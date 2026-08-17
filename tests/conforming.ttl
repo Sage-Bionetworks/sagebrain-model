@@ -1,0 +1,106 @@
+# Instance data that MUST validate cleanly against sagebrain-shapes.ttl.
+#
+# Beyond covering every connection in the model once, this fixture deliberately
+# exercises the shared-vocabulary-node pattern: ind1 and ind2 both point at the
+# same DiseaseLabel, DiseaseStatus and DiseaseStage nodes. That is legitimate
+# under the model as documented, and it is what the deactivated ISSUE-1 inverse
+# shapes would wrongly reject. If someone activates those shapes without first
+# resolving the node-kind question, this fixture starts failing -- which is the
+# point.
+
+@prefix sagebrain: <https://w3id.org/synapse/sagebrain#> .
+@prefix biolink:   <https://w3id.org/biolink/vocab/> .
+@prefix ex:        <https://example.org/sagebrain-test/> .
+
+###  Individuals, including a Case and a Control  ###############
+
+ex:ind1
+    a sagebrain:Individual ;
+    sagebrain:has_sample ex:samp1 ;
+    sagebrain:has_diagnosis ex:ad ;
+    sagebrain:has_status ex:symptomatic ;
+    sagebrain:staged_at ex:braakStage3 .
+
+ex:ind2
+    a sagebrain:Case ;
+    sagebrain:has_sample ex:samp2 ;
+    sagebrain:has_diagnosis ex:ad ;
+    sagebrain:has_status ex:symptomatic ;
+    sagebrain:staged_at ex:braakStage3 .
+
+ex:ind3
+    a sagebrain:Control ;
+    sagebrain:has_diagnosis ex:ad .
+
+###  Samples  ###################################################
+
+ex:samp1
+    a biolink:MaterialSample ;
+    sagebrain:source_tissue ex:cortexTissue ;
+    sagebrain:has_pathology ex:plaqueBurden ;
+    sagebrain:de_associated_with ex:apoptosisPathway .
+
+ex:samp2
+    a biolink:MaterialSample ;
+    sagebrain:source_tissue ex:cortexTissue ;
+    sagebrain:has_pathology ex:plaqueBurden .
+
+###  Anatomy  ###################################################
+
+ex:brain
+    a sagebrain:Organ ;
+    sagebrain:has_subregion ex:hippocampus ;
+    sagebrain:contains_tissue ex:cortexTissue .
+
+ex:hippocampus
+    a sagebrain:OrganSubregion ;
+    sagebrain:contains_tissue ex:cortexTissue .
+
+ex:cortexTissue a sagebrain:Tissue .
+
+###  Clinical vocabulary  #######################################
+
+ex:ad
+    a biolink:Disease ;
+    sagebrain:has_trial ex:trial1 .
+
+ex:symptomatic
+    a sagebrain:DiseaseStatus ;
+    sagebrain:relates_to ex:ad .
+
+ex:braakStage3
+    a sagebrain:DiseaseStage ;
+    sagebrain:relates_to ex:ad .
+
+ex:plaqueBurden
+    a sagebrain:Pathology ;
+    sagebrain:relates_to ex:ad .
+
+###  Genes, pathways, biodomains  ###############################
+
+ex:apoe
+    a biolink:Gene ;
+    sagebrain:expressed_in ex:samp1 , ex:samp2 ;
+    sagebrain:participates_in ex:apoptosisPathway .
+
+ex:apoptosisPathway
+    a biolink:Pathway ;
+    sagebrain:belongs_to ex:neuroinflammation ;
+    sagebrain:associated_with ex:ad ;
+    sagebrain:related_pathway ex:synapticPathway ;
+    sagebrain:de_associated_with ex:symptomatic , ex:braakStage3 .
+
+ex:synapticPathway a biolink:Pathway .
+
+ex:neuroinflammation a sagebrain:Biodomain .
+
+###  Translational  #############################################
+
+ex:donanemab
+    a biolink:Drug ;
+    sagebrain:targets ex:apoe ;
+    sagebrain:used_to_treat ex:ad .
+
+ex:trial1
+    a biolink:ClinicalTrial ;
+    sagebrain:tests ex:donanemab .
