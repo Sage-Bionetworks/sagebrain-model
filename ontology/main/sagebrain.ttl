@@ -1,0 +1,433 @@
+@prefix sagebrain: <https://w3id.org/synapse/sagebrain#> .
+@prefix biolink:   <https://w3id.org/biolink/vocab/> .
+@prefix owl:       <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs:      <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:       <http://www.w3.org/2001/XMLSchema#> .
+@prefix skos:      <http://www.w3.org/2004/02/skos/core#> .
+@prefix dcterms:   <http://purl.org/dc/terms/> .
+@prefix vann:      <http://purl.org/vocab/vann/> .
+
+#################################################################
+#    Ontology
+#################################################################
+
+<https://w3id.org/synapse/sagebrain>
+    a owl:Ontology ;
+    dcterms:title "SageBrain Graph Model" ;
+    rdfs:comment """Schema for the SageBrain knowledge graph: the common nodes and
+connections used to integrate biological, clinical, systems-biology and
+translational data across Synapse portals.
+
+One layer: a T-Box of OWL classes and object properties, for RDF/OWL consumers.
+
+Many elements are reused from the Biolink Model rather than minted here, e.g. 
+biolink:Gene and biolink:Pathway, while sagebrain:participates_in is declared a
+subproperty of biolink:participates_in. See the "Reused terms" section below. The
+Biolink declarations are not in this file: they come from
+ontology/imports/biolink.ttl, which the build merges alongside it.""" ;
+    owl:versionIRI <https://w3id.org/synapse/sagebrain/0.1.0> ;
+    owl:versionInfo "v0.1" ;
+    vann:preferredNamespacePrefix "sagebrain" ;
+    vann:preferredNamespaceUri "https://w3id.org/synapse/sagebrain#" ;
+    dcterms:publisher <https://sagebionetworks.org> ;
+    dcterms:created "2026-08-14"^^xsd:date ;
+    dcterms:source <https://docs.google.com/spreadsheets/d/1VCVPoEC7UZYgPmJCukCONMGVKq8xpRdcYKFlHIsMtLQ> ;
+    rdfs:seeAlso <https://github.com/Sage-Bionetworks/sagebrain-model> ,
+                 <https://w3id.org/synapse/sagebrain/shapes> ,
+                 <https://biolink.github.io/biolink-model/> .
+
+#################################################################
+#    Annotation properties (model metadata carried from the source sheet)
+#################################################################
+
+sagebrain:elementCategory
+    a owl:AnnotationProperty ;
+    rdfs:label "element category" ;
+    rdfs:comment "The broad category an element type belongs to, from the source model's \"Type\" column." ;
+    rdfs:range sagebrain:ElementCategory .
+
+
+sagebrain:weighted
+    a owl:AnnotationProperty ;
+    rdfs:label "weighted" ;
+    rdfs:comment "True if the connection carries a numeric edge weight; false if it encodes presence/absence only." ;
+    rdfs:range xsd:boolean .
+
+sagebrain:optional
+    a owl:AnnotationProperty ;
+    rdfs:label "optional" ;
+    rdfs:comment "True if the source model marks this connection as optional in the graph build." ;
+    rdfs:range xsd:boolean .
+
+
+#################################################################
+#    Element categories
+#################################################################
+
+sagebrain:ElementCategory
+    a owl:Class ;
+    rdfs:subClassOf skos:Concept ;
+    rdfs:label "Element Category" ;
+    rdfs:comment "A broad grouping of SageBrain element types." .
+
+sagebrain:ElementCategoryScheme
+    a skos:ConceptScheme ;
+    rdfs:label "SageBrain element categories" ;
+    skos:hasTopConcept sagebrain:Biological , sagebrain:Clinical ,
+                       sagebrain:SystemsBiology , sagebrain:Translational .
+
+sagebrain:Biological
+    a sagebrain:ElementCategory ;
+    skos:prefLabel "Biological" ;
+    skos:inScheme sagebrain:ElementCategoryScheme .
+
+sagebrain:Clinical
+    a sagebrain:ElementCategory ;
+    skos:prefLabel "Clinical" ;
+    skos:inScheme sagebrain:ElementCategoryScheme .
+
+sagebrain:SystemsBiology
+    a sagebrain:ElementCategory ;
+    skos:prefLabel "Systems Biology" ;
+    skos:inScheme sagebrain:ElementCategoryScheme .
+
+sagebrain:Translational
+    a sagebrain:ElementCategory ;
+    skos:prefLabel "Translational" ;
+    skos:inScheme sagebrain:ElementCategoryScheme .
+
+#################################################################
+#    Reused terms (Biolink Model)
+#
+#    Some elements are not minted in the sagebrain namespace. The model uses
+#    Biolink terms such as biolink:Gene and biolink:Pathway, so that a
+#    SageBrain graph is Biolink data without a mapping step.
+#
+#    The description is attached with skos:scopeNote, NOT rdfs:comment. An
+#    rdfs:comment on someone else's class reads as a definition of that class,
+#    which is not ours to give.
+#################################################################
+
+biolink:Gene
+    skos:scopeNote "A gene entity; source of expression data and drug target information." ;
+    skos:editorialNote "Reused from the Biolink Model. Instances are expected to carry HGNC or Ensembl identifiers." ;
+    sagebrain:elementCategory sagebrain:Biological ;
+    owl:versionInfo "v0.1" .
+
+biolink:Pathway
+    skos:scopeNote "A biological pathway (e.g. Reactome, KEGG). Many genes per pathway; many pathways per gene." ;
+    skos:editorialNote "Reused from the Biolink Model, which records it as an exact match for PW_0000001. Imported from external data source." ;
+    sagebrain:elementCategory sagebrain:SystemsBiology ;
+    owl:versionInfo "v0.1" .
+
+biolink:MaterialSample
+    skos:scopeNote "A biological sample collected from a tissue. Could have multiple samples per individual." ;
+    skos:editorialNote "Reused from the Biolink Model, which records it as an exact match for OBI_0000747." ;
+    sagebrain:elementCategory sagebrain:Biological ;
+    owl:versionInfo "v0.1" .
+
+biolink:Disease
+    skos:scopeNote "A disease label node. One node per disease (e.g. Alzheimer's Disease, ALS)." ;
+    skos:editorialNote "Reused from the Biolink Model, which records it as an exact match for MONDO_0000001." ;
+    sagebrain:elementCategory sagebrain:Clinical ;
+    owl:versionInfo "v0.1" .
+
+biolink:Drug
+    skos:scopeNote "An existing drug or compound with known gene targets." ;
+    skos:editorialNote "Reused from the Biolink Model, which records it as an exact match for CHEBI_23888. Imported from external data source. Biolink places Drug under MolecularMixture, i.e. a formulated substance rather than a single compound -- if the data turns out to be single compounds, biolink:SmallMolecule or biolink:ChemicalEntity is the better term." ;
+    sagebrain:elementCategory sagebrain:Translational ;
+    owl:versionInfo "v0.1" .
+
+biolink:ClinicalTrial
+    skos:scopeNote "A clinical trial entry. Presence/absence linked to disease and compound." ;
+    skos:editorialNote "Reused from the Biolink Model, where it is a kind of Study, recorded as an exact match for NCIT_C71104." ;
+    sagebrain:elementCategory sagebrain:Translational ;
+    owl:versionInfo "v0.1" .
+
+#################################################################
+#    Elements (classes)
+#################################################################
+
+###  Biological
+
+sagebrain:Individual
+    a owl:Class ;
+    rdfs:label "Individual" ;
+    rdfs:comment "A study participant (human or animal)." ;
+    sagebrain:elementCategory sagebrain:Biological ;
+    owl:versionInfo "v0.1" .
+
+sagebrain:Organ
+    a owl:Class ;
+    rdfs:label "Organ" ;
+    rdfs:comment "A biological organ. Contains one or more organ sub-regions." ;
+    sagebrain:elementCategory sagebrain:Biological ;
+    owl:versionInfo "v0.1" .
+
+sagebrain:OrganSubregion
+    a owl:Class ;
+    rdfs:label "Organ Sub-Region" ;
+    rdfs:comment "A distinct anatomical sub-region within an organ (e.g. hippocampus within brain). Separate from tissue." ;
+    skos:editorialNote "Component of Organ. Especially relevant for brain-related diseases such as AD and ALS." ;
+    sagebrain:elementCategory sagebrain:Biological ;
+    owl:versionInfo "v0.1" .
+
+sagebrain:Tissue
+    a owl:Class ;
+    rdfs:label "Tissue" ;
+    rdfs:comment "A tissue type collected from an organ or organ sub-region. Source of samples." ;
+    skos:editorialNote "Tissue names are not standardized across diseases; this graph represents the schema concept only." ;
+    sagebrain:elementCategory sagebrain:Biological ;
+    owl:versionInfo "v0.1" .
+
+###  Clinical
+
+sagebrain:DiseaseStatus
+    a owl:Class ;
+    rdfs:label "Disease Status" ;
+    rdfs:comment "A disease-specific status node. Multiple per disease (e.g. symptomatic, pre-symptomatic)." ;
+    skos:editorialNote "Multiple nodes, disease-specific. Weighted 0/1 or scored range from disease label." ;
+    sagebrain:elementCategory sagebrain:Clinical ;
+    owl:versionInfo "v0.1" .
+
+sagebrain:Case
+    a owl:Class ;
+    rdfs:label "Case" ;
+    rdfs:comment "An individual classified as a disease case." ;
+    skos:editorialNote "Subtype of Individual for disease group assignment." ;
+    rdfs:subClassOf sagebrain:Individual ;
+    owl:disjointWith sagebrain:Control ;
+    sagebrain:elementCategory sagebrain:Clinical ;
+    owl:versionInfo "v0.1" .
+
+sagebrain:Control
+    a owl:Class ;
+    rdfs:label "Control" ;
+    rdfs:comment "An individual classified as a healthy control." ;
+    skos:editorialNote "Subtype of Individual for control group assignment." ;
+    rdfs:subClassOf sagebrain:Individual ;
+    sagebrain:elementCategory sagebrain:Clinical ;
+    owl:versionInfo "v0.1" .
+
+sagebrain:Pathology
+    a owl:Class ;
+    rdfs:label "Pathology" ;
+    rdfs:comment "A disease pathology classification node, associated with the sample." ;
+    skos:editorialNote "Multiple nodes, disease-specific." ;
+    sagebrain:elementCategory sagebrain:Clinical ;
+    owl:versionInfo "v0.1" .
+
+sagebrain:DiseaseStage
+    a owl:Class ;
+    rdfs:label "Disease Stage" ;
+    rdfs:comment "A disease progression stage associated with the Case." ;
+    skos:editorialNote "Multiple nodes, disease-specific." ;
+    sagebrain:elementCategory sagebrain:Clinical ;
+    owl:versionInfo "v0.1" .
+
+###  Systems Biology
+###  (Pathway is reused from Biolink -- see "Reused terms" above.)
+
+sagebrain:Biodomain
+    a owl:Class ;
+    rdfs:label "Biodomain" ;
+    rdfs:comment "A higher-level biological domain grouping one or more pathways (e.g. neuroinflammation, synaptic)." ;
+    sagebrain:elementCategory sagebrain:SystemsBiology ;
+    owl:versionInfo "v0.1" .
+
+###  Translational
+
+#################################################################
+#    Connections (object properties)
+#
+#    Where a property is used on more than one (source, target) pair, its
+#    rdfs:domain / rdfs:range is the union over those pairs. The union is
+#    deliberately permissive -- it admits combinations the model does not, e.g.
+#    Sample de_associated_with DiseaseStage -- so the permitted pairings are
+#    stated per pair in the shapes graph, and only there.
+#################################################################
+
+sagebrain:tests
+    a owl:ObjectProperty ;
+    rdfs:label "tests" ;
+    rdfs:domain biolink:ClinicalTrial ;
+    rdfs:range biolink:Drug ;
+    sagebrain:weighted false ;
+    skos:editorialNote "Many trials per compound." ;
+    owl:versionInfo "v0.1" .
+
+sagebrain:has_trial
+    a owl:ObjectProperty ;
+    rdfs:label "has trial" ;
+    rdfs:domain biolink:Disease ;
+    rdfs:range biolink:ClinicalTrial ;
+    sagebrain:weighted false ;
+    owl:versionInfo "v0.1" .
+
+sagebrain:relates_to
+    a owl:ObjectProperty ;
+    rdfs:label "relates to" ;
+    rdfs:comment "Relates a disease-specific stage, status or pathology node to its disease label." ;
+    rdfs:domain [ a owl:Class ;
+                  owl:unionOf ( sagebrain:DiseaseStage sagebrain:DiseaseStatus sagebrain:Pathology ) ] ;
+    rdfs:range biolink:Disease ;
+    sagebrain:weighted false ;
+    skos:editorialNote "Disease-specific pathology classification." ;
+    skos:editorialNote "This is overloaded and should probably be split into `stage_of`, `status_of`, `pathology_of`" ;
+    owl:versionInfo "v0.1" .
+
+sagebrain:targets
+    a owl:ObjectProperty ;
+    rdfs:label "targets" ;
+    rdfs:domain biolink:Drug ;
+    rdfs:range biolink:Gene ;
+    sagebrain:weighted false ;
+    skos:editorialNote "Imported from external data source. Drug compound targets a gene." ;
+    owl:versionInfo "v0.1" .
+
+sagebrain:used_to_treat
+    a owl:ObjectProperty ;
+    rdfs:label "used to treat" ;
+    rdfs:subPropertyOf biolink:treats ;
+    rdfs:domain biolink:Drug ;
+    rdfs:range biolink:Disease ;
+    skos:editorialNote "Narrows biolink:treats, which holds between any chemical, drug or treatment and any disease or phenotypic feature, to the model's Drug -> Disease edge." ;
+    sagebrain:weighted false ;
+    sagebrain:optional true ;
+    skos:editorialNote "Optional." ;
+    owl:versionInfo "v0.1" .
+
+sagebrain:expressed_in
+    a owl:ObjectProperty ;
+    rdfs:label "expressed in" ;
+    rdfs:domain biolink:Gene ;
+    rdfs:range biolink:MaterialSample ;
+    sagebrain:weighted true ;
+    skos:editorialNote "Weight represents expression level relative to DE results." ;
+    owl:versionInfo "v0.1" .
+
+sagebrain:participates_in
+    a owl:ObjectProperty ;
+    rdfs:label "participates in" ;
+    rdfs:subPropertyOf biolink:participates_in ;
+    rdfs:domain biolink:Gene ;
+    rdfs:range biolink:Pathway ;
+    skos:editorialNote "Narrows biolink:participates_in, which holds between any continuant and any process, to the model's Gene -> Pathway edge. Biolink records theirs as an exact match for RO_0000056." ;
+    sagebrain:weighted false ;
+    skos:editorialNote "v0.1 unweighted" ;
+    owl:versionInfo "v0.1" .
+
+sagebrain:has_sample
+    a owl:ObjectProperty ;
+    rdfs:label "has sample" ;
+    rdfs:domain sagebrain:Individual ;
+    rdfs:range biolink:MaterialSample ;
+    sagebrain:weighted false ;
+    skos:editorialNote "One individual contributes many samples." ;
+    owl:versionInfo "v0.1" .
+
+sagebrain:has_diagnosis
+    a owl:ObjectProperty ;
+    rdfs:label "has diagnosis" ;
+    rdfs:domain sagebrain:Individual ;
+    rdfs:range biolink:Disease ;
+    sagebrain:weighted false ;
+    skos:editorialNote "Disease diagnosis for an individual." ;
+    owl:versionInfo "v0.1" .
+
+sagebrain:staged_at
+    a owl:ObjectProperty ;
+    rdfs:label "staged at" ;
+    rdfs:domain sagebrain:Individual ;
+    rdfs:range sagebrain:DiseaseStage ;
+    sagebrain:weighted false ;
+    skos:editorialNote "Disease-specific staging or pathology classification." ;
+    owl:versionInfo "v0.1" .
+
+sagebrain:has_status
+    a owl:ObjectProperty ;
+    rdfs:label "has status" ;
+    rdfs:domain sagebrain:Individual ;
+    rdfs:range sagebrain:DiseaseStatus ;
+    sagebrain:weighted true ;
+    owl:versionInfo "v0.1" .
+
+sagebrain:has_subregion
+    a owl:ObjectProperty ;
+    rdfs:label "has sub-region" ;
+    rdfs:domain sagebrain:Organ ;
+    rdfs:range sagebrain:OrganSubregion ;
+    sagebrain:weighted false ;
+    skos:editorialNote "Organ sub-region is a distinct anatomical component of the organ." ;
+    owl:versionInfo "v0.1" .
+
+sagebrain:contains_tissue
+    a owl:ObjectProperty ;
+    rdfs:label "contains tissue" ;
+    rdfs:domain [ a owl:Class ;
+                  owl:unionOf ( sagebrain:Organ sagebrain:OrganSubregion ) ] ;
+    rdfs:range sagebrain:Tissue ;
+    sagebrain:weighted false ;
+    skos:editorialNote "An organ contains one or more tissue types." ;
+    skos:editorialNote "A sub-region may also be the source of a tissue." ;
+    owl:versionInfo "v0.1" .
+
+sagebrain:belongs_to
+    a owl:ObjectProperty ;
+    rdfs:label "belongs to" ;
+    rdfs:domain biolink:Pathway ;
+    rdfs:range sagebrain:Biodomain ;
+    rdfs:seeAlso <https://alz-journals.onlinelibrary.wiley.com/doi/10.1002/alz.078590> ;
+    sagebrain:weighted false ;
+    owl:versionInfo "v0.1" .
+
+sagebrain:de_associated_with
+    a owl:ObjectProperty ;
+    rdfs:label "DE associated with" ;
+    rdfs:comment "Links entities via a differential-expression association." ;
+    rdfs:domain [ a owl:Class ;
+                  owl:unionOf ( biolink:Pathway biolink:MaterialSample ) ] ;
+    rdfs:range [ a owl:Class ;
+                 owl:unionOf ( sagebrain:DiseaseStatus sagebrain:DiseaseStage biolink:Pathway ) ] ;
+    sagebrain:weighted true ;
+    sagebrain:optional true ;
+    skos:editorialNote "Optional. DE state associated with pathway activity." ;
+    skos:editorialNote "Optional. Differential expression result linking sample to pathway." ;
+    owl:versionInfo "v0.1" .
+
+sagebrain:related_pathway
+    a owl:ObjectProperty ;
+    rdfs:label "related pathway" ;
+    rdfs:domain biolink:Pathway ;
+    rdfs:range biolink:Pathway ;
+    sagebrain:weighted false ;
+    sagebrain:optional true ;
+    skos:editorialNote "Optional. Cross-pathway relationships for graph inference. Imported from external sources." ;
+    owl:versionInfo "v0.1" .
+
+sagebrain:associated_with
+    a owl:ObjectProperty ;
+    rdfs:label "associated with" ;
+    rdfs:domain biolink:Pathway ;
+    rdfs:range biolink:Disease ;
+    sagebrain:weighted true ;
+    sagebrain:optional true ;
+    skos:editorialNote "Optional. Pathway associated with Disease Labels." ;
+    owl:versionInfo "v0.1" .
+
+sagebrain:source_tissue
+    a owl:ObjectProperty ;
+    rdfs:label "source tissue" ;
+    rdfs:domain biolink:MaterialSample ;
+    rdfs:range sagebrain:Tissue ;
+    sagebrain:weighted false ;
+    owl:versionInfo "v0.1" .
+
+sagebrain:has_pathology
+    a owl:ObjectProperty ;
+    rdfs:label "has pathology" ;
+    rdfs:domain biolink:MaterialSample ;
+    rdfs:range sagebrain:Pathology ;
+    sagebrain:weighted false ;
+    skos:editorialNote "Pathology identifier for the sample." ;
+    owl:versionInfo "v0.1" .
