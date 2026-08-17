@@ -25,8 +25,8 @@ biolink:Gene and biolink:Pathway, while sagebrain:participates_in is declared a
 subproperty of biolink:participates_in. See the "Reused terms" section below. The
 Biolink declarations are not in this file: they come from
 ontology/imports/biolink.ttl, which the build merges alongside it.""" ;
-    owl:versionIRI <https://w3id.org/synapse/sagebrain/0.1.0> ;
-    owl:versionInfo "v0.1" ;
+    owl:versionIRI <https://w3id.org/synapse/sagebrain/0.2.0> ;
+    owl:versionInfo "v0.2" ;
     vann:preferredNamespacePrefix "sagebrain" ;
     vann:preferredNamespaceUri "https://w3id.org/synapse/sagebrain#" ;
     dcterms:publisher <https://sagebionetworks.org> ;
@@ -112,37 +112,37 @@ biolink:Gene
     skos:scopeNote "A gene entity; source of expression data and drug target information." ;
     skos:editorialNote "Reused from the Biolink Model. Instances are expected to carry HGNC or Ensembl identifiers." ;
     sagebrain:elementCategory sagebrain:Biological ;
-    owl:versionInfo "v0.1" .
+    owl:versionInfo "v0.2" .
 
 biolink:Pathway
     skos:scopeNote "A biological pathway (e.g. Reactome, KEGG). Many genes per pathway; many pathways per gene." ;
     skos:editorialNote "Reused from the Biolink Model, which records it as an exact match for PW_0000001. Imported from external data source." ;
     sagebrain:elementCategory sagebrain:SystemsBiology ;
-    owl:versionInfo "v0.1" .
+    owl:versionInfo "v0.2" .
 
 biolink:MaterialSample
     skos:scopeNote "A biological sample collected from a tissue. Could have multiple samples per individual." ;
     skos:editorialNote "Reused from the Biolink Model, which records it as an exact match for OBI_0000747." ;
     sagebrain:elementCategory sagebrain:Biological ;
-    owl:versionInfo "v0.1" .
+    owl:versionInfo "v0.2" .
 
 biolink:Disease
     skos:scopeNote "A disease label node. One node per disease (e.g. Alzheimer's Disease, ALS)." ;
     skos:editorialNote "Reused from the Biolink Model, which records it as an exact match for MONDO_0000001." ;
     sagebrain:elementCategory sagebrain:Clinical ;
-    owl:versionInfo "v0.1" .
+    owl:versionInfo "v0.2" .
 
 biolink:Drug
     skos:scopeNote "An existing drug or compound with known gene targets." ;
     skos:editorialNote "Reused from the Biolink Model, which records it as an exact match for CHEBI_23888. Imported from external data source. Biolink places Drug under MolecularMixture, i.e. a formulated substance rather than a single compound -- if the data turns out to be single compounds, biolink:SmallMolecule or biolink:ChemicalEntity is the better term." ;
     sagebrain:elementCategory sagebrain:Translational ;
-    owl:versionInfo "v0.1" .
+    owl:versionInfo "v0.2" .
 
 biolink:ClinicalTrial
     skos:scopeNote "A clinical trial entry. Presence/absence linked to disease and compound." ;
     skos:editorialNote "Reused from the Biolink Model, where it is a kind of Study, recorded as an exact match for NCIT_C71104." ;
     sagebrain:elementCategory sagebrain:Translational ;
-    owl:versionInfo "v0.1" .
+    owl:versionInfo "v0.2" .
 
 #################################################################
 #    Elements (classes)
@@ -155,14 +155,14 @@ sagebrain:Individual
     rdfs:label "Individual" ;
     rdfs:comment "A study participant (human or animal)." ;
     sagebrain:elementCategory sagebrain:Biological ;
-    owl:versionInfo "v0.1" .
+    owl:versionInfo "v0.2" .
 
 sagebrain:Organ
     a owl:Class ;
     rdfs:label "Organ" ;
     rdfs:comment "A biological organ. Contains one or more organ sub-regions." ;
     sagebrain:elementCategory sagebrain:Biological ;
-    owl:versionInfo "v0.1" .
+    owl:versionInfo "v0.2" .
 
 sagebrain:OrganSubregion
     a owl:Class ;
@@ -170,7 +170,7 @@ sagebrain:OrganSubregion
     rdfs:comment "A distinct anatomical sub-region within an organ (e.g. hippocampus within brain). Separate from tissue." ;
     skos:editorialNote "Component of Organ. Especially relevant for brain-related diseases such as AD and ALS." ;
     sagebrain:elementCategory sagebrain:Biological ;
-    owl:versionInfo "v0.1" .
+    owl:versionInfo "v0.2" .
 
 sagebrain:Tissue
     a owl:Class ;
@@ -178,7 +178,7 @@ sagebrain:Tissue
     rdfs:comment "A tissue type collected from an organ or organ sub-region. Source of samples." ;
     skos:editorialNote "Tissue names are not standardized across diseases; this graph represents the schema concept only." ;
     sagebrain:elementCategory sagebrain:Biological ;
-    owl:versionInfo "v0.1" .
+    owl:versionInfo "v0.2" .
 
 ###  Clinical
 
@@ -188,7 +188,7 @@ sagebrain:DiseaseStatus
     rdfs:comment "A disease-specific status node. Multiple per disease (e.g. symptomatic, pre-symptomatic)." ;
     skos:editorialNote "Multiple nodes, disease-specific. Weighted 0/1 or scored range from disease label." ;
     sagebrain:elementCategory sagebrain:Clinical ;
-    owl:versionInfo "v0.1" .
+    owl:versionInfo "v0.2" .
 
 sagebrain:Case
     a owl:Class ;
@@ -198,7 +198,7 @@ sagebrain:Case
     rdfs:subClassOf sagebrain:Individual ;
     owl:disjointWith sagebrain:Control ;
     sagebrain:elementCategory sagebrain:Clinical ;
-    owl:versionInfo "v0.1" .
+    owl:versionInfo "v0.2" .
 
 sagebrain:Control
     a owl:Class ;
@@ -207,7 +207,7 @@ sagebrain:Control
     skos:editorialNote "Subtype of Individual for control group assignment." ;
     rdfs:subClassOf sagebrain:Individual ;
     sagebrain:elementCategory sagebrain:Clinical ;
-    owl:versionInfo "v0.1" .
+    owl:versionInfo "v0.2" .
 
 sagebrain:Pathology
     a owl:Class ;
@@ -215,7 +215,7 @@ sagebrain:Pathology
     rdfs:comment "A disease pathology classification node, associated with the sample." ;
     skos:editorialNote "Multiple nodes, disease-specific." ;
     sagebrain:elementCategory sagebrain:Clinical ;
-    owl:versionInfo "v0.1" .
+    owl:versionInfo "v0.2" .
 
 sagebrain:DiseaseStage
     a owl:Class ;
@@ -223,7 +223,7 @@ sagebrain:DiseaseStage
     rdfs:comment "A disease progression stage associated with the Case." ;
     skos:editorialNote "Multiple nodes, disease-specific." ;
     sagebrain:elementCategory sagebrain:Clinical ;
-    owl:versionInfo "v0.1" .
+    owl:versionInfo "v0.2" .
 
 ###  Systems Biology
 ###  (Pathway is reused from Biolink -- see "Reused terms" above.)
@@ -233,7 +233,7 @@ sagebrain:Biodomain
     rdfs:label "Biodomain" ;
     rdfs:comment "A higher-level biological domain grouping one or more pathways (e.g. neuroinflammation, synaptic)." ;
     sagebrain:elementCategory sagebrain:SystemsBiology ;
-    owl:versionInfo "v0.1" .
+    owl:versionInfo "v0.2" .
 
 ###  Translational
 
@@ -254,7 +254,7 @@ sagebrain:tests
     rdfs:range biolink:Drug ;
     sagebrain:weighted false ;
     skos:editorialNote "Many trials per compound." ;
-    owl:versionInfo "v0.1" .
+    owl:versionInfo "v0.2" .
 
 sagebrain:has_trial
     a owl:ObjectProperty ;
@@ -262,7 +262,7 @@ sagebrain:has_trial
     rdfs:domain biolink:Disease ;
     rdfs:range biolink:ClinicalTrial ;
     sagebrain:weighted false ;
-    owl:versionInfo "v0.1" .
+    owl:versionInfo "v0.2" .
 
 sagebrain:relates_to
     a owl:ObjectProperty ;
@@ -274,7 +274,7 @@ sagebrain:relates_to
     sagebrain:weighted false ;
     skos:editorialNote "Disease-specific pathology classification." ;
     skos:editorialNote "This is overloaded and should probably be split into `stage_of`, `status_of`, `pathology_of`" ;
-    owl:versionInfo "v0.1" .
+    owl:versionInfo "v0.2" .
 
 sagebrain:targets
     a owl:ObjectProperty ;
@@ -283,7 +283,7 @@ sagebrain:targets
     rdfs:range biolink:Gene ;
     sagebrain:weighted false ;
     skos:editorialNote "Imported from external data source. Drug compound targets a gene." ;
-    owl:versionInfo "v0.1" .
+    owl:versionInfo "v0.2" .
 
 sagebrain:used_to_treat
     a owl:ObjectProperty ;
@@ -295,7 +295,7 @@ sagebrain:used_to_treat
     sagebrain:weighted false ;
     sagebrain:optional true ;
     skos:editorialNote "Optional." ;
-    owl:versionInfo "v0.1" .
+    owl:versionInfo "v0.2" .
 
 sagebrain:expressed_in
     a owl:ObjectProperty ;
@@ -304,7 +304,7 @@ sagebrain:expressed_in
     rdfs:range biolink:MaterialSample ;
     sagebrain:weighted true ;
     skos:editorialNote "Weight represents expression level relative to DE results." ;
-    owl:versionInfo "v0.1" .
+    owl:versionInfo "v0.2" .
 
 sagebrain:participates_in
     a owl:ObjectProperty ;
@@ -314,8 +314,8 @@ sagebrain:participates_in
     rdfs:range biolink:Pathway ;
     skos:editorialNote "Narrows biolink:participates_in, which holds between any continuant and any process, to the model's Gene -> Pathway edge. Biolink records theirs as an exact match for RO_0000056." ;
     sagebrain:weighted false ;
-    skos:editorialNote "v0.1 unweighted" ;
-    owl:versionInfo "v0.1" .
+    skos:editorialNote "v0.2 unweighted" ;
+    owl:versionInfo "v0.2" .
 
 sagebrain:has_sample
     a owl:ObjectProperty ;
@@ -324,7 +324,7 @@ sagebrain:has_sample
     rdfs:range biolink:MaterialSample ;
     sagebrain:weighted false ;
     skos:editorialNote "One individual contributes many samples." ;
-    owl:versionInfo "v0.1" .
+    owl:versionInfo "v0.2" .
 
 sagebrain:has_diagnosis
     a owl:ObjectProperty ;
@@ -333,7 +333,7 @@ sagebrain:has_diagnosis
     rdfs:range biolink:Disease ;
     sagebrain:weighted false ;
     skos:editorialNote "Disease diagnosis for an individual." ;
-    owl:versionInfo "v0.1" .
+    owl:versionInfo "v0.2" .
 
 sagebrain:staged_at
     a owl:ObjectProperty ;
@@ -342,7 +342,7 @@ sagebrain:staged_at
     rdfs:range sagebrain:DiseaseStage ;
     sagebrain:weighted false ;
     skos:editorialNote "Disease-specific staging or pathology classification." ;
-    owl:versionInfo "v0.1" .
+    owl:versionInfo "v0.2" .
 
 sagebrain:has_status
     a owl:ObjectProperty ;
@@ -350,7 +350,7 @@ sagebrain:has_status
     rdfs:domain sagebrain:Individual ;
     rdfs:range sagebrain:DiseaseStatus ;
     sagebrain:weighted true ;
-    owl:versionInfo "v0.1" .
+    owl:versionInfo "v0.2" .
 
 sagebrain:has_subregion
     a owl:ObjectProperty ;
@@ -359,7 +359,7 @@ sagebrain:has_subregion
     rdfs:range sagebrain:OrganSubregion ;
     sagebrain:weighted false ;
     skos:editorialNote "Organ sub-region is a distinct anatomical component of the organ." ;
-    owl:versionInfo "v0.1" .
+    owl:versionInfo "v0.2" .
 
 sagebrain:contains_tissue
     a owl:ObjectProperty ;
@@ -370,7 +370,7 @@ sagebrain:contains_tissue
     sagebrain:weighted false ;
     skos:editorialNote "An organ contains one or more tissue types." ;
     skos:editorialNote "A sub-region may also be the source of a tissue." ;
-    owl:versionInfo "v0.1" .
+    owl:versionInfo "v0.2" .
 
 sagebrain:belongs_to
     a owl:ObjectProperty ;
@@ -379,7 +379,7 @@ sagebrain:belongs_to
     rdfs:range sagebrain:Biodomain ;
     rdfs:seeAlso <https://alz-journals.onlinelibrary.wiley.com/doi/10.1002/alz.078590> ;
     sagebrain:weighted false ;
-    owl:versionInfo "v0.1" .
+    owl:versionInfo "v0.2" .
 
 sagebrain:de_associated_with
     a owl:ObjectProperty ;
@@ -393,7 +393,7 @@ sagebrain:de_associated_with
     sagebrain:optional true ;
     skos:editorialNote "Optional. DE state associated with pathway activity." ;
     skos:editorialNote "Optional. Differential expression result linking sample to pathway." ;
-    owl:versionInfo "v0.1" .
+    owl:versionInfo "v0.2" .
 
 sagebrain:related_pathway
     a owl:ObjectProperty ;
@@ -403,7 +403,7 @@ sagebrain:related_pathway
     sagebrain:weighted false ;
     sagebrain:optional true ;
     skos:editorialNote "Optional. Cross-pathway relationships for graph inference. Imported from external sources." ;
-    owl:versionInfo "v0.1" .
+    owl:versionInfo "v0.2" .
 
 sagebrain:associated_with
     a owl:ObjectProperty ;
@@ -413,7 +413,7 @@ sagebrain:associated_with
     sagebrain:weighted true ;
     sagebrain:optional true ;
     skos:editorialNote "Optional. Pathway associated with Disease Labels." ;
-    owl:versionInfo "v0.1" .
+    owl:versionInfo "v0.2" .
 
 sagebrain:source_tissue
     a owl:ObjectProperty ;
@@ -421,7 +421,7 @@ sagebrain:source_tissue
     rdfs:domain biolink:MaterialSample ;
     rdfs:range sagebrain:Tissue ;
     sagebrain:weighted false ;
-    owl:versionInfo "v0.1" .
+    owl:versionInfo "v0.2" .
 
 sagebrain:has_pathology
     a owl:ObjectProperty ;
@@ -430,4 +430,4 @@ sagebrain:has_pathology
     rdfs:range sagebrain:Pathology ;
     sagebrain:weighted false ;
     skos:editorialNote "Pathology identifier for the sample." ;
-    owl:versionInfo "v0.1" .
+    owl:versionInfo "v0.2" .

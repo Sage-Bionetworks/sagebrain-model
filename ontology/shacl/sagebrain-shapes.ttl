@@ -40,8 +40,8 @@ Three groups of shapes:
      direction, so those shapes are authored but carry sh:deactivated true.""" ;
     rdfs:seeAlso "See the VALIDATION CONFIGURATION section below before running these shapes." ;
     owl:imports <https://w3id.org/synapse/sagebrain> ;
-    owl:versionIRI <https://w3id.org/synapse/sagebrain/shapes/0.1.0> ;
-    owl:versionInfo "v0.1" ;
+    owl:versionIRI <https://w3id.org/synapse/sagebrain/shapes/0.2.0> ;
+    owl:versionInfo "v0.2" ;
     dcterms:created "2026-08-14"^^xsd:date ;
     rdfs:seeAlso <https://github.com/Sage-Bionetworks/sagebrain-model> .
 
