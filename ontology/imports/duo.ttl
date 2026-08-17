@@ -1,0 +1,1552 @@
+@prefix : <http://purl.obolibrary.org/obo/duo.owl#> .
+@prefix dc: <http://purl.org/dc/elements/1.1/> .
+@prefix obo: <http://purl.obolibrary.org/obo/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix xml: <http://www.w3.org/XML/1998/namespace> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix terms: <http://purl.org/dc/terms/> .
+@prefix protege: <http://protege.stanford.edu/plugins/owl/protege#> .
+@prefix oboInOwl: <http://www.geneontology.org/formats/oboInOwl#> .
+@base <http://purl.obolibrary.org/obo/duo.owl> .
+
+<http://purl.obolibrary.org/obo/duo.owl> rdf:type owl:Ontology ;
+                                          owl:versionIRI <http://purl.obolibrary.org/obo/duo/releases/2021-02-23/duo.owl> ;
+                                          owl:imports obo:iao.owl ;
+                                          dc:contributor "Contributors to the GA4GH Data Use Ontology workstream are listed at https://github.com/EBISPOT/DUO/blob/master/README.md#contributions" ;
+                                          dc:creator "Melanie Courtot" ;
+                                          terms:license "http://creativecommons.org/licenses/by/4.0/" .
+
+#################################################################
+#    Annotation properties
+#################################################################
+
+###  http://purl.obolibrary.org/obo/DUO_0000041
+obo:DUO_0000041 rdf:type owl:AnnotationProperty ;
+                rdfs:label "DUO_preferred_label"@en .
+
+
+###  http://www.geneontology.org/formats/oboInOwl#hasDbXref
+oboInOwl:hasDbXref rdf:type owl:AnnotationProperty .
+
+
+###  http://www.geneontology.org/formats/oboInOwl#hasExactSynonym
+oboInOwl:hasExactSynonym rdf:type owl:AnnotationProperty .
+
+
+###  http://www.geneontology.org/formats/oboInOwl#id
+oboInOwl:id rdf:type owl:AnnotationProperty .
+
+
+###  http://www.geneontology.org/formats/oboInOwl#shorthand
+oboInOwl:shorthand rdf:type owl:AnnotationProperty .
+
+
+###  http://www.w3.org/2004/02/skos/core#exactMatch
+skos:exactMatch rdf:type owl:AnnotationProperty .
+
+
+#################################################################
+#    Object Properties
+#################################################################
+
+###  http://purl.obolibrary.org/obo/DUO_0000010
+obo:DUO_0000010 rdf:type owl:ObjectProperty ;
+                obo:DUO_0000041 "is_restricted_to" ;
+                obo:IAO_0000115 "A is restricted to B iff A is a consent code and B is an investigation and A may only participate in instances of a class C, of which B is an instance." ;
+                obo:IAO_0000117 "J. Neil Otte" ;
+                obo:IAO_0000232 "E.g. A dataset is restricted to an instance of an investigation for a specific disease or at geographical location." ;
+                oboInOwl:id "DUO:0000010" ;
+                rdfs:label "is restricted to" .
+
+
+#################################################################
+#    Classes
+#################################################################
+
+###  http://purl.obolibrary.org/obo/APOLLO_SV_00000008
+obo:APOLLO_SV_00000008 rdfs:subClassOf obo:OBI_0000011 .
+
+
+###  http://purl.obolibrary.org/obo/APOLLO_SV_00000032
+obo:APOLLO_SV_00000032 rdfs:subClassOf obo:IAO_0000109 .
+
+
+###  http://purl.obolibrary.org/obo/APOLLO_SV_00000033
+obo:APOLLO_SV_00000033 rdfs:subClassOf obo:OBI_0000011 .
+
+
+###  http://purl.obolibrary.org/obo/APOLLO_SV_00000522
+obo:APOLLO_SV_00000522 rdfs:subClassOf obo:IAO_0000310 .
+
+
+###  http://purl.obolibrary.org/obo/APOLLO_SV_00000524
+obo:APOLLO_SV_00000524 rdfs:subClassOf obo:APOLLO_SV_00000008 .
+
+
+###  http://purl.obolibrary.org/obo/APOLLO_SV_00000796
+obo:APOLLO_SV_00000796 rdfs:subClassOf obo:OBI_0000011 .
+
+
+###  http://purl.obolibrary.org/obo/BFO_0000001
+obo:BFO_0000001 rdfs:subClassOf owl:Thing .
+
+
+###  http://purl.obolibrary.org/obo/BFO_0000002
+obo:BFO_0000002 rdfs:subClassOf obo:BFO_0000001 .
+
+
+###  http://purl.obolibrary.org/obo/BFO_0000003
+obo:BFO_0000003 rdfs:subClassOf obo:BFO_0000001 .
+
+
+###  http://purl.obolibrary.org/obo/BFO_0000004
+obo:BFO_0000004 rdfs:subClassOf obo:BFO_0000002 .
+
+
+###  http://purl.obolibrary.org/obo/BFO_0000005
+obo:BFO_0000005 rdf:type owl:Class ;
+                rdfs:subClassOf oboInOwl:ObsoleteClass .
+
+
+###  http://purl.obolibrary.org/obo/BFO_0000006
+obo:BFO_0000006 rdfs:subClassOf obo:BFO_0000141 .
+
+
+###  http://purl.obolibrary.org/obo/BFO_0000008
+obo:BFO_0000008 rdfs:subClassOf obo:BFO_0000003 .
+
+
+###  http://purl.obolibrary.org/obo/BFO_0000009
+obo:BFO_0000009 rdfs:subClassOf obo:BFO_0000006 .
+
+
+###  http://purl.obolibrary.org/obo/BFO_0000011
+obo:BFO_0000011 rdfs:subClassOf obo:BFO_0000003 .
+
+
+###  http://purl.obolibrary.org/obo/BFO_0000015
+obo:BFO_0000015 rdfs:subClassOf obo:BFO_0000003 .
+
+
+###  http://purl.obolibrary.org/obo/BFO_0000016
+obo:BFO_0000016 rdfs:subClassOf obo:BFO_0000017 .
+
+
+###  http://purl.obolibrary.org/obo/BFO_0000017
+obo:BFO_0000017 rdfs:subClassOf obo:BFO_0000020 .
+
+
+###  http://purl.obolibrary.org/obo/BFO_0000018
+obo:BFO_0000018 rdfs:subClassOf obo:BFO_0000006 .
+
+
+###  http://purl.obolibrary.org/obo/BFO_0000019
+obo:BFO_0000019 rdfs:subClassOf obo:BFO_0000020 .
+
+
+###  http://purl.obolibrary.org/obo/BFO_0000020
+obo:BFO_0000020 rdfs:subClassOf obo:BFO_0000002 .
+
+
+###  http://purl.obolibrary.org/obo/BFO_0000023
+obo:BFO_0000023 rdfs:subClassOf obo:BFO_0000017 .
+
+
+###  http://purl.obolibrary.org/obo/BFO_0000024
+obo:BFO_0000024 rdfs:subClassOf obo:BFO_0000040 .
+
+
+###  http://purl.obolibrary.org/obo/BFO_0000026
+obo:BFO_0000026 rdfs:subClassOf obo:BFO_0000006 .
+
+
+###  http://purl.obolibrary.org/obo/BFO_0000027
+obo:BFO_0000027 rdfs:subClassOf obo:BFO_0000040 .
+
+
+###  http://purl.obolibrary.org/obo/BFO_0000028
+obo:BFO_0000028 rdfs:subClassOf obo:BFO_0000006 .
+
+
+###  http://purl.obolibrary.org/obo/BFO_0000029
+obo:BFO_0000029 rdfs:subClassOf obo:BFO_0000141 .
+
+
+###  http://purl.obolibrary.org/obo/BFO_0000030
+obo:BFO_0000030 rdfs:subClassOf obo:BFO_0000040 .
+
+
+###  http://purl.obolibrary.org/obo/BFO_0000031
+obo:BFO_0000031 rdfs:subClassOf obo:BFO_0000002 .
+
+
+###  http://purl.obolibrary.org/obo/BFO_0000034
+obo:BFO_0000034 rdfs:subClassOf obo:BFO_0000016 .
+
+
+###  http://purl.obolibrary.org/obo/BFO_0000035
+obo:BFO_0000035 rdfs:subClassOf obo:BFO_0000003 .
+
+
+###  http://purl.obolibrary.org/obo/BFO_0000038
+obo:BFO_0000038 rdfs:subClassOf obo:BFO_0000008 .
+
+
+###  http://purl.obolibrary.org/obo/BFO_0000040
+obo:BFO_0000040 rdfs:subClassOf obo:BFO_0000004 .
+
+
+###  http://purl.obolibrary.org/obo/BFO_0000140
+obo:BFO_0000140 rdfs:subClassOf obo:BFO_0000141 .
+
+
+###  http://purl.obolibrary.org/obo/BFO_0000141
+obo:BFO_0000141 rdfs:subClassOf obo:BFO_0000004 .
+
+
+###  http://purl.obolibrary.org/obo/BFO_0000142
+obo:BFO_0000142 rdfs:subClassOf obo:BFO_0000140 .
+
+
+###  http://purl.obolibrary.org/obo/BFO_0000144
+obo:BFO_0000144 rdfs:subClassOf obo:BFO_0000015 .
+
+
+###  http://purl.obolibrary.org/obo/BFO_0000145
+obo:BFO_0000145 rdfs:subClassOf obo:BFO_0000019 .
+
+
+###  http://purl.obolibrary.org/obo/BFO_0000146
+obo:BFO_0000146 rdfs:subClassOf obo:BFO_0000140 .
+
+
+###  http://purl.obolibrary.org/obo/BFO_0000147
+obo:BFO_0000147 rdfs:subClassOf obo:BFO_0000140 .
+
+
+###  http://purl.obolibrary.org/obo/BFO_0000148
+obo:BFO_0000148 rdfs:subClassOf obo:BFO_0000008 .
+
+
+###  http://purl.obolibrary.org/obo/BFO_0000182
+obo:BFO_0000182 rdfs:subClassOf obo:BFO_0000015 .
+
+
+###  http://purl.obolibrary.org/obo/DUO_0000001
+obo:DUO_0000001 rdf:type owl:Class ;
+                rdfs:subClassOf obo:IAO_0000027 ;
+                obo:IAO_0000115 "A data item that is used to indicate consent permissions for datasets and/or materials, and relates to the purposes for which datasets and/or material might be removed, stored or used."@en ;
+                obo:IAO_0000118 "consent code" ;
+                oboInOwl:id "DUO:0000001" ;
+                rdfs:label "data use permission"@en .
+
+
+###  http://purl.obolibrary.org/obo/DUO_0000002
+obo:DUO_0000002 rdf:type owl:Class ;
+                rdfs:subClassOf oboInOwl:ObsoleteClass ;
+                obo:IAO_0000115 "A categorical data item indicating the primary category the consent code belongs to according to Dyke et al. 2016." ;
+                obo:IAO_0000231 """This term was depreacted as it is not used to tag datasets but instead as patterns for DUO codes capture. This is an archive specific requirement, e.g. \"one code from a primary category and one or more from a second category'
+This is better done by Schemablocks and constraining the pattern of usage of DUO terms at each archive level.""" ;
+                oboInOwl:id "DUO:0000002" ;
+                rdfs:label "obsolete consent code primary category" ;
+                owl:deprecated "true"^^xsd:boolean .
+
+
+###  http://purl.obolibrary.org/obo/DUO_0000003
+obo:DUO_0000003 rdf:type owl:Class ;
+                rdfs:subClassOf oboInOwl:ObsoleteClass ;
+                obo:IAO_0000115 "A categorical data item indicating the secondary category the consent code belongs to according to Dyke et al. 2016." ;
+                obo:IAO_0000231 """This term was depreacted as it is not used to tag datasets but instead as patterns for DUO codes capture. This is an archive specific requirement, e.g. \"one code from a primary category and one or more from a second category'
+This is better done by Schemablocks and constraining the pattern of usage of DUO terms at each archive level.""" ;
+                oboInOwl:id "DUO:0000003" ;
+                rdfs:label "obsolete consent code secondary category" ;
+                owl:deprecated "true"^^xsd:boolean .
+
+
+###  http://purl.obolibrary.org/obo/DUO_0000004
+obo:DUO_0000004 rdf:type owl:Class ;
+                rdfs:subClassOf obo:DUO_0000001 ;
+                obo:IAO_0000115 "This data use permission indicates there is no restriction on use."@en ;
+                oboInOwl:id "DUO:0000004" ;
+                oboInOwl:shorthand "NRES" ;
+                rdfs:comment "20180907, Meeting Moran Melanie: This is to be thought about more carefully - what is the intent when using 'no restriction' as usually users still need to be researchers." ,
+                             "Note: the NRES alternative term may be confusing as in the UK it also stands for National Research Ethics Service" ;
+                rdfs:label "no restriction"@en .
+
+
+###  http://purl.obolibrary.org/obo/DUO_00000044
+obo:DUO_00000044 rdf:type owl:Class ;
+                 rdfs:subClassOf obo:DUO_0000017 ;
+                 obo:IAO_0000115 "This data use modifier indicates use for purposes of population, origin, or ancestry research is prohibited."@en ;
+                 oboInOwl:id "DUO:0000044" ;
+                 oboInOwl:shorthand "NPOA" ;
+                 rdfs:label "population origins or ancestry research prohibited"@en .
+
+
+###  http://purl.obolibrary.org/obo/DUO_0000005
+obo:DUO_0000005 rdf:type owl:Class ;
+                rdfs:subClassOf oboInOwl:ObsoleteClass ;
+                obo:IAO_0000115 "This data use limitation indicates that use is allowed for health/medical/biomedical purposes and other biological research, including the study of population origins or ancestry."@en ;
+                obo:IAO_0100001 """General Research Use, DUO_0000042
+Clinical Care USe, DUO_0000043"""@en ;
+                oboInOwl:id "DUO:0000005" ;
+                oboInOwl:shorthand "GRU-CC" ;
+                rdfs:comment "This term was made obsolete as per https://github.com/EBISPOT/DUO/issues/45"@en ,
+                             "This term includes clinical care, which was not defined in the original consent codes paper. This term does not have a usage in our current use cases and we recommend using DUO:0000042, General Research Use, instead" ;
+                rdfs:label "obsolete general research use and clinical care"@en .
+
+
+###  http://purl.obolibrary.org/obo/DUO_0000006
+obo:DUO_0000006 rdf:type owl:Class ;
+                rdfs:subClassOf obo:DUO_0000042 ;
+                obo:IAO_0000115 "This data use permission indicates that use is allowed for health/medical/biomedical purposes; does not include the study of population origins or ancestry."@en ;
+                oboInOwl:id "DUO:0000006" ;
+                oboInOwl:shorthand "HMB" ;
+                rdfs:label "health or medical or biomedical research"@en .
+
+
+###  http://purl.obolibrary.org/obo/DUO_0000007
+obo:DUO_0000007 rdf:type owl:Class ;
+                rdfs:subClassOf obo:DUO_0000006 ,
+                                [ rdf:type owl:Restriction ;
+                                  owl:onProperty obo:DUO_0000010 ;
+                                  owl:someValuesFrom obo:MONDO_0000001
+                                ] ;
+                obo:IAO_0000115 "This data use permission indicates that use is allowed provided it is related to the specified disease."@en ;
+                oboInOwl:id "DUO:0000007" ;
+                oboInOwl:shorthand "DS" ;
+                rdfs:comment """This term should be coupled with a term describing a disease from an ontology to specify the disease the restriction applies to. 
+
+DUO recommends MONDO be used, to provide the basis for automated evaluation. For more information see https://github.com/EBISPOT/DUO/blob/master/MONDO_Overview.md
+
+Other resources, such as the Disease Ontology, HPO, SNOMED-CT or others, can also be used. When those other resources are being used, this may require an extra mapping step to leverage automated matching algorithms."""@en ;
+                rdfs:label "disease specific research"@en .
+
+
+###  http://purl.obolibrary.org/obo/DUO_0000011
+obo:DUO_0000011 rdf:type owl:Class ;
+                rdfs:subClassOf obo:DUO_0000001 ;
+                obo:IAO_0000115 "This data use permission indicates that use of the data is limited to the study of population origins or ancestry."@en ;
+                obo:IAO_0000118 "population origins/ancestry research" ;
+                oboInOwl:id "DUO:0000011" ;
+                oboInOwl:shorthand "POA" ;
+                rdfs:label "population origins or ancestry research only"@en .
+
+
+###  http://purl.obolibrary.org/obo/DUO_0000012
+obo:DUO_0000012 rdf:type owl:Class ;
+                rdfs:subClassOf obo:DUO_0000017 ,
+                                [ rdf:type owl:Restriction ;
+                                  owl:onProperty obo:DUO_0000010 ;
+                                  owl:someValuesFrom obo:topic_0003
+                                ] ;
+                obo:IAO_0000115 "This data use modifier indicates that use is limited to studies of a certain research type."@en ;
+                oboInOwl:id "DUO:0000012" ;
+                oboInOwl:shorthand "RS" ;
+                rdfs:label "research specific restrictions"@en .
+
+
+###  http://purl.obolibrary.org/obo/DUO_0000014
+obo:DUO_0000014 rdf:type owl:Class ;
+                rdfs:subClassOf oboInOwl:ObsoleteClass ;
+                obo:IAO_0000115 "This data use limitation indicates that use is limited to research purposes (e.g., does not include its use in clinical care)."@en ;
+                oboInOwl:id "DUO:0000014" ;
+                oboInOwl:shorthand "RU" ;
+                rdfs:comment "Deprecated as GRU-CC was split into GRU and CC, so this is not applicable anymore as a qualifier of GRU-CC"@en ;
+                rdfs:label "obsolete research use only"@en .
+
+
+###  http://purl.obolibrary.org/obo/DUO_0000015
+obo:DUO_0000015 rdf:type owl:Class ;
+                rdfs:subClassOf obo:DUO_0000017 ;
+                obo:IAO_0000115 "This data use modifier indicates that use does not allow methods development research (e.g., development of software or algorithms)."@en ;
+                oboInOwl:id "DUO:0000015" ;
+                oboInOwl:shorthand "NMDS" ;
+                rdfs:label "no general methods research"@en .
+
+
+###  http://purl.obolibrary.org/obo/DUO_0000016
+obo:DUO_0000016 rdf:type owl:Class ;
+                rdfs:subClassOf obo:DUO_0000017 ;
+                obo:IAO_0000115 "This data use modifier indicates that use is limited to genetic studies only (i.e., studies that include genotype research alone or both genotype and phenotype research, but not phenotype research exclusively)"@en ;
+                oboInOwl:id "DUO:0000016" ;
+                oboInOwl:shorthand "GSO" ;
+                rdfs:label "genetic studies only"@en .
+
+
+###  http://purl.obolibrary.org/obo/DUO_0000017
+obo:DUO_0000017 rdf:type owl:Class ;
+                rdfs:subClassOf obo:IAO_0000027 ;
+                obo:IAO_0000115 "Data use modifiers indicate additional conditions for use."@en ;
+                oboInOwl:id "DUO:0000017" ;
+                rdfs:label "data use modifier"@en .
+
+
+###  http://purl.obolibrary.org/obo/DUO_0000018
+obo:DUO_0000018 rdf:type owl:Class ;
+                rdfs:subClassOf obo:DUO_0000017 ;
+                obo:IAO_0000115 "This data use modifier indicates that use of the data is limited to not-for-profit organizations and not-for-profit use, non-commercial use."@en ;
+                oboInOwl:id "DUO:0000018" ;
+                oboInOwl:shorthand "NPUNCU" ;
+                rdfs:label "not for profit, non commercial use only"@en .
+
+
+###  http://purl.obolibrary.org/obo/DUO_0000019
+obo:DUO_0000019 rdf:type owl:Class ;
+                rdfs:subClassOf obo:DUO_0000017 ;
+                obo:IAO_0000115 "This data use modifier indicates that requestor agrees to make results of studies using the data available to the larger scientific community."@en ;
+                oboInOwl:id "DUO:0000019" ;
+                oboInOwl:shorthand "PUB" ;
+                rdfs:label "publication required"@en .
+
+
+###  http://purl.obolibrary.org/obo/DUO_0000020
+obo:DUO_0000020 rdf:type owl:Class ;
+                rdfs:subClassOf obo:DUO_0000017 ;
+                obo:IAO_0000115 "This data use modifier indicates that the requestor must agree to collaboration with the primary study investigator(s)."@en ;
+                oboInOwl:id "DUO:0000020" ;
+                oboInOwl:shorthand "COL" ;
+                rdfs:comment "This could be coupled with a string describing the primary study investigator(s)."@en ;
+                rdfs:label "collaboration required"@en .
+
+
+###  http://purl.obolibrary.org/obo/DUO_0000021
+obo:DUO_0000021 rdf:type owl:Class ;
+                rdfs:subClassOf obo:DUO_0000017 ;
+                obo:IAO_0000115 "This data use modifier indicates that the requestor must provide documentation of local IRB/ERB approval."@en ;
+                oboInOwl:id "DUO:0000021" ;
+                oboInOwl:shorthand "IRB" ;
+                rdfs:label "ethics approval required"@en .
+
+
+###  http://purl.obolibrary.org/obo/DUO_0000022
+obo:DUO_0000022 rdf:type owl:Class ;
+                rdfs:subClassOf obo:DUO_0000017 ,
+                                [ rdf:type owl:Restriction ;
+                                  owl:onProperty obo:DUO_0000010 ;
+                                  owl:someValuesFrom obo:GAZ_00000448
+                                ] ;
+                obo:IAO_0000115 "This data use modifier indicates that use is limited to within a specific geographic region."@en ;
+                oboInOwl:id "DUO:0000022" ;
+                oboInOwl:shorthand "GS" ;
+                rdfs:comment "This should be coupled with an ontology term describing the geographical location the restriction applies to."@en ;
+                rdfs:label "geographical restriction"@en .
+
+
+###  http://purl.obolibrary.org/obo/DUO_0000024
+obo:DUO_0000024 rdf:type owl:Class ;
+                rdfs:subClassOf obo:DUO_0000017 ;
+                obo:IAO_0000115 "This data use modifier indicates that requestor agrees not to publish results of studies until a specific date."@en ;
+                obo:IAO_0000118 "publication embargo"@en ;
+                oboInOwl:id "DUO:0000024" ;
+                oboInOwl:shorthand "MOR" ;
+                rdfs:comment "This should be coupled with a date specified as ISO8601"@en ;
+                rdfs:label "publication moratorium"@en .
+
+
+###  http://purl.obolibrary.org/obo/DUO_0000025
+obo:DUO_0000025 rdf:type owl:Class ;
+                rdfs:subClassOf obo:DUO_0000017 ;
+                obo:IAO_0000115 "This data use modifier indicates that use is approved for a specific number of months."@en ;
+                oboInOwl:id "DUO:0000025" ;
+                oboInOwl:shorthand "TS" ;
+                rdfs:comment "This should be coupled with an integer value indicating the number of months."@en ;
+                rdfs:label "time limit on use"@en .
+
+
+###  http://purl.obolibrary.org/obo/DUO_0000026
+obo:DUO_0000026 rdf:type owl:Class ;
+                rdfs:subClassOf obo:DUO_0000017 ;
+                obo:IAO_0000115 "This data use modifier indicates that use is limited to use by approved users."@en ;
+                oboInOwl:id "DUO:0000026" ;
+                oboInOwl:shorthand "US" ;
+                rdfs:label "user specific restriction"@en .
+
+
+###  http://purl.obolibrary.org/obo/DUO_0000027
+obo:DUO_0000027 rdf:type owl:Class ;
+                rdfs:subClassOf obo:DUO_0000017 ;
+                obo:IAO_0000115 "This data use modifier indicates that use is limited to use within an approved project."@en ;
+                oboInOwl:id "DUO:0000027" ;
+                oboInOwl:shorthand "PS" ;
+                rdfs:label "project specific restriction"@en .
+
+
+###  http://purl.obolibrary.org/obo/DUO_0000028
+obo:DUO_0000028 rdf:type owl:Class ;
+                rdfs:subClassOf obo:DUO_0000017 ;
+                obo:IAO_0000115 "This data use modifier indicates that use is limited to use within an approved institution."@en ;
+                oboInOwl:id "DUO:0000028" ;
+                oboInOwl:shorthand "IS" ;
+                rdfs:label "institution specific restriction"@en .
+
+
+###  http://purl.obolibrary.org/obo/DUO_0000029
+obo:DUO_0000029 rdf:type owl:Class ;
+                rdfs:subClassOf obo:DUO_0000017 ;
+                obo:IAO_0000115 "This data use modifier indicates that the requestor must return derived/enriched data to the database/resource."@en ;
+                oboInOwl:id "DUO:0000029" ;
+                oboInOwl:shorthand "RTN" ;
+                rdfs:label "return to database or resource"@en .
+
+
+###  http://purl.obolibrary.org/obo/DUO_0000031
+obo:DUO_0000031 rdf:type owl:Class ;
+                rdfs:subClassOf obo:OBI_0000066 ;
+                obo:DUO_0000041 "method development" ;
+                obo:IAO_0000115 "An investigation concerning development of methods, algorithms, software or analytical tools." ;
+                obo:IAO_0000232 "This definition is a placeholder as a result of meetings at ICBO2018." ;
+                oboInOwl:id "DUO:0000031" ;
+                rdfs:label "method development" .
+
+
+###  http://purl.obolibrary.org/obo/DUO_0000032
+obo:DUO_0000032 rdf:type owl:Class ;
+                rdfs:subClassOf obo:OBI_0000066 ;
+                obo:DUO_0000041 "population research" ;
+                obo:IAO_0000115 "An investigation concerning a specific population group." ;
+                obo:IAO_0000232 "This definition is a placeholder as a result of meetings at ICBO2018." ;
+                oboInOwl:id "DUO:0000032" ;
+                rdfs:comment "Should be paired with the an ontology term representing this population (e.g., xxx)." ;
+                rdfs:label "population research" .
+
+
+###  http://purl.obolibrary.org/obo/DUO_0000033
+obo:DUO_0000033 rdf:type owl:Class ;
+                rdfs:subClassOf obo:OBI_0000066 ;
+                obo:DUO_0000041 "ancestry research" ;
+                obo:IAO_0000115 "An investigation concerning ancestry or population origins." ;
+                obo:IAO_0000232 "This definition is a placeholder as a result of meetings at ICBO2018." ;
+                oboInOwl:id "DUO:0000033" ;
+                rdfs:label "ancestry research" .
+
+
+###  http://purl.obolibrary.org/obo/DUO_0000034
+obo:DUO_0000034 rdf:type owl:Class ;
+                rdfs:subClassOf obo:OBI_0000066 ;
+                obo:DUO_0000041 "age category research" ;
+                obo:IAO_0000115 "An investigation concerning specific age categories." ;
+                obo:IAO_0000232 "This definition is a placeholder as a result of meetings at ICBO2018." ;
+                oboInOwl:id "DUO:0000034" ;
+                rdfs:comment "Should be paired with the an ontology term representing this population (e.g., xxx)." ;
+                rdfs:label "age category research" .
+
+
+###  http://purl.obolibrary.org/obo/DUO_0000035
+obo:DUO_0000035 rdf:type owl:Class ;
+                rdfs:subClassOf obo:OBI_0000066 ;
+                obo:DUO_0000041 "gender category research" ;
+                obo:IAO_0000115 "An investigation concerning specific gender categories." ;
+                obo:IAO_0000232 "This definition is a placeholder as a result of meetings at ICBO2018." ;
+                oboInOwl:id "DUO:0000035" ;
+                rdfs:comment "Should be paired with the an ontology term representing this population (e.g., xxx)." ;
+                rdfs:label "gender category research" .
+
+
+###  http://purl.obolibrary.org/obo/DUO_0000036
+obo:DUO_0000036 rdf:type owl:Class ;
+                rdfs:subClassOf obo:OBI_0000066 ;
+                obo:DUO_0000041 "research control" ;
+                obo:IAO_0000115 "An investigation concerning use of data as reference or control material." ;
+                obo:IAO_0000232 "This definition is a placeholder as a result of meetings at ICBO2018." ;
+                oboInOwl:id "DUO:0000036" ;
+                rdfs:label "research control" .
+
+
+###  http://purl.obolibrary.org/obo/DUO_0000037
+obo:DUO_0000037 rdf:type owl:Class ;
+                rdfs:subClassOf obo:OBI_0000066 ;
+                obo:DUO_0000041 "biomedical research" ;
+                obo:IAO_0000115 "An investigation concerning health, medical, or biomedical research." ;
+                obo:IAO_0000232 "This definition is a placeholder as a result of meetings at ICBO2018." ;
+                oboInOwl:id "DUO:0000037" ;
+                rdfs:label "biomedical research" .
+
+
+###  http://purl.obolibrary.org/obo/DUO_0000038
+obo:DUO_0000038 rdf:type owl:Class ;
+                rdfs:subClassOf obo:DUO_0000037 ;
+                obo:DUO_0000041 "genetic research" ;
+                obo:IAO_0000115 "Biomedical research concerning genetics (i.e., the study of genes, genetic variations and heredity)." ;
+                obo:IAO_0000232 "This definition is a placeholder as a result of meetings at ICBO2018." ;
+                oboInOwl:id "DUO:0000038" ;
+                rdfs:label "genetic research" .
+
+
+###  http://purl.obolibrary.org/obo/DUO_0000039
+obo:DUO_0000039 rdf:type owl:Class ;
+                rdfs:subClassOf obo:DUO_0000037 ;
+                obo:DUO_0000041 "drug development research" ;
+                obo:IAO_0000115 "Biomedical research concerning drug development." ;
+                obo:IAO_0000232 "This definition is a placeholder as a result of meetings at ICBO2018." ;
+                oboInOwl:id "DUO:0000039" ;
+                rdfs:label "drug development research" .
+
+
+###  http://purl.obolibrary.org/obo/DUO_0000040
+obo:DUO_0000040 rdf:type owl:Class ;
+                rdfs:subClassOf obo:DUO_0000037 ;
+                obo:DUO_0000041 "disease category research" ;
+                obo:IAO_0000115 "Biomedical research research concerning specific disease/s" ;
+                obo:IAO_0000232 "This definition is a placeholder as a result of meetings at ICBO2018." ;
+                oboInOwl:id "DUO:0000040" ;
+                rdfs:label "disease category research" .
+
+
+###  http://purl.obolibrary.org/obo/DUO_0000042
+obo:DUO_0000042 rdf:type owl:Class ;
+                rdfs:subClassOf obo:DUO_0000001 ;
+                obo:IAO_0000115 "This data use permission indicates that use is allowed for general research use for any research purpose."@en ;
+                oboInOwl:id "DUO:0000042" ;
+                oboInOwl:shorthand "GRU" ;
+                rdfs:comment "This includes but is not limited to: health/medical/biomedical purposes, fundamental biology research, the study of population origins or ancestry, statistical methods and algorithms development, and social-sciences research."@en ;
+                rdfs:label "general research use"@en .
+
+
+###  http://purl.obolibrary.org/obo/DUO_0000043
+obo:DUO_0000043 rdf:type owl:Class ;
+                rdfs:subClassOf obo:DUO_0000017 ;
+                obo:IAO_0000115 "This data use modifier indicates that use is allowed for clinical use and care."@en ;
+                oboInOwl:id "DUO:0000043" ;
+                oboInOwl:shorthand "CC" ;
+                rdfs:comment "Clinical Care is defined as Health care or services provided at home, in a healthcare facility or hospital. Data may be used for clinical decision making."@en ;
+                rdfs:label "clinical care use"@en .
+
+
+###  http://purl.obolibrary.org/obo/DUO_0000045
+obo:DUO_0000045 rdf:type owl:Class ;
+                rdfs:subClassOf obo:DUO_0000018 ;
+                obo:IAO_0000115 "This data use modifier indicates that use of the data is limited to not-for-profit organizations."@en ;
+                oboInOwl:id "DUO:0000045" ;
+                oboInOwl:shorthand "NPU" ;
+                rdfs:label "not for profit organisation use only"@en .
+
+
+###  http://purl.obolibrary.org/obo/DUO_0000046
+obo:DUO_0000046 rdf:type owl:Class ;
+                rdfs:subClassOf obo:DUO_0000018 ;
+                obo:IAO_0000115 "This data use modifier indicates that use of the data is limited to not-for-profit use."@en ;
+                oboInOwl:id "DUO:0000046" ;
+                oboInOwl:shorthand "NCU" ;
+                rdfs:comment "This indicates that data can be used by commercial organisations for research purposes, but not commercial purposes."@en ;
+                rdfs:label "non-commercial use only"@en .
+
+
+###  http://purl.obolibrary.org/obo/GAZ_00000448
+obo:GAZ_00000448 rdf:type owl:Class ;
+                 rdfs:subClassOf obo:BFO_0000029 ;
+                 oboInOwl:id "GAZ:00000448" ;
+                 rdfs:label "geographic location" .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000001
+obo:IAO_0000001 rdfs:subClassOf obo:IAO_0000033 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000003
+obo:IAO_0000003 rdfs:subClassOf obo:IAO_0000009 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000005
+obo:IAO_0000005 rdfs:subClassOf obo:IAO_0000033 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000006
+obo:IAO_0000006 rdfs:subClassOf obo:IAO_0000030 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000007
+obo:IAO_0000007 rdfs:subClassOf obo:IAO_0000033 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000008
+obo:IAO_0000008 rdfs:subClassOf oboInOwl:ObsoleteClass .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000009
+obo:IAO_0000009 rdfs:subClassOf obo:IAO_0000030 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000010
+obo:IAO_0000010 rdfs:subClassOf obo:IAO_0000104 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000012
+obo:IAO_0000012 rdfs:subClassOf oboInOwl:ObsoleteClass .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000013
+obo:IAO_0000013 rdfs:subClassOf obo:IAO_0000088 ,
+                                obo:IAO_0000311 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000015
+obo:IAO_0000015 rdfs:subClassOf obo:BFO_0000019 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000017
+obo:IAO_0000017 rdfs:subClassOf obo:IAO_0000028 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000018
+obo:IAO_0000018 rdfs:subClassOf oboInOwl:ObsoleteClass .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000019
+obo:IAO_0000019 rdfs:subClassOf oboInOwl:ObsoleteClass .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000024
+obo:IAO_0000024 rdfs:subClassOf oboInOwl:ObsoleteClass .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000025
+obo:IAO_0000025 rdfs:subClassOf obo:IAO_0000104 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000027
+obo:IAO_0000027 rdf:type owl:Class ;
+                rdfs:subClassOf obo:IAO_0000030 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000028
+obo:IAO_0000028 rdfs:subClassOf obo:IAO_0000030 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000029
+obo:IAO_0000029 rdfs:subClassOf obo:IAO_0000028 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000030
+obo:IAO_0000030 rdf:type owl:Class ;
+                rdfs:subClassOf obo:BFO_0000031 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000031
+obo:IAO_0000031 rdfs:subClassOf obo:IAO_0000029 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000032
+obo:IAO_0000032 rdfs:subClassOf obo:IAO_0000109 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000033
+obo:IAO_0000033 rdfs:subClassOf obo:IAO_0000030 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000034
+obo:IAO_0000034 rdfs:subClassOf obo:IAO_0000001 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000035
+obo:IAO_0000035 rdfs:subClassOf oboInOwl:ObsoleteClass .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000037
+obo:IAO_0000037 rdfs:subClassOf obo:IAO_0000038 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000038
+obo:IAO_0000038 rdfs:subClassOf obo:IAO_0000309 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000047
+obo:IAO_0000047 rdfs:subClassOf oboInOwl:ObsoleteClass .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000055
+obo:IAO_0000055 rdfs:subClassOf obo:IAO_0000001 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000057
+obo:IAO_0000057 rdfs:subClassOf obo:IAO_0000038 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000059
+obo:IAO_0000059 rdfs:subClassOf oboInOwl:ObsoleteClass .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000064
+obo:IAO_0000064 rdfs:subClassOf obo:IAO_0000104 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000065
+obo:IAO_0000065 rdfs:subClassOf obo:IAO_0000064 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000078
+obo:IAO_0000078 rdfs:subClassOf obo:IAO_0000102 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000079
+obo:IAO_0000079 rdfs:subClassOf obo:IAO_0000038 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000088
+obo:IAO_0000088 rdfs:subClassOf obo:IAO_0000310 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000091
+obo:IAO_0000091 rdfs:subClassOf oboInOwl:ObsoleteClass .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000093
+obo:IAO_0000093 rdfs:subClassOf oboInOwl:ObsoleteClass .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000096
+obo:IAO_0000096 rdfs:subClassOf obo:IAO_0000033 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000097
+obo:IAO_0000097 rdfs:subClassOf oboInOwl:ObsoleteClass .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000098
+obo:IAO_0000098 rdfs:subClassOf obo:IAO_0000033 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000100
+obo:IAO_0000100 rdfs:subClassOf obo:IAO_0000027 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000101
+obo:IAO_0000101 rdfs:subClassOf obo:IAO_0000308 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000102
+obo:IAO_0000102 rdfs:subClassOf obo:IAO_0000027 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000104
+obo:IAO_0000104 rdfs:subClassOf obo:IAO_0000033 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000105
+obo:IAO_0000105 rdfs:subClassOf oboInOwl:ObsoleteClass .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000109
+obo:IAO_0000109 rdfs:subClassOf obo:IAO_0000027 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000128
+obo:IAO_0000128 rdfs:subClassOf oboInOwl:ObsoleteClass .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000129
+obo:IAO_0000129 rdfs:subClassOf obo:IAO_0000028 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000131
+obo:IAO_0000131 rdfs:subClassOf obo:IAO_0000028 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000132
+obo:IAO_0000132 rdfs:subClassOf obo:IAO_0000028 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000140
+obo:IAO_0000140 rdfs:subClassOf obo:IAO_0000027 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000141
+obo:IAO_0000141 rdfs:subClassOf oboInOwl:ObsoleteClass .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000144
+obo:IAO_0000144 rdfs:subClassOf obo:IAO_0000300 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000178
+obo:IAO_0000178 rdfs:subClassOf obo:BFO_0000040 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000179
+obo:IAO_0000179 rdfs:subClassOf obo:IAO_0000038 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000180
+obo:IAO_0000180 rdfs:subClassOf obo:IAO_0000038 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000181
+obo:IAO_0000181 rdfs:subClassOf obo:IAO_0000038 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000182
+obo:IAO_0000182 rdfs:subClassOf oboInOwl:ObsoleteClass .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000183
+obo:IAO_0000183 rdfs:subClassOf obo:IAO_0000038 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000184
+obo:IAO_0000184 rdfs:subClassOf obo:IAO_0000038 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000185
+obo:IAO_0000185 rdfs:subClassOf obo:IAO_0000101 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000186
+obo:IAO_0000186 rdfs:subClassOf obo:IAO_0000178 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000225
+obo:IAO_0000225 rdfs:subClassOf obo:IAO_0000102 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000300
+obo:IAO_0000300 rdfs:subClassOf obo:IAO_0000030 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000301
+obo:IAO_0000301 rdfs:subClassOf obo:IAO_0000300 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000302
+obo:IAO_0000302 rdfs:subClassOf obo:IAO_0000590 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000303
+obo:IAO_0000303 rdfs:subClassOf obo:IAO_0000300 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000304
+obo:IAO_0000304 rdfs:subClassOf obo:IAO_0000300 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000305
+obo:IAO_0000305 rdfs:subClassOf obo:IAO_0000300 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000306
+obo:IAO_0000306 rdfs:subClassOf obo:IAO_0000300 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000307
+obo:IAO_0000307 rdfs:subClassOf obo:IAO_0000306 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000308
+obo:IAO_0000308 rdfs:subClassOf obo:IAO_0000030 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000309
+obo:IAO_0000309 rdfs:subClassOf obo:IAO_0000308 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000310
+obo:IAO_0000310 rdfs:subClassOf obo:IAO_0000030 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000311
+obo:IAO_0000311 rdfs:subClassOf obo:IAO_0000310 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000312
+obo:IAO_0000312 rdfs:subClassOf obo:IAO_0000311 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000313
+obo:IAO_0000313 rdfs:subClassOf obo:IAO_0000310 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000314
+obo:IAO_0000314 rdfs:subClassOf obo:IAO_0000030 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000315
+obo:IAO_0000315 rdfs:subClassOf obo:IAO_0000314 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000316
+obo:IAO_0000316 rdfs:subClassOf obo:IAO_0000314 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000317
+obo:IAO_0000317 rdfs:subClassOf obo:IAO_0000314 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000318
+obo:IAO_0000318 rdfs:subClassOf obo:IAO_0000314 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000319
+obo:IAO_0000319 rdfs:subClassOf obo:IAO_0000314 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000320
+obo:IAO_0000320 rdfs:subClassOf obo:IAO_0000314 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000321
+obo:IAO_0000321 rdfs:subClassOf obo:IAO_0000314 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000322
+obo:IAO_0000322 rdfs:subClassOf obo:IAO_0000314 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000323
+obo:IAO_0000323 rdfs:subClassOf obo:IAO_0000314 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000324
+obo:IAO_0000324 rdfs:subClassOf obo:IAO_0000314 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000325
+obo:IAO_0000325 rdfs:subClassOf obo:IAO_0000314 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000326
+obo:IAO_0000326 rdfs:subClassOf obo:IAO_0000314 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000327
+obo:IAO_0000327 rdfs:subClassOf obo:IAO_0000306 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000328
+obo:IAO_0000328 rdfs:subClassOf obo:IAO_0000306 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000329
+obo:IAO_0000329 rdfs:subClassOf obo:IAO_0000305 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000330
+obo:IAO_0000330 rdfs:subClassOf obo:IAO_0000314 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000400
+obo:IAO_0000400 rdfs:subClassOf obo:IAO_0000027 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000401
+obo:IAO_0000401 rdfs:subClassOf obo:IAO_0000400 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000402
+obo:IAO_0000402 rdfs:subClassOf obo:IAO_0000400 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000403
+obo:IAO_0000403 rdfs:subClassOf obo:IAO_0000400 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000408
+obo:IAO_0000408 rdfs:subClassOf obo:IAO_0000032 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000409
+obo:IAO_0000409 rdfs:subClassOf obo:IAO_0000102 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000414
+obo:IAO_0000414 rdfs:subClassOf obo:IAO_0000032 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000415
+obo:IAO_0000415 rdfs:subClassOf obo:IAO_0000300 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000416
+obo:IAO_0000416 rdfs:subClassOf obo:IAO_0000032 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000422
+obo:IAO_0000422 rdfs:subClassOf obo:IAO_0000300 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000429
+obo:IAO_0000429 rdfs:subClassOf obo:IAO_0000030 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000442
+obo:IAO_0000442 rdfs:subClassOf obo:BFO_0000023 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000443
+obo:IAO_0000443 rdfs:subClassOf obo:OBI_0000011 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000444
+obo:IAO_0000444 rdfs:subClassOf obo:OBI_0000011 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000445
+obo:IAO_0000445 rdfs:subClassOf obo:IAO_0000310 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000572
+obo:IAO_0000572 rdfs:subClassOf obo:OBI_0000011 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000573
+obo:IAO_0000573 rdfs:subClassOf obo:IAO_0000038 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000574
+obo:IAO_0000574 rdfs:subClassOf obo:OBI_0000011 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000575
+obo:IAO_0000575 rdfs:subClassOf obo:OBI_0000011 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000576
+obo:IAO_0000576 rdfs:subClassOf oboInOwl:ObsoleteClass .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000577
+obo:IAO_0000577 rdfs:subClassOf obo:IAO_0000028 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000578
+obo:IAO_0000578 rdfs:subClassOf obo:IAO_0020000 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000579
+obo:IAO_0000579 rdfs:subClassOf obo:IAO_0000100 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000580
+obo:IAO_0000580 rdfs:subClassOf obo:OBI_0000011 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000582
+obo:IAO_0000582 rdfs:subClassOf obo:IAO_0000109 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000584
+obo:IAO_0000584 rdfs:subClassOf obo:IAO_0000100 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000590
+obo:IAO_0000590 rdfs:subClassOf obo:IAO_0000300 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000591
+obo:IAO_0000591 rdfs:subClassOf obo:IAO_0000010 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000592
+obo:IAO_0000592 rdfs:subClassOf obo:IAO_0000010 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000593
+obo:IAO_0000593 rdfs:subClassOf obo:IAO_0000010 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000594
+obo:IAO_0000594 rdfs:subClassOf obo:IAO_0000010 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000595
+obo:IAO_0000595 rdfs:subClassOf obo:IAO_0000010 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000605
+obo:IAO_0000605 rdfs:subClassOf obo:IAO_0000300 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000606
+obo:IAO_0000606 rdfs:subClassOf obo:IAO_0000314 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000607
+obo:IAO_0000607 rdfs:subClassOf obo:IAO_0000314 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000608
+obo:IAO_0000608 rdfs:subClassOf obo:IAO_0000300 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000609
+obo:IAO_0000609 rdfs:subClassOf obo:IAO_0000314 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000610
+obo:IAO_0000610 rdfs:subClassOf obo:IAO_0000300 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000611
+obo:IAO_0000611 rdfs:subClassOf obo:IAO_0000314 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000612
+obo:IAO_0000612 rdfs:subClassOf obo:IAO_0000300 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000613
+obo:IAO_0000613 rdfs:subClassOf obo:IAO_0000314 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000614
+obo:IAO_0000614 rdfs:subClassOf obo:IAO_0000300 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000615
+obo:IAO_0000615 rdfs:subClassOf obo:IAO_0000314 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000616
+obo:IAO_0000616 rdfs:subClassOf obo:IAO_0000314 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000617
+obo:IAO_0000617 rdfs:subClassOf obo:IAO_0000300 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000618
+obo:IAO_0000618 rdfs:subClassOf obo:IAO_0000314 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000619
+obo:IAO_0000619 rdfs:subClassOf obo:IAO_0000300 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000620
+obo:IAO_0000620 rdfs:subClassOf obo:IAO_0000314 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000621
+obo:IAO_0000621 rdfs:subClassOf obo:IAO_0000300 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000622
+obo:IAO_0000622 rdfs:subClassOf obo:IAO_0000314 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000623
+obo:IAO_0000623 rdfs:subClassOf obo:IAO_0000314 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000624
+obo:IAO_0000624 rdfs:subClassOf obo:IAO_0000300 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000625
+obo:IAO_0000625 rdfs:subClassOf obo:IAO_0000314 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000626
+obo:IAO_0000626 rdfs:subClassOf obo:IAO_0000300 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000627
+obo:IAO_0000627 rdfs:subClassOf obo:IAO_0000314 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000628
+obo:IAO_0000628 rdfs:subClassOf obo:IAO_0000300 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000629
+obo:IAO_0000629 rdfs:subClassOf obo:IAO_0000300 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000630
+obo:IAO_0000630 rdfs:subClassOf obo:IAO_0000314 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000631
+obo:IAO_0000631 rdfs:subClassOf obo:IAO_0000314 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000632
+obo:IAO_0000632 rdfs:subClassOf obo:IAO_0000300 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000633
+obo:IAO_0000633 rdfs:subClassOf obo:IAO_0000314 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000634
+obo:IAO_0000634 rdfs:subClassOf obo:IAO_0000314 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000635
+obo:IAO_0000635 rdfs:subClassOf obo:IAO_0000314 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000636
+obo:IAO_0000636 rdfs:subClassOf obo:IAO_0000300 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000637
+obo:IAO_0000637 rdfs:subClassOf obo:IAO_0000314 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000638
+obo:IAO_0000638 rdfs:subClassOf obo:IAO_0000300 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000639
+obo:IAO_0000639 rdfs:subClassOf obo:IAO_0000314 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000640
+obo:IAO_0000640 rdfs:subClassOf obo:IAO_0000300 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000641
+obo:IAO_0000641 rdfs:subClassOf obo:IAO_0000314 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000642
+obo:IAO_0000642 rdfs:subClassOf obo:IAO_0000300 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000643
+obo:IAO_0000643 rdfs:subClassOf obo:IAO_0000300 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000644
+obo:IAO_0000644 rdfs:subClassOf obo:IAO_0000314 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000645
+obo:IAO_0000645 rdfs:subClassOf obo:IAO_0000314 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000646
+obo:IAO_0000646 rdfs:subClassOf obo:IAO_0020000 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000647
+obo:IAO_0000647 rdfs:subClassOf obo:IAO_0000104 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000648
+obo:IAO_0000648 rdfs:subClassOf obo:IAO_0000646 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000650
+obo:IAO_0000650 rdfs:subClassOf obo:OBI_0000011 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000701
+obo:IAO_0000701 rdfs:subClassOf obo:IAO_0000314 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000702
+obo:IAO_0000702 rdfs:subClassOf obo:IAO_0000318 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000703
+obo:IAO_0000703 rdfs:subClassOf obo:IAO_0000314 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000704
+obo:IAO_0000704 rdfs:subClassOf obo:IAO_0000317 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000705
+obo:IAO_0000705 rdfs:subClassOf obo:IAO_0000314 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000706
+obo:IAO_0000706 rdfs:subClassOf obo:IAO_0000631 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0000707
+obo:IAO_0000707 rdfs:subClassOf obo:IAO_0000315 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_0020000
+obo:IAO_0020000 rdfs:subClassOf obo:IAO_0000030 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_8000000
+obo:IAO_8000000 rdfs:subClassOf obo:IAO_0000102 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_8000001
+obo:IAO_8000001 rdfs:subClassOf obo:IAO_8000000 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_8000002
+obo:IAO_8000002 rdfs:subClassOf obo:IAO_8000000 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_8000003
+obo:IAO_8000003 rdfs:subClassOf obo:IAO_8000000 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_8000004
+obo:IAO_8000004 rdfs:subClassOf obo:IAO_8000000 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_8000005
+obo:IAO_8000005 rdfs:subClassOf obo:IAO_8000006 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_8000006
+obo:IAO_8000006 rdfs:subClassOf obo:IAO_8000000 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_8000007
+obo:IAO_8000007 rdfs:subClassOf obo:IAO_8000006 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_8000008
+obo:IAO_8000008 rdfs:subClassOf obo:IAO_8000006 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_8000009
+obo:IAO_8000009 rdfs:subClassOf obo:IAO_8000006 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_8000010
+obo:IAO_8000010 rdfs:subClassOf obo:IAO_8000006 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_8000011
+obo:IAO_8000011 rdfs:subClassOf obo:IAO_8000005 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_8000012
+obo:IAO_8000012 rdfs:subClassOf obo:IAO_8000006 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_8000013
+obo:IAO_8000013 rdfs:subClassOf obo:IAO_8000000 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_8000014
+obo:IAO_8000014 rdfs:subClassOf obo:IAO_8000000 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_8000015
+obo:IAO_8000015 rdfs:subClassOf obo:IAO_8000014 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_8000016
+obo:IAO_8000016 rdfs:subClassOf obo:IAO_8000004 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_8000017
+obo:IAO_8000017 rdfs:subClassOf obo:IAO_8000006 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_8000018
+obo:IAO_8000018 rdfs:subClassOf obo:IAO_8000017 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_8000019
+obo:IAO_8000019 rdfs:subClassOf obo:IAO_8000017 .
+
+
+###  http://purl.obolibrary.org/obo/IAO_8000020
+obo:IAO_8000020 rdfs:subClassOf obo:IAO_8000019 .
+
+
+###  http://purl.obolibrary.org/obo/MONDO_0000001
+obo:MONDO_0000001 rdf:type owl:Class ;
+                  rdfs:subClassOf obo:BFO_0000016 ;
+                  obo:IAO_0000115 "A disease is a disposition to undergo pathological processes that exists in an organism because of one or more disorders in that organism." ;
+                  oboInOwl:hasDbXref "DOID:4" ,
+                                     "EFO:0000408" ,
+                                     "ICD10:N18" ,
+                                     "ICD9:799.9" ,
+                                     "MESH:D004194" ,
+                                     "NCIT:C2991" ,
+                                     "OGMS:0000031" ,
+                                     "Orphanet:377788" ,
+                                     "SCTID:64572001" ,
+                                     "UMLS:C0012634" ;
+                  oboInOwl:hasExactSynonym "condition" ,
+                                           "disease" ,
+                                           "disease or disorder" ,
+                                           "disease or disorder, non-neoplastic" ,
+                                           "diseases" ,
+                                           "diseases and disorders" ,
+                                           "disorder" ,
+                                           "disorders" ,
+                                           "medical condition" ,
+                                           "other disease" ;
+                  oboInOwl:id "MONDO:0000001" ;
+                  rdfs:label "disease or disorder" ;
+                  skos:exactMatch <http://identifiers.org/mesh/D004194> ,
+                                  <http://identifiers.org/snomedct/64572001> ,
+                                  <http://linkedlifedata.com/resource/umls/id/C0012634> ,
+                                  obo:DOID_4 ,
+                                  obo:NCIT_C2991 ,
+                                  <http://www.orpha.net/ORDO/Orphanet_377788> .
+
+
+###  http://purl.obolibrary.org/obo/OBI_0000011
+obo:OBI_0000011 rdfs:subClassOf obo:BFO_0000015 .
+
+
+###  http://purl.obolibrary.org/obo/OBI_0000066
+obo:OBI_0000066 rdf:type owl:Class ;
+                rdfs:subClassOf obo:OBI_0000011 .
+
+
+###  http://purl.obolibrary.org/obo/OBI_0000471
+obo:OBI_0000471 rdfs:subClassOf obo:OBI_0000011 .
+
+
+###  http://purl.obolibrary.org/obo/OBI_0200000
+obo:OBI_0200000 rdfs:subClassOf obo:OBI_0000011 .
+
+
+###  http://purl.obolibrary.org/obo/OBI_0500000
+obo:OBI_0500000 rdfs:subClassOf obo:IAO_0000104 .
+
+
+###  http://purl.obolibrary.org/obo/PATO_0000051
+obo:PATO_0000051 rdfs:subClassOf obo:PATO_0001241 .
+
+
+###  http://purl.obolibrary.org/obo/PATO_0000122
+obo:PATO_0000122 rdfs:subClassOf obo:PATO_0000051 .
+
+
+###  http://purl.obolibrary.org/obo/PATO_0000125
+obo:PATO_0000125 rdfs:subClassOf obo:PATO_0001018 .
+
+
+###  http://purl.obolibrary.org/obo/PATO_0001018
+obo:PATO_0001018 rdfs:subClassOf obo:PATO_0001241 .
+
+
+###  http://purl.obolibrary.org/obo/PATO_0001241
+obo:PATO_0001241 rdfs:subClassOf obo:BFO_0000019 .
+
+
+###  http://purl.obolibrary.org/obo/UO_0000001
+obo:UO_0000001 rdfs:subClassOf obo:IAO_0000003 .
+
+
+###  http://purl.obolibrary.org/obo/UO_0000002
+obo:UO_0000002 rdfs:subClassOf obo:IAO_0000003 .
+
+
+###  http://purl.obolibrary.org/obo/UO_0000003
+obo:UO_0000003 rdfs:subClassOf obo:IAO_0000003 .
+
+
+###  http://purl.obolibrary.org/obo/topic_0003
+obo:topic_0003 rdf:type owl:Class ;
+               rdfs:subClassOf obo:IAO_0000030 ;
+               obo:IAO_0000115 "A category denoting a rather broad domain or field of interest, study, application, work, data, or technology. Topics have no clearly defined borders between each other." ;
+               oboInOwl:id "topic:0003" ;
+               rdfs:label "Topic" .
+
+
+###  http://www.geneontology.org/formats/oboInOwl#ObsoleteClass
+oboInOwl:ObsoleteClass rdfs:subClassOf owl:Thing .
+
+
+###  Generated by the OWL API (version 4.5.29) https://github.com/owlcs/owlapi
