@@ -57,13 +57,11 @@ ONTOLOGY = ROOT / "ontology" / "main" / "sagebrain.ttl"
 # sh:targetClass over them matches nothing, and sagebrain:participates_in and
 # sagebrain:used_to_treat are subproperties of things that do not exist.
 IMPORTS = [ROOT / "ontology" / "imports" / "biolink.ttl"]
-# Claims this project asserts about other people's vocabularies. Loaded so they are
-# parsed and shape-checked on every run, but deliberately not part of the visualized
-# build: a mapping between two external vocabularies is not the SageBrain schema.
-MAPPINGS = sorted((ROOT / "ontology" / "mappings").glob("*.ttl"))
-# Claims this project asserts about other people's vocabularies. Loaded so they are
-# parsed and shape-checked on every run, but deliberately not part of the visualized
-# build: they are not the SageBrain schema.
+# Claims this project asserts about other people's vocabularies, e.g. that a CERAD
+# score specialises an HP finding. Loaded so they are parsed and shape-checked on
+# every run, but deliberately not part of the visualized build: a mapping between two
+# external vocabularies is not the SageBrain schema. Globbed, and an absent folder
+# yields an empty list -- the checks below do not depend on any mapping existing.
 MAPPINGS = sorted((ROOT / "ontology" / "mappings").glob("*.ttl"))
 SHAPES = ROOT / "ontology" / "shacl" / "sagebrain-shapes.ttl"
 CONFORMING = ROOT / "tests" / "conforming.ttl"
