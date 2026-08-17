@@ -62,9 +62,19 @@ OWL2VOWL_SHA256  ?= 2ddc42dc2ff7f66aad48ee8717eef4bd9ddae99aecbbf828c04a8074ea77
 MAIN_SOURCES = ontology/main/sagebrain.ttl \
                ontology/imports/biolink.ttl
 
-GOVERNANCE_SOURCES = ontology/governance/sagegov.ttl \
-                     ontology/governance/sagegov_axioms.ttl \
-                     ontology/governance/data_ops.ttl \
+# Every .ttl in ontology/governance/ is built, so adding a module there is all it
+# takes -- there is no list here to fall out of sync with the folder. The imports
+# stay explicit because they are not governance modules: they are the vocabularies
+# those modules are modelled against, and biolink (in MAIN_SOURCES) is imported for
+# a different reason.
+#
+# The wildcard expands at parse time and yields nothing at all when the folder is
+# absent, which on a clone that excludes governance would make WITH_GOVERNANCE=1
+# quietly build the default set instead of failing. Hence the guard in the
+# parse-time check block below.
+GOVERNANCE_MODULES = $(wildcard ontology/governance/*.ttl)
+
+GOVERNANCE_SOURCES = $(GOVERNANCE_MODULES) \
                      ontology/imports/duo.ttl \
                      ontology/imports/prov.ttl
 
@@ -136,6 +146,7 @@ PRUNE_TERMS = http://purl.obolibrary.org/obo/IAO_0000102 \
 ifeq ($(filter clean config,$(MAKECMDGOALS)),)
 $(if $(wildcard $(STRIP_EXTERNAL)),,$(error Post-processor not found at '$(STRIP_EXTERNAL)'))
 $(foreach src,$(ONTOLOGY_SOURCES),$(if $(wildcard $(src)),,$(error Ontology module not found: '$(src)')))
+$(if $(WITH_GOVERNANCE),$(if $(GOVERNANCE_MODULES),,$(error WITH_GOVERNANCE=1 but ontology/governance/ holds no .ttl files -- the governance modules are not committed, see the note in TODO.md)))
 endif
 
 .PHONY: all json viz serve dev watch config tools imports check-submodule clean FORCE
