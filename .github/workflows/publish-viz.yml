@@ -1,0 +1,127 @@
+# Build the ontology visualization and publish it to GitHub Pages.
+#
+# The published site is webvowl/deploy, the output of `make viz`: the ontology is
+# merged, pruned and converted to VOWL JSON here, then installed into the viewer
+# submodule and bundled by it. Every asset path in the viewer's index.html is
+# relative, so serving it from a project subpath (…github.io/sagebrain-model/)
+# needs no rewriting.
+#
+# One-time setup: Settings → Pages → Source → "GitHub Actions". The configure-pages
+# step below asks for that itself (`enablement: true`), which works when the
+# workflow token is allowed to create the site; if the org forbids it, that step
+# fails and the setting has to be flipped by hand.
+name: Publish visualization
+
+on:
+  push:
+    branches: [main]
+    # Only what can change the rendered graph. `webvowl` is the submodule pointer,
+    # so a viewer bump republishes too.
+    paths:
+      - ontology/**
+      - tools/**
+      - scripts/**
+      - Makefile
+      - webvowl
+      - .github/workflows/publish-viz.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: github-pages
+  # Not cancel-in-progress: interrupting a deploy can leave the site half-updated.
+  cancel-in-progress: false
+
+jobs:
+  # Publishing a model that fails its own shapes would be worse than not
+  # publishing, so validation gates the build rather than running beside it.
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      # Unpinned because the project has no requirements file yet -- see D1 in
+      # TODO.md. Point this at that file once it exists; an unpinned pyshacl can
+      # change validation behaviour under us.
+      - run: pip install rdflib pyshacl
+
+      - run: python tests/validate.py
+
+  build:
+    needs: validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # The viewer lives in a submodule and the build installs the converted
+          # ontology into it, so a shallow checkout without it produces nothing.
+          submodules: recursive
+
+      # Java and Node are pinned to what this build is verified to work on. Node
+      # matters more than it looks: the viewer builds with webpack 1.x, which is a
+      # decade old, so bump this deliberately and check the bundle still builds.
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: webvowl/package-lock.json
+
+      # ROBOT is 78 MB and OWL2VOWL 10 MB, neither committed. Keyed on the Makefile
+      # because that is where their versions, URLs and checksum live -- so an
+      # unrelated Makefile edit costs one re-download, and a version bump can never
+      # be served a stale jar.
+      - name: Cache fetched jars
+        uses: actions/cache@v4
+        with:
+          path: tools/*.jar
+          key: jars-${{ runner.os }}-${{ hashFiles('Makefile') }}
+
+      - run: make tools
+
+      - run: make viz
+
+      # `make viz` already refuses to install a graph with too few classes
+      # (MIN_CLASSES), so this only checks that the site itself came out whole --
+      # the floor deliberately is not repeated here, or the two would drift.
+      - name: Check the built site
+        run: |
+          test -s webvowl/deploy/index.html
+          test -s webvowl/deploy/data/sage.json
+          python3 - <<'EOF'
+          import json, sys
+          d = json.load(open("webvowl/deploy/data/sage.json"))
+          n, p = len(d.get("class", [])), len(d.get("property", []))
+          print(f"published graph: {n} classes, {p} properties")
+          sys.exit(0 if n and p else "empty graph in the bundled JSON")
+          EOF
+
+      - uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: webvowl/deploy
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
