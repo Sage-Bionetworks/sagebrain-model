@@ -6,7 +6,7 @@ The Sage Brain ontologies.
 ontology/main/        the ontologies under active development -- built by default
 ontology/governance/  the governance model (placeholder)
 ontology/imports/     third-party vocabularies, as extracted modules
-ontology/mappings/    claims we assert about external vocabularies
+ontology/mappings/    claims we assert about external vocabularies (placeholder)
 ontology/shacl/       constraints over the above
 examples/             validated example instance data that conforms to the model
 scripts/import.sh     regenerates the import modules
