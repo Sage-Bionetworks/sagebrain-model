@@ -9,7 +9,7 @@ plausibly have written fails the test run.
 | File | What it is |
 |---|---|
 | `minimal.ttl` | One gene in one pathway. A one-screen answer to "show me the format" |
-| `AD-cohort.ttl` | Two participants, three samples, three genes, two pathways, a drug and a trial — 76 triples exercising 17 of the model's 19 connections |
+| `AD-cohort.ttl` | Two participants, three samples, three genes, two pathways, a drug and a trial — exercising all 19 of the model's connections |
 
 ## Identifiers
 
@@ -45,18 +45,26 @@ question in `TODO.md` rather than something we have decided not to anchor:
 
 - **tissue** — the source model states that tissue names are not standardised
   across diseases (`A3`)
-- **disease status, disease stage** — no anchor identified. Verified gaps, not
-  unfinished searching: Braak staging has no term in any ontology on OLS, and
-  ALSFRS-R exists only in SNOMED CT, which needs an affiliate licence (`B15`).
-  Biolink also models these as attributes rather than nodes (`B1c`)
-- **biodomain** — deliberately SageBrain-native; names come from the AD biodomain
-  paper cited on `sagebrain:belongs_to` (`B5`)
+- **disease stage** — no anchor identified. Verified gaps, not unfinished
+  searching: Braak staging has no term in any ontology on OLS, and ALSFRS-R
+  exists only in SNOMED CT, which needs an affiliate licence (`B15`)
 
-**The example does not have to cover the model.** It covers 17 of 19 connections, and
-the two it drops are findings rather than gaps in the example: `has_status` and
-`belongs_to` could not be written without inventing a vocabulary, so they were left
-out. The model is a work in progress, and a statement that cannot be written honestly
-is a signal about where to look — see "What is missing" below.
+**Biodomain is no longer on this list.** It used a placeholder through v0.2, for
+the reason the "What is missing" section used to give; v0.3 mints the 19 AD
+biodomains as a real SKOS vocabulary (`sagebrain:BiodomainScheme`), so
+`sagebrain:belongs_to` now points at `sagebrain:Proteostasis` and
+`sagebrain:ImmuneResponse` below rather than at a placeholder. `DiseaseStatus` is
+off this list for a different reason: it was removed from the model outright as
+redundant with `has_diagnosis` rather than left open (see the Clinical section of
+`ontology/main/sagebrain.ttl`).
+
+**The example covers all 19 of the model's connections.** Through v0.2 it covered
+17, and the two it dropped were findings rather than gaps in the example:
+`has_status` and `belongs_to` could not be written without inventing a
+vocabulary. Both are resolved now -- `has_status` by removing the property,
+`belongs_to` by minting the vocabulary -- so both are exercised below. The model
+is a work in progress, and a statement that cannot be written honestly is a
+signal about where to look; that is still true of what remains open, covered next.
 
 ### Where a term comes from
 
@@ -77,20 +85,6 @@ not the AD model's `cerebral cortex` value — the AD model's own `Source` for t
 annotation-layer alias. Worth knowing that their `hippocampus` row cites `BTO_0000601`
 instead, so the portal list is not uniformly UBERON-backed; each tissue term needs
 checking rather than assuming.
-
-### What is missing
-
-- **`sagebrain:has_status` / `DiseaseStatus`.** No vocabulary anywhere. The AD model's
-  nearest terms — `no cognitive impairment`, `mild cognitive impairment`, `dementia` —
-  are values of its `diagnosis` column, not a separate status axis. So either
-  `DiseaseStatus` is a diagnosis under another name, in which case it duplicates
-  `has_diagnosis`, or it is the symptomatic/pre-symptomatic axis it appears to be, in
-  which case nobody has a vocabulary for it. Resolve that before minting one
-  (`B2`, `B7`, `B15`).
-- **`sagebrain:belongs_to` / `Biodomain`.** No ontology term and no AD model column.
-  The names come from the AD biodomain paper cited on the property, which is a citation
-  rather than a term list, so the 19 biodomains have to be minted somewhere first
-  (`B5`).
 
 **The `adkp:` namespace is provisional.** The AD model is a CSV today, published as
 Synapse JSON Schemas, with no term IRIs at all. The example assumes the most likely
@@ -113,11 +107,11 @@ The local name follows schematic's own label derivation, so `BRAAK Stage 3` →
 - label-derived local names break on rename, which is exactly why OBO uses opaque
   numeric IDs.
 
-So the policy these files demonstrate, which `B5` still has to ratify, has three
-tiers: a registry identifier where the thing is in a registry, a Synapse-minted
-IRI under `w3id.org/synapse/` where we own the thing, and a placeholder where the
-modelling is still open. The third tier is meant to shrink — when `B1c` settles
-what a disease status is, those nodes move up a tier.
+So the policy these files demonstrate has three tiers: a registry identifier
+where the thing is in a registry, a Synapse-minted IRI under `w3id.org/synapse/`
+where we own the thing, and a placeholder where the modelling is still open. The
+third tier is meant to shrink — biodomain moved out of it in v0.3 (`B5`, above);
+tissue naming (`A3`) and disease stage (`B15`) are what is left in it.
 
 ## Why these are not the test fixtures
 
