@@ -1,12 +1,15 @@
-# Instance data with seven planted defects, each of which MUST be reported.
+# Instance data with six planted defects, each of which MUST be reported.
 # tests/validate.py asserts on the expected violation set, so this doubles as
 # documentation of what the shapes actually catch.
 #
 # Defect (a) is the headline: the ontology's OWL axioms PERMIT it, because
-# de_associated_with has a union range covering DiseaseStatus, DiseaseStage and
-# Pathway. Only the per-source-shape sh:class in SHACL rules it out. It is the
-# clearest demonstration of why the constraint layer is not redundant with the
-# T-Box.
+# de_associated_with has a union range covering DiseaseStage and Pathway. Only
+# the per-source-shape sh:class in SHACL rules it out. It is the clearest
+# demonstration of why the constraint layer is not redundant with the T-Box --
+# even after the v0.3 per-pair owl:allValuesFrom restrictions on
+# biolink:MaterialSample and biolink:Pathway (see ontology/main/sagebrain.ttl),
+# those restrictions are open-world and cannot themselves reject a violation
+# the way sh:class does under closed-world validation.
 
 @prefix sagebrain: <https://w3id.org/synapse/sagebrain#> .
 @prefix biolink:   <https://w3id.org/biolink/vocab/> .

@@ -152,7 +152,7 @@ MONDO:0004975
 adkp:BRAAKStage3
     a sagebrain:DiseaseStage ;
     rdfs:label "BRAAK Stage 3" ;
-    sagebrain:relates_to MONDO:0004975 .
+    sagebrain:stage_of MONDO:0004975 .
 
 # Pathology draws from both HP and AD model, examples showing that AD is used for graded categories.
 # Plaque burden is graded, and CERAD is a scale of graded categories.
@@ -161,12 +161,12 @@ adkp:BRAAKStage3
 adkp:FrequentDefiniteC3
     a sagebrain:Pathology ;
     rdfs:label "Frequent Definite C3" ;
-    sagebrain:relates_to MONDO:0004975 .
+    sagebrain:pathology_of MONDO:0004975 .
 
 HP:0002185
     a sagebrain:Pathology ;
     rdfs:label "Neurofibrillary tangles" ;
-    sagebrain:relates_to MONDO:0004975 .
+    sagebrain:pathology_of MONDO:0004975 .
 
 ###  Genes and pathways  ########################################
 

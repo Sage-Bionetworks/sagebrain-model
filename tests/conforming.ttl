@@ -2,11 +2,10 @@
 #
 # Beyond covering every connection in the model once, this fixture deliberately
 # exercises the shared-vocabulary-node pattern: ind1 and ind2 both point at the
-# same DiseaseLabel, DiseaseStatus and DiseaseStage nodes. That is legitimate
-# under the model as documented, and it is what the deactivated ISSUE-1 inverse
-# shapes would wrongly reject. If someone activates those shapes without first
-# resolving the node-kind question, this fixture starts failing -- which is the
-# point.
+# same DiseaseLabel and DiseaseStage nodes. That is legitimate under the model as
+# documented (both are sagebrain:nodeLevel sagebrain:Vocabulary), and it is what
+# the deactivated ISSUE-1 inverse shapes would wrongly reject. If someone
+# reactivates those shapes, this fixture starts failing -- which is the point.
 
 @prefix sagebrain: <https://w3id.org/synapse/sagebrain#> .
 @prefix biolink:   <https://w3id.org/biolink/vocab/> .
@@ -19,14 +18,12 @@ ex:ind1
     a sagebrain:Individual ;
     sagebrain:has_sample ex:samp1 ;
     sagebrain:has_diagnosis ex:ad ;
-    sagebrain:has_status ex:symptomatic ;
     sagebrain:staged_at ex:braakStage3 .
 
 ex:ind2
     a sagebrain:Case ;
     sagebrain:has_sample ex:samp2 ;
     sagebrain:has_diagnosis ex:ad ;
-    sagebrain:has_status ex:symptomatic ;
     sagebrain:staged_at ex:braakStage3 .
 
 ex:ind3
@@ -65,17 +62,13 @@ ex:ad
     a biolink:Disease ;
     sagebrain:has_trial ex:trial1 .
 
-ex:symptomatic
-    a sagebrain:DiseaseStatus ;
-    sagebrain:relates_to ex:ad .
-
 ex:braakStage3
     a sagebrain:DiseaseStage ;
-    sagebrain:relates_to ex:ad .
+    sagebrain:stage_of ex:ad .
 
 ex:plaqueBurden
     a sagebrain:Pathology ;
-    sagebrain:relates_to ex:ad .
+    sagebrain:pathology_of ex:ad .
 
 ###  Genes, pathways, biodomains  ###############################
 
@@ -95,7 +88,7 @@ ex:apoptosisPathway
     sagebrain:belongs_to ex:neuroinflammation ;
     sagebrain:associated_with ex:ad ;
     sagebrain:related_pathway ex:synapticPathway ;
-    sagebrain:de_associated_with ex:symptomatic , ex:braakStage3 .
+    sagebrain:de_associated_with ex:braakStage3 .
 
 ex:synapticPathway a biolink:Pathway .
 

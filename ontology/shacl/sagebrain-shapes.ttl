@@ -19,7 +19,7 @@
 ontology so that the ontology stays a monotonic, open-world T-Box for reasoners while
 validation lives here under closed-world semantics.
 
-Three groups of shapes:
+Four groups of shapes:
 
   1. MODEL INTEGRITY -- validates the ontology itself: that every element class and every
      connection carries its required metadata. Run these over ontology/main/sagebrain.ttl
@@ -32,16 +32,26 @@ Three groups of shapes:
        - sh:class is asserted per (source, target) pair, whereas rdfs:range on a reused
          property can only state the union of all its targets. The union permits
          combinations the model does not, e.g. Sample de_associated_with DiseaseStage.
-       - cardinality is scoped per source shape, so relates_to can be at most 1 from
-         DiseaseStage while remaining unbounded from Pathology.
+       - cardinality is scoped per source shape, so stage_of can be at most 1 from
+         DiseaseStage while pathology_of remains unbounded from Pathology.
 
-  3. INVERSE CARDINALITY (DEACTIVATED) -- see the extended note in that section. The
-     source model's cardinality column cannot be mechanically compiled in the inverse
-     direction, so those shapes are authored but carry sh:deactivated true.""" ;
+  3. INVERSE CARDINALITY (mostly DEACTIVATED) -- see the extended note in that section.
+     Each shape now carries a settled disposition rather than a "pending" one: every
+     class in ontology/main/sagebrain.ttl declares sagebrain:nodeLevel (Instance or
+     Vocabulary), and an inverse maxCount of 1 is only sound where the relationship is a
+     genuine one-parent hierarchy toward a Vocabulary-level target, which is a fact about
+     the specific relationship, not something nodeLevel alone decides. Two domain
+     questions (ISSUE-5, ISSUE-6) stay deactivated for a substantive reason rather than an
+     unresolved one.
+
+  4. ASSOCIATION SHAPES -- constrains the reified weighted connections. A weight cannot
+     live on a plain RDF triple, so ontology/main/sagebrain.ttl reifies the six weighted
+     (source, target) pairs as Biolink-style association instances; these shapes require
+     each one to carry exactly one subject, one object, and one weight.""" ;
     rdfs:seeAlso "See the VALIDATION CONFIGURATION section below before running these shapes." ;
     owl:imports <https://w3id.org/synapse/sagebrain> ;
-    owl:versionIRI <https://w3id.org/synapse/sagebrain/shapes/0.2.0> ;
-    owl:versionInfo "v0.2" ;
+    owl:versionIRI <https://w3id.org/synapse/sagebrain/shapes/0.3.0> ;
+    owl:versionInfo "v0.3" ;
     dcterms:created "2026-08-14"^^xsd:date ;
     rdfs:seeAlso <https://github.com/Sage-Bionetworks/sagebrain-model> .
 
@@ -187,6 +197,23 @@ exists and is a plain string.""" ;
     ) ;
     sh:message "An element class needs its description as a plain string with no language tag -- rdfs:comment if the class is minted here, skos:scopeNote if it is reused from another vocabulary." .
 
+shape:NodeLevelShape
+    a sh:NodeShape ;
+    sh:targetSubjectsOf sagebrain:elementCategory ;
+    rdfs:label "Node level shape" ;
+    rdfs:comment """Every element class must declare sagebrain:nodeLevel -- whether its
+instances are one-per-real-world-particular or a node shared by reference -- so that the
+inverse-cardinality shapes in section 3 below can cite a settled, recorded fact instead of
+an unconfirmed assumption about the class they target.""" ;
+
+    sh:property [
+        sh:path sagebrain:nodeLevel ;
+        sh:name "node level" ;
+        sh:minCount 1 ; sh:maxCount 1 ;
+        sh:class sagebrain:NodeLevel ;
+        sh:message "An element class needs exactly one sagebrain:nodeLevel drawn from Instance or Vocabulary." ;
+    ] .
+
 
 #################################################################
 #################################################################
@@ -250,13 +277,6 @@ shape:IndividualShape
         sh:class sagebrain:DiseaseStage ;
         sh:nodeKind sh:IRI ;
         sh:message "Individual staged_at must point to a DiseaseStage." ;
-    ] ;
-    sh:property [
-        sh:path sagebrain:has_status ;
-        sh:name "has status" ;
-        sh:class sagebrain:DiseaseStatus ;
-        sh:nodeKind sh:IRI ;
-        sh:message "Individual has_status must point to a DiseaseStatus." ;
     ] .
 
 shape:OrganShape
@@ -322,7 +342,7 @@ shape:SampleShape
         sh:name "DE associated with" ;
         sh:class biolink:Pathway ;
         sh:nodeKind sh:IRI ;
-        sh:message "From a Sample, de_associated_with may only point to a Pathway -- not to a DiseaseStage or DiseaseStatus, which are permitted only from a Pathway." ;
+        sh:message "From a Sample, de_associated_with may only point to a Pathway -- not to a DiseaseStage, which is permitted only from a Pathway." ;
     ] .
 
 ###  Clinical  #################################################
@@ -340,48 +360,35 @@ shape:DiseaseLabelShape
         sh:message "DiseaseLabel has_trial must point to a ClinicalTrial." ;
     ] .
 
-shape:DiseaseStatusShape
-    a sh:NodeShape ;
-    sh:targetClass sagebrain:DiseaseStatus ;
-    rdfs:label "Disease status shape" ;
-
-    sh:property [
-        sh:path sagebrain:relates_to ;
-        sh:name "relates to" ;
-        sh:class biolink:Disease ;
-        sh:nodeKind sh:IRI ;
-        sh:maxCount 1 ;
-        sh:message "A DiseaseStatus relates_to at most one DiseaseLabel (source model: many:1)." ;
-    ] .
-
 shape:DiseaseStageShape
     a sh:NodeShape ;
     sh:targetClass sagebrain:DiseaseStage ;
     rdfs:label "Disease stage shape" ;
 
     sh:property [
-        sh:path sagebrain:relates_to ;
-        sh:name "relates to" ;
+        sh:path sagebrain:stage_of ;
+        sh:name "stage of" ;
         sh:class biolink:Disease ;
         sh:nodeKind sh:IRI ;
         sh:maxCount 1 ;
-        sh:message "A DiseaseStage relates_to at most one DiseaseLabel (source model: many:1)." ;
+        sh:message "A DiseaseStage is the stage of at most one DiseaseLabel (source model: many:1)." ;
     ] .
 
 shape:PathologyShape
     a sh:NodeShape ;
     sh:targetClass sagebrain:Pathology ;
     rdfs:label "Pathology shape" ;
-    rdfs:comment """No sh:maxCount on relates_to here: the source model records this row as
-1:many, unlike the many:1 recorded for DiseaseStage and DiseaseStatus on the same property.
-See issue note ISSUE-2 in the inverse-cardinality section.""" ;
+    rdfs:comment """No sh:maxCount on pathology_of here: the source model records this row
+as 1:many, unlike the many:1 recorded for DiseaseStage on the property this was split from.
+Resolved ISSUE-2 -- see sagebrain:stage_of and sagebrain:pathology_of in
+ontology/main/sagebrain.ttl.""" ;
 
     sh:property [
-        sh:path sagebrain:relates_to ;
-        sh:name "relates to" ;
+        sh:path sagebrain:pathology_of ;
+        sh:name "pathology of" ;
         sh:class biolink:Disease ;
         sh:nodeKind sh:IRI ;
-        sh:message "Pathology relates_to must point to a DiseaseLabel." ;
+        sh:message "Pathology's pathology_of must point to a DiseaseLabel." ;
     ] .
 
 shape:CaseShape
@@ -433,10 +440,9 @@ shape:PathwayShape
     sh:property [
         sh:path sagebrain:de_associated_with ;
         sh:name "DE associated with" ;
+        sh:class sagebrain:DiseaseStage ;
         sh:nodeKind sh:IRI ;
-        sh:or ( [ sh:class sagebrain:DiseaseStatus ]
-                [ sh:class sagebrain:DiseaseStage ] ) ;
-        sh:message "From a Pathway, de_associated_with may only point to a DiseaseStatus or a DiseaseStage." ;
+        sh:message "From a Pathway, de_associated_with may only point to a DiseaseStage." ;
     ] .
 
 ###  Translational  ############################################
@@ -479,25 +485,30 @@ shape:ClinicalTrialShape
 #################################################################
 #################################################################
 ##
-##  3. INVERSE CARDINALITY -- DEACTIVATED
+##  3. INVERSE CARDINALITY -- mostly DEACTIVATED, now on settled grounds
 ##
 ##  The source model states cardinality as "From:To". Read strictly, the
 ##  "1" on the From side of a 1:many row is a constraint on the INVERSE
 ##  direction: at most one source per target. Compiling that mechanically
-##  produces false constraints, because the model mixes two kinds of node
-##  without distinguishing them:
+##  produced false constraints in early drafts, because the model mixes two
+##  kinds of node without distinguishing them -- which ontology/main/sagebrain.ttl
+##  now does explicitly, via sagebrain:nodeLevel on every element class:
 ##
-##    - instance-level nodes, one per real-world thing (Individual, Sample)
-##    - vocabulary-level nodes, shared across many instances
-##      (DiseaseLabel "one node per disease", DiseaseStatus/DiseaseStage/
-##       Pathology "multiple nodes, disease-specific", Tissue, Pathway)
+##    - Instance nodes, one per real-world thing (Individual, Sample, ClinicalTrial)
+##    - Vocabulary nodes, shared across many instances (DiseaseLabel, DiseaseStage,
+##      Pathology, Tissue, Organ, OrganSubregion, Gene, Pathway, Drug)
 ##
-##  An inverse cardinality of 1 is meaningful between two instance-level
-##  nodes and generally false when the target is a shared vocabulary node.
-##  Until the model distinguishes these, each shape below is authored with
-##  sh:deactivated true and an explanation. Flip the flag once the intended
-##  reading is confirmed; two cases that ARE defensible today are already
-##  active and appear at the end of this section.
+##  An inverse cardinality of 1 is safe between two Instance-level nodes. Toward a
+##  Vocabulary-level target it is safe only where the relationship is independently a
+##  one-parent hierarchy (has_subregion, below) -- otherwise it is the exact shape of
+##  the mistake ISSUE-1 and ISSUE-3 made: capping how many instances may legitimately
+##  share one vocabulary node.
+##
+##  Every shape below now carries a settled disposition rather than "pending",
+##  because nodeLevel answers the question that was previously assumed. Two shapes
+##  (ISSUE-5, ISSUE-6) stay deactivated for a different, still-open reason: they turn
+##  on a real containment/trial-design question nodeLevel does not decide, not on
+##  which kind of node is involved.
 ##
 #################################################################
 #################################################################
@@ -507,10 +518,14 @@ shape:InverseHasDiagnosisShape
     sh:targetClass biolink:Disease ;
     sh:deactivated true ;
     rdfs:label "Inverse of has_diagnosis (deactivated)" ;
-    rdfs:comment """ISSUE-1. Strict reading of Individual --has_diagnosis--> DiseaseLabel [1:many]
-is "at most one Individual per DiseaseLabel", which contradicts the class description
-"one node per disease (e.g. Alzheimer's Disease, ALS)" -- every diagnosed individual points
-at the same shared node. The same defect applies to has_status and staged_at below.""" ;
+    rdfs:comment """ISSUE-1, resolved permanently deactivated. Strict reading of Individual
+(Instance) --has_diagnosis--> DiseaseLabel (Vocabulary) [1:many] is "at most one Individual per
+DiseaseLabel", which contradicts the class description "one node per disease (e.g. Alzheimer's
+Disease, ALS)" -- every diagnosed individual points at the same shared node. Now that
+sagebrain:nodeLevel records DiseaseLabel as Vocabulary, this is not a pending question: an
+Instance fanning into a Vocabulary node is exactly the shape nodeLevel exists to permit. The
+same reasoning applied to has_status below before DiseaseStatus was removed as redundant with
+has_diagnosis; it still applies to staged_at.""" ;
 
     sh:property [
         sh:path [ sh:inversePath sagebrain:has_diagnosis ] ;
@@ -518,25 +533,12 @@ at the same shared node. The same defect applies to has_status and staged_at bel
         sh:message "At most one Individual may have this DiseaseLabel as a diagnosis." ;
     ] .
 
-shape:InverseHasStatusShape
-    a sh:NodeShape ;
-    sh:targetClass sagebrain:DiseaseStatus ;
-    sh:deactivated true ;
-    rdfs:label "Inverse of has_status (deactivated)" ;
-    rdfs:comment "ISSUE-1. DiseaseStatus is a shared vocabulary node (\"multiple nodes, disease-specific\"), so at most one Individual per status is false." ;
-
-    sh:property [
-        sh:path [ sh:inversePath sagebrain:has_status ] ;
-        sh:maxCount 1 ;
-        sh:message "At most one Individual may have this DiseaseStatus." ;
-    ] .
-
 shape:InverseStagedAtShape
     a sh:NodeShape ;
     sh:targetClass sagebrain:DiseaseStage ;
     sh:deactivated true ;
     rdfs:label "Inverse of staged_at (deactivated)" ;
-    rdfs:comment "ISSUE-1. DiseaseStage is a shared vocabulary node, so at most one Individual per stage is false." ;
+    rdfs:comment "ISSUE-1, resolved permanently deactivated. DiseaseStage is recorded sagebrain:nodeLevel sagebrain:Vocabulary, so at most one Individual per stage is false by the same reasoning as InverseHasDiagnosisShape." ;
 
     sh:property [
         sh:path [ sh:inversePath sagebrain:staged_at ] ;
@@ -544,32 +546,17 @@ shape:InverseStagedAtShape
         sh:message "At most one Individual may be staged at this DiseaseStage." ;
     ] .
 
-shape:InverseRelatesToShape
-    a sh:NodeShape ;
-    sh:targetClass biolink:Disease ;
-    sh:deactivated true ;
-    rdfs:label "Inverse of relates_to from Pathology (deactivated)" ;
-    rdfs:comment """ISSUE-2. Pathology --relates_to--> DiseaseLabel is recorded 1:many while
-DiseaseStage --relates_to--> DiseaseLabel and DiseaseStatus --relates_to--> DiseaseLabel are
-recorded many:1, all on the same property. Those readings are mutually exclusive: an inverse
-maxCount of 1 on DiseaseLabel would forbid the many-to-one fan-in the other two rows require.
-This is not merely unconfirmed, it is inconsistent as recorded.""" ;
-
-    sh:property [
-        sh:path [ sh:inversePath sagebrain:relates_to ] ;
-        sh:maxCount 1 ;
-        sh:message "At most one node may relate to this DiseaseLabel." ;
-    ] .
-
 shape:InverseSourceTissueShape
     a sh:NodeShape ;
     sh:targetClass sagebrain:Tissue ;
     sh:deactivated true ;
     rdfs:label "Inverse of source_tissue (deactivated)" ;
-    rdfs:comment """ISSUE-3. Sample --source_tissue--> Tissue is recorded 1:many, but the row's
-own note reads "One tissue is the source of many samples" -- the opposite orientation. Under the
-recorded value each Tissue would admit at most one Sample; under the note each Sample has at
-most one source Tissue, i.e. many:1 with a forward maxCount instead.""" ;
+    rdfs:comment """ISSUE-3, resolved permanently deactivated. Sample (Instance)
+--source_tissue--> Tissue (Vocabulary) was recorded 1:many in the source sheet, but the row's
+own note reads "One tissue is the source of many samples" -- the opposite orientation, and the
+one nodeLevel corroborates: many Sample instances legitimately share one Tissue vocabulary node,
+the same pattern as has_diagnosis above. The sheet's "1:many" was oriented backwards relative to
+which side is Instance and which is Vocabulary, not a hint to activate this shape.""" ;
 
     sh:property [
         sh:path [ sh:inversePath sagebrain:source_tissue ] ;
@@ -582,17 +569,15 @@ shape:InverseHasPathologyShape
     sh:targetClass sagebrain:Pathology ;
     sh:deactivated true ;
     rdfs:label "Inverse of has_pathology (deactivated)" ;
-    rdfs:comment """ISSUE-4. Sample --has_pathology--> Pathology is recorded 1:1, and neither
-half of that survives.
-
-The inverse half never did: Pathology is described as a classification node with "multiple
-nodes, disease-specific", so many Samples are expected to share one pathology classification.
-The row is probably many:1, and this shape stays deactivated.
+    rdfs:comment """ISSUE-4, resolved permanently deactivated. Sample --has_pathology-->
+Pathology was recorded 1:1, and neither half survives: Pathology is recorded sagebrain:nodeLevel
+sagebrain:Vocabulary ("multiple nodes, disease-specific"), so many Sample instances are expected
+to share one Pathology classification -- the same has_diagnosis pattern again.
 
 The forward half looked defensible and was active, until writing examples/AD-cohort.ttl
 showed otherwise -- a sample can carry a graded score (CERAD) and a qualitative finding
 (neurofibrillary tangles) at once, which are different kinds of statement rather than
-competing values. That cap is now removed from shape:SampleShape, so the connection is
+competing values. That cap was removed from shape:SampleShape, so the connection is
 unbounded in both directions.""" ;
 
     sh:property [
@@ -606,11 +591,16 @@ shape:InverseContainsTissueShape
     sh:targetClass sagebrain:Tissue ;
     sh:deactivated true ;
     rdfs:label "Inverse of contains_tissue (deactivated)" ;
-    rdfs:comment """ISSUE-5. contains_tissue is asserted from both Organ and OrganSubregion,
-each recorded 1:many. A single inverse maxCount of 1 on Tissue would forbid a Tissue being
-contained by both an Organ and a sub-region of that organ -- yet the OrganSubregion row's note,
-"A sub-region may also be the source of a tissue", suggests exactly that is intended. Splitting
-into two qualified shapes needs the intended containment semantics settled first.""" ;
+    rdfs:comment """ISSUE-5, resolved permanently deactivated -- but not by nodeLevel. Organ,
+OrganSubregion and Tissue are all recorded sagebrain:nodeLevel sagebrain:Vocabulary, so nodeLevel
+alone does not settle this the way it did ISSUE-1/3/4 (those all turned on an Instance fanning
+into a Vocabulary node; this is Vocabulary-to-Vocabulary). contains_tissue is asserted from both
+Organ and OrganSubregion, each recorded 1:many. A single inverse maxCount of 1 on Tissue would
+forbid a Tissue being contained by both an Organ and a sub-region of that organ -- yet the
+OrganSubregion row's note, "A sub-region may also be the source of a tissue", says exactly that
+is intended. Decided: anatomical containment here is a genuine many-to-many lattice, not a tree,
+so no single inverse-cardinality shape was ever going to fit it -- this is not a gap to fill with
+two qualified shapes later, it is the correct permanent shape of the relationship.""" ;
 
     sh:property [
         sh:path [ sh:inversePath sagebrain:contains_tissue ] ;
@@ -623,10 +613,14 @@ shape:InverseHasTrialShape
     sh:targetClass biolink:ClinicalTrial ;
     sh:deactivated true ;
     rdfs:label "Inverse of has_trial (deactivated)" ;
-    rdfs:comment """ISSUE-6. DiseaseLabel --has_trial--> ClinicalTrial is recorded 1:many, so
-each trial would belong to at most one disease. Plausible, but nothing in the source model
-corroborates it and basket or platform trials span indications. Left deactivated pending
-confirmation rather than assumed.""" ;
+    rdfs:comment """ISSUE-6, resolved permanently deactivated -- confirmed, not merely
+plausible. DiseaseLabel --has_trial--> ClinicalTrial was recorded 1:many in the source sheet, so
+each trial would belong to at most one disease. Confirmed false: a single ClinicalTrial (Instance)
+may carry has_trial edges from more than one DiseaseLabel, since basket and platform trials span
+multiple indications by design. Unlike ISSUE-1/3/4, this was never a nodeLevel artifact --
+DiseaseLabel is Vocabulary and ClinicalTrial is Instance, but the question this shape asks is a
+trial-design fact (can one trial serve several diseases), not a shared-vocabulary-fan-in
+question. Kept for documentation; it should not be reactivated.""" ;
 
     sh:property [
         sh:path [ sh:inversePath sagebrain:has_trial ] ;
@@ -660,7 +654,10 @@ shape:InverseHasSubregionShape
     rdfs:label "Inverse of has_subregion" ;
     rdfs:comment """Active. Corroborated by the OrganSubregion description, "a distinct
 anatomical sub-region within an organ", and its note, "Component of Organ". Both endpoints are
-vocabulary-level anatomical concepts standing in a part-of hierarchy.""" ;
+recorded sagebrain:nodeLevel sagebrain:Vocabulary, so the "instance vs. vocabulary" test alone
+does not activate this shape (contrast InverseContainsTissueShape above, also
+Vocabulary-to-Vocabulary but deactivated) -- it is active because Organ/OrganSubregion
+containment is independently a one-parent hierarchy, unlike Tissue's many-parent one.""" ;
 
     sh:property [
         sh:path [ sh:inversePath sagebrain:has_subregion ] ;
@@ -669,6 +666,9 @@ vocabulary-level anatomical concepts standing in a part-of hierarchy.""" ;
     ] .
 
 
+#################################################################
+#################################################################
+##
 ##  4. EDGE WEIGHTS -- VIA REIFIED ASSOCIATIONS
 ##
 ##  Four (source, target) pairs are marked weighted in the source model:
