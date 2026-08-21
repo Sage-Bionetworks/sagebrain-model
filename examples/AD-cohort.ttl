@@ -4,9 +4,11 @@
 # trial, with real identifiers throughout. Validated on every run of
 # tests/validate.py.
 #
-# It exercises 17 of the model's 19 connections. The two it leaves out are the
-# point of the last section below: an example that cannot be written honestly is
-# telling us something about the model.
+# It exercises all 19 of the model's connections, including sagebrain:belongs_to
+# now that the 19 AD biodomains are minted as a SKOS vocabulary (see
+# sagebrain:BiodomainScheme in ontology/main/sagebrain.ttl) -- previously left out
+# on exactly this ground, per the "What is missing" section below before B5 was
+# resolved.
 #
 # IDENTIFIERS
 #
@@ -35,16 +37,6 @@
 #   adkp:FrequentDefiniteC3 pathology      Frequent Definite C3
 #
 # Participants and samples are presumed minted under https://w3id.org/synapse/ad/.
-#
-# Not in example:
-#   sagebrain:has_status    DiseaseStatus has no vocabulary. The AD model's nearest
-#     terms -- "no cognitive impairment", "mild cognitive impairment", "dementia" --
-#     are values of its `diagnosis` column, not a separate status axis. So either
-#     DiseaseStatus is a diagnosis under another name, in which case it duplicates
-#     has_diagnosis, or it is the symptomatic/pre-symptomatic axis.
-#
-#   sagebrain:belongs_to    Biodomain has no vocabulary either: no ontology, and no
-#     column in the AD model.
 
 @prefix sagebrain: <https://w3id.org/synapse/sagebrain#> .
 @prefix biolink:   <https://w3id.org/biolink/vocab/> .
@@ -199,9 +191,27 @@ HGNC:17761
     sagebrain:expressed_in sample:01 , sample:03 ;
     sagebrain:participates_in REACT:R-HSA-9664422 .
 
+# belongs_to now has somewhere to point: sagebrain:Proteostasis and
+# sagebrain:ImmuneResponse are minted individuals of the 19-member
+# sagebrain:BiodomainScheme (see ontology/main/sagebrain.ttl), resolving B5.
+# Amyloid aggregation is categorised under Proteostasis and FCGR3A-mediated
+# phagocytosis under Immune Response in the AD biodomain framework this
+# vocabulary is drawn from.
+#
+# Their `a sagebrain:Biodomain` type is restated here even though it is
+# already asserted in the ontology: tests/validate.py's sh:class checks run
+# against this file as its own data graph, and pySHACL's ClassConstraintComponent
+# only looks at rdf:type triples present in the graph actually being validated,
+# not ones that live solely in the separately-supplied ont_graph. Any instance
+# data referencing a SageBrain-minted vocabulary term (a Biodomain, an
+# ElementCategory) needs to do the same.
+sagebrain:Proteostasis a sagebrain:Biodomain .
+sagebrain:ImmuneResponse a sagebrain:Biodomain .
+
 REACT:R-HSA-977225
     a biolink:Pathway ;
     rdfs:label "Amyloid fiber formation" ;
+    sagebrain:belongs_to sagebrain:Proteostasis ;
     sagebrain:associated_with MONDO:0004975 ;
     sagebrain:related_pathway REACT:R-HSA-9664422 ;
     sagebrain:de_associated_with adkp:BRAAKStage3 .
@@ -209,6 +219,7 @@ REACT:R-HSA-977225
 REACT:R-HSA-9664422
     a biolink:Pathway ;
     rdfs:label "FCGR3A-mediated phagocytosis" ;
+    sagebrain:belongs_to sagebrain:ImmuneResponse ;
     sagebrain:de_associated_with adkp:BRAAKStage3 .
 
 ###  Translational  #############################################

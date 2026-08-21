@@ -290,11 +290,63 @@ sagebrain:DiseaseStage
 
 sagebrain:Biodomain
     a owl:Class ;
+    rdfs:subClassOf skos:Concept ;
     rdfs:label "Biodomain" ;
     rdfs:comment "A higher-level biological domain grouping one or more pathways (e.g. neuroinflammation, synaptic)." ;
     sagebrain:elementCategory sagebrain:SystemsBiology ;
     sagebrain:nodeLevel sagebrain:Vocabulary ;
-    owl:versionInfo "v0.2" .
+    owl:versionInfo "v0.3" .
+
+#################################################################
+#    Biodomains
+#
+#    Deliberately SageBrain-native (see sagebrain:belongs_to below): the AD
+#    biodomain framework is not itself an ontology, so these 19 are minted
+#    here as a SKOS vocabulary rather than left as an unmintable citation.
+#
+#    Names cross-checked against three independent sources rather than
+#    recalled: Agora's own per-gene Biological Domains listing
+#    (agora.adknowledgeportal.org), the body text of the open-access
+#    methodology paper (Cary et al. 2024, PMC11033838, doi:10.1002/trc2.12461),
+#    and the AD Knowledge Portal's "Biological Domain Classification Data and
+#    Methods" help page. The authoritative enumeration lives in that paper's
+#    supplementary table (and in the Synapse file syn51062522), both
+#    access-gated -- check this list against either the next time someone on
+#    the team has Synapse download permission for that entity.
+#################################################################
+
+sagebrain:BiodomainScheme
+    a skos:ConceptScheme ;
+    rdfs:label "AD biological domains" ;
+    dcterms:source <https://doi.org/10.1002/trc2.12461> ;
+    skos:hasTopConcept
+        sagebrain:APPMetabolism , sagebrain:Apoptosis , sagebrain:Autophagy ,
+        sagebrain:CellCycle , sagebrain:DNARepair , sagebrain:Endolysosome ,
+        sagebrain:Epigenetic , sagebrain:ImmuneResponse , sagebrain:LipidMetabolism ,
+        sagebrain:MetalBindingAndHomeostasis , sagebrain:MitochondrialMetabolism ,
+        sagebrain:Myelination , sagebrain:OxidativeStress , sagebrain:Proteostasis ,
+        sagebrain:RNASpliceosome , sagebrain:StructuralStabilization , sagebrain:Synapse ,
+        sagebrain:TauHomeostasis , sagebrain:Vasculature .
+
+sagebrain:APPMetabolism a sagebrain:Biodomain ; skos:prefLabel "APP Metabolism" ; skos:inScheme sagebrain:BiodomainScheme .
+sagebrain:Apoptosis a sagebrain:Biodomain ; skos:prefLabel "Apoptosis" ; skos:inScheme sagebrain:BiodomainScheme .
+sagebrain:Autophagy a sagebrain:Biodomain ; skos:prefLabel "Autophagy" ; skos:inScheme sagebrain:BiodomainScheme .
+sagebrain:CellCycle a sagebrain:Biodomain ; skos:prefLabel "Cell Cycle" ; skos:inScheme sagebrain:BiodomainScheme .
+sagebrain:DNARepair a sagebrain:Biodomain ; skos:prefLabel "DNA Repair" ; skos:inScheme sagebrain:BiodomainScheme .
+sagebrain:Endolysosome a sagebrain:Biodomain ; skos:prefLabel "Endolysosome" ; skos:inScheme sagebrain:BiodomainScheme .
+sagebrain:Epigenetic a sagebrain:Biodomain ; skos:prefLabel "Epigenetic" ; skos:inScheme sagebrain:BiodomainScheme .
+sagebrain:ImmuneResponse a sagebrain:Biodomain ; skos:prefLabel "Immune Response" ; skos:inScheme sagebrain:BiodomainScheme .
+sagebrain:LipidMetabolism a sagebrain:Biodomain ; skos:prefLabel "Lipid Metabolism" ; skos:inScheme sagebrain:BiodomainScheme .
+sagebrain:MetalBindingAndHomeostasis a sagebrain:Biodomain ; skos:prefLabel "Metal Binding and Homeostasis" ; skos:inScheme sagebrain:BiodomainScheme .
+sagebrain:MitochondrialMetabolism a sagebrain:Biodomain ; skos:prefLabel "Mitochondrial Metabolism" ; skos:inScheme sagebrain:BiodomainScheme .
+sagebrain:Myelination a sagebrain:Biodomain ; skos:prefLabel "Myelination" ; skos:inScheme sagebrain:BiodomainScheme .
+sagebrain:OxidativeStress a sagebrain:Biodomain ; skos:prefLabel "Oxidative Stress" ; skos:inScheme sagebrain:BiodomainScheme .
+sagebrain:Proteostasis a sagebrain:Biodomain ; skos:prefLabel "Proteostasis" ; skos:inScheme sagebrain:BiodomainScheme .
+sagebrain:RNASpliceosome a sagebrain:Biodomain ; skos:prefLabel "RNA Spliceosome" ; skos:inScheme sagebrain:BiodomainScheme .
+sagebrain:StructuralStabilization a sagebrain:Biodomain ; skos:prefLabel "Structural Stabilization" ; skos:inScheme sagebrain:BiodomainScheme .
+sagebrain:Synapse a sagebrain:Biodomain ; skos:prefLabel "Synapse" ; skos:inScheme sagebrain:BiodomainScheme .
+sagebrain:TauHomeostasis a sagebrain:Biodomain ; skos:prefLabel "Tau Homeostasis" ; skos:inScheme sagebrain:BiodomainScheme .
+sagebrain:Vasculature a sagebrain:Biodomain ; skos:prefLabel "Vasculature" ; skos:inScheme sagebrain:BiodomainScheme .
 
 ###  Translational
 
