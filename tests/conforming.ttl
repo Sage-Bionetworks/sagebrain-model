@@ -10,6 +10,7 @@
 
 @prefix sagebrain: <https://w3id.org/synapse/sagebrain#> .
 @prefix biolink:   <https://w3id.org/biolink/vocab/> .
+@prefix xsd:       <http://www.w3.org/2001/XMLSchema#> .
 @prefix ex:        <https://example.org/sagebrain-test/> .
 
 ###  Individuals, including a Case and a Control  ###############
@@ -82,6 +83,12 @@ ex:apoe
     a biolink:Gene ;
     sagebrain:expressed_in ex:samp1 , ex:samp2 ;
     sagebrain:participates_in ex:apoptosisPathway .
+
+ex:apoeExpressionInSamp1
+    a sagebrain:GeneExpressionAssociation ;
+    biolink:subject ex:apoe ;
+    biolink:object ex:samp1 ;
+    sagebrain:weight "0.83"^^xsd:decimal .
 
 ex:apoptosisPathway
     a biolink:Pathway ;

@@ -669,38 +669,145 @@ vocabulary-level anatomical concepts standing in a part-of hierarchy.""" ;
     ] .
 
 
-#################################################################
-#################################################################
+##  4. EDGE WEIGHTS -- VIA REIFIED ASSOCIATIONS
 ##
-##  4. EDGE WEIGHTS -- NOT YET CONSTRAINABLE
+##  Four (source, target) pairs are marked weighted in the source model:
+##    Gene expressed_in Sample; Sample de_associated_with Pathway;
+##    Pathway de_associated_with DiseaseStage; Pathway associated_with DiseaseLabel.
 ##
-##  Six connections are marked weighted in the source model:
-##    Gene expressed_in Sample; Individual has_status DiseaseStatus;
-##    Pathway de_associated_with DiseaseStatus; Pathway de_associated_with
-##    DiseaseStage; Pathway associated_with DiseaseLabel;
-##    Sample de_associated_with Pathway.
+##  A weight is a property OF an edge, which a plain RDF triple cannot carry. Of the
+##  options once listed here (skip RDF entirely; reify; RDF-star; collapse to a
+##  thresholded directional predicate), this model takes reification (former option
+##  b), shaped as a Biolink association rather than a bespoke class: see the
+##  "Associations" section of ontology/main/sagebrain.ttl for why. Each pair below
+##  gets its own association class -- one class per plain property, mirroring the
+##  relates_to split in section 2, rather than one class per property with subject
+##  and object types entangled behind an sh:or.
 ##
-##  A weight is a property OF an edge, which plain RDF triples cannot carry.
-##  Validating weights requires first choosing how they are materialised:
-##
-##    (a) not in RDF at all -- weights live only in the property-graph load,
-##        and this ontology stays a schema-level description. No shapes needed.
-##    (b) reification -- introduce an association class carrying source,
-##        target and an xsd:decimal weight. Fully validatable with SHACL today,
-##        but it adds a class to the ontology that the source model does not have.
-##    (c) RDF-star / RDF 1.2 quoted triples -- closest to the property-graph
-##        model, but SHACL support across tooling is still thin.
-##    (d) don't represent the number -- represent its interpretation, as
-##        directional predicates (de_over_* / de_under_*) derived by
-##        thresholding whatever score the method produced. Constrainable with
-##        ordinary sh:class shapes, so this is the one option that needs no new
-##        machinery here; it trades magnitude away and moves the threshold into
-##        the pipeline. See B11 for the full argument.
-##
-##  No shapes are emitted here on purpose: each option implies a different
-##  instance representation, and picking one is a modelling decision rather
-##  than a validation detail. The sagebrain:weighted flag on each object
-##  property records which edges would be in scope.
+##  These shapes constrain the association classes themselves (sh:targetClass), not
+##  the plain properties they reify -- shape:GeneShape.expressed_in and the other
+##  plain-property shapes above are unaffected and remain how you validate a
+##  weightless assertion of the same connection.
 ##
 #################################################################
 #################################################################
+
+shape:GeneExpressionAssociationShape
+    a sh:NodeShape ;
+    sh:targetClass sagebrain:GeneExpressionAssociation ;
+    rdfs:label "Gene expression association shape" ;
+    rdfs:comment "Reifies sagebrain:expressed_in. subject: a Gene. object: a Sample." ;
+
+    sh:property [
+        sh:path biolink:subject ;
+        sh:name "subject" ;
+        sh:class biolink:Gene ;
+        sh:nodeKind sh:IRI ;
+        sh:minCount 1 ; sh:maxCount 1 ;
+        sh:message "A GeneExpressionAssociation needs exactly one subject, a Gene." ;
+    ] ;
+    sh:property [
+        sh:path biolink:object ;
+        sh:name "object" ;
+        sh:class biolink:MaterialSample ;
+        sh:nodeKind sh:IRI ;
+        sh:minCount 1 ; sh:maxCount 1 ;
+        sh:message "A GeneExpressionAssociation needs exactly one object, a Sample." ;
+    ] ;
+    sh:property [
+        sh:path sagebrain:weight ;
+        sh:name "weight" ;
+        sh:datatype xsd:decimal ;
+        sh:minCount 1 ; sh:maxCount 1 ;
+        sh:message "A GeneExpressionAssociation needs exactly one xsd:decimal weight." ;
+    ] .
+
+shape:SampleDEAssociationShape
+    a sh:NodeShape ;
+    sh:targetClass sagebrain:SampleDEAssociation ;
+    rdfs:label "Sample differential-expression association shape" ;
+    rdfs:comment "Reifies the Sample -> Pathway pairing of sagebrain:de_associated_with. subject: a Sample. object: a Pathway." ;
+
+    sh:property [
+        sh:path biolink:subject ;
+        sh:name "subject" ;
+        sh:class biolink:MaterialSample ;
+        sh:nodeKind sh:IRI ;
+        sh:minCount 1 ; sh:maxCount 1 ;
+        sh:message "A SampleDEAssociation needs exactly one subject, a Sample." ;
+    ] ;
+    sh:property [
+        sh:path biolink:object ;
+        sh:name "object" ;
+        sh:class biolink:Pathway ;
+        sh:nodeKind sh:IRI ;
+        sh:minCount 1 ; sh:maxCount 1 ;
+        sh:message "A SampleDEAssociation needs exactly one object, a Pathway." ;
+    ] ;
+    sh:property [
+        sh:path sagebrain:weight ;
+        sh:name "weight" ;
+        sh:datatype xsd:decimal ;
+        sh:minCount 1 ; sh:maxCount 1 ;
+        sh:message "A SampleDEAssociation needs exactly one xsd:decimal weight." ;
+    ] .
+
+shape:PathwayDEAssociationShape
+    a sh:NodeShape ;
+    sh:targetClass sagebrain:PathwayDEAssociation ;
+    rdfs:label "Pathway differential-expression association shape" ;
+    rdfs:comment "Reifies the Pathway -> DiseaseStage pairing of sagebrain:de_associated_with. subject: a Pathway. object: a DiseaseStage." ;
+
+    sh:property [
+        sh:path biolink:subject ;
+        sh:name "subject" ;
+        sh:class biolink:Pathway ;
+        sh:nodeKind sh:IRI ;
+        sh:minCount 1 ; sh:maxCount 1 ;
+        sh:message "A PathwayDEAssociation needs exactly one subject, a Pathway." ;
+    ] ;
+    sh:property [
+        sh:path biolink:object ;
+        sh:name "object" ;
+        sh:class sagebrain:DiseaseStage ;
+        sh:nodeKind sh:IRI ;
+        sh:minCount 1 ; sh:maxCount 1 ;
+        sh:message "A PathwayDEAssociation needs exactly one object, a DiseaseStage." ;
+    ] ;
+    sh:property [
+        sh:path sagebrain:weight ;
+        sh:name "weight" ;
+        sh:datatype xsd:decimal ;
+        sh:minCount 1 ; sh:maxCount 1 ;
+        sh:message "A PathwayDEAssociation needs exactly one xsd:decimal weight." ;
+    ] .
+
+shape:PathwayDiseaseAssociationShape
+    a sh:NodeShape ;
+    sh:targetClass sagebrain:PathwayDiseaseAssociation ;
+    rdfs:label "Pathway disease association shape" ;
+    rdfs:comment "Reifies sagebrain:associated_with. subject: a Pathway. object: a DiseaseLabel." ;
+
+    sh:property [
+        sh:path biolink:subject ;
+        sh:name "subject" ;
+        sh:class biolink:Pathway ;
+        sh:nodeKind sh:IRI ;
+        sh:minCount 1 ; sh:maxCount 1 ;
+        sh:message "A PathwayDiseaseAssociation needs exactly one subject, a Pathway." ;
+    ] ;
+    sh:property [
+        sh:path biolink:object ;
+        sh:name "object" ;
+        sh:class biolink:Disease ;
+        sh:nodeKind sh:IRI ;
+        sh:minCount 1 ; sh:maxCount 1 ;
+        sh:message "A PathwayDiseaseAssociation needs exactly one object, a DiseaseLabel." ;
+    ] ;
+    sh:property [
+        sh:path sagebrain:weight ;
+        sh:name "weight" ;
+        sh:datatype xsd:decimal ;
+        sh:minCount 1 ; sh:maxCount 1 ;
+        sh:message "A PathwayDiseaseAssociation needs exactly one xsd:decimal weight." ;
+    ] .

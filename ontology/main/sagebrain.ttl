@@ -431,3 +431,85 @@ sagebrain:has_pathology
     sagebrain:weighted false ;
     skos:editorialNote "Pathology identifier for the sample." ;
     owl:versionInfo "v0.2" .
+
+#################################################################
+#    Associations (reified weighted connections)
+#
+#    Four of the plain connections above are marked sagebrain:weighted true:
+#    expressed_in, de_associated_with (two source/target pairs), and
+#    associated_with. A weight is a property OF an edge, which a plain RDF
+#    triple cannot carry, and sagebrain-shapes.ttl's old #4 section left this
+#    unconstrained rather than choosing between reification, RDF-star, or
+#    dropping the number.
+#
+#    Resolved in v0.3 by reifying via Biolink's own association pattern
+#    (biolink:Association, biolink:subject, biolink:object -- MIREOT'd
+#    alongside the classes and properties SageBrain already reuses; see
+#    scripts/import.sh) rather than inventing a bespoke reification class. The
+#    project's own stated goal is that "a SageBrain graph is Biolink data...
+#    with no mapping step" for the classes it reuses; associations get the
+#    same treatment. Biolink has no generic numeric weight/score slot on
+#    Association (checked against the v4.4.4 source rather than assumed), so
+#    sagebrain:weight is minted here, the same way used_to_treat narrows
+#    biolink:treats: Biolink supplies the reification structure, SageBrain
+#    supplies the one slot Biolink does not have.
+#
+#    One class per plain property rather than per (source, target) pair --
+#    de_associated_with's two pairs get two association classes instead of one
+#    with an owl:onProperty/owl:allValuesFrom scoped by an sh:or, which would
+#    recreate exactly the kind of per-property overloading this model avoids
+#    elsewhere. subject/object typing is stated once per class as an OWL
+#    restriction, so it does not depend only on the shapes graph.
+#
+#    The plain properties above are NOT removed: an assertion of e.g.
+#    expressed_in with no known weight is still meaningful, and forcing every
+#    such statement through an association node would discard information
+#    (that a weight was never measured) rather than represent it. The
+#    association is how you state the plain property WITH its weight; use
+#    both only when they are not asserting the same weighted fact twice.
+#################################################################
+
+sagebrain:weight
+    a owl:DatatypeProperty ;
+    rdfs:label "weight" ;
+    rdfs:comment "The numeric weight of a differential-expression or quantitative association -- an expression level, a differential-expression score, or an association strength, depending on which Association subclass it appears on." ;
+    rdfs:domain biolink:Association ;
+    rdfs:range xsd:decimal ;
+    rdfs:subPropertyOf biolink:association_slot ;
+    owl:versionInfo "v0.3" .
+
+sagebrain:GeneExpressionAssociation
+    a owl:Class ;
+    rdfs:subClassOf biolink:Association ,
+        [ a owl:Restriction ; owl:onProperty biolink:subject ; owl:allValuesFrom biolink:Gene ] ,
+        [ a owl:Restriction ; owl:onProperty biolink:object ; owl:allValuesFrom biolink:MaterialSample ] ;
+    rdfs:label "Gene Expression Association" ;
+    rdfs:comment "Reifies sagebrain:expressed_in with its weight. subject: a Gene. object: a Sample. weight: expression level relative to differential-expression results." ;
+    owl:versionInfo "v0.3" .
+
+sagebrain:SampleDEAssociation
+    a owl:Class ;
+    rdfs:subClassOf biolink:Association ,
+        [ a owl:Restriction ; owl:onProperty biolink:subject ; owl:allValuesFrom biolink:MaterialSample ] ,
+        [ a owl:Restriction ; owl:onProperty biolink:object ; owl:allValuesFrom biolink:Pathway ] ;
+    rdfs:label "Sample Differential-Expression Association" ;
+    rdfs:comment "Reifies the Sample -> Pathway pairing of sagebrain:de_associated_with with its weight. subject: a Sample. object: a Pathway. weight: the differential-expression score." ;
+    owl:versionInfo "v0.3" .
+
+sagebrain:PathwayDEAssociation
+    a owl:Class ;
+    rdfs:subClassOf biolink:Association ,
+        [ a owl:Restriction ; owl:onProperty biolink:subject ; owl:allValuesFrom biolink:Pathway ] ,
+        [ a owl:Restriction ; owl:onProperty biolink:object ; owl:allValuesFrom sagebrain:DiseaseStage ] ;
+    rdfs:label "Pathway Differential-Expression Association" ;
+    rdfs:comment "Reifies the Pathway -> DiseaseStage pairing of sagebrain:de_associated_with with its weight. subject: a Pathway. object: a DiseaseStage. weight: the differential-expression score." ;
+    owl:versionInfo "v0.3" .
+
+sagebrain:PathwayDiseaseAssociation
+    a owl:Class ;
+    rdfs:subClassOf biolink:Association ,
+        [ a owl:Restriction ; owl:onProperty biolink:subject ; owl:allValuesFrom biolink:Pathway ] ,
+        [ a owl:Restriction ; owl:onProperty biolink:object ; owl:allValuesFrom biolink:Disease ] ;
+    rdfs:label "Pathway Disease Association" ;
+    rdfs:comment "Reifies sagebrain:associated_with with its weight. subject: a Pathway. object: a DiseaseLabel. weight: strength of the pathway-disease association." ;
+    owl:versionInfo "v0.3" .

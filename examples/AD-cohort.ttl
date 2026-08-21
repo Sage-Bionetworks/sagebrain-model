@@ -31,7 +31,7 @@
 # instead (see the fallback note further down). All three are Attribute rows in
 # AD.model.csv, and Source is that row's own citation:
 #
-#   adkp:BRAAKStage3        disease stage  BRAAK Stage 3       
+#   adkp:BRAAKStage3        disease stage  BRAAK Stage 3
 #   adkp:FrequentDefiniteC3 pathology      Frequent Definite C3
 #
 # Participants and samples are presumed minted under https://w3id.org/synapse/ad/.
@@ -49,6 +49,7 @@
 @prefix sagebrain: <https://w3id.org/synapse/sagebrain#> .
 @prefix biolink:   <https://w3id.org/biolink/vocab/> .
 @prefix rdfs:      <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:       <http://www.w3.org/2001/XMLSchema#> .
 
 @prefix HGNC:   <http://identifiers.org/hgnc/> .
 @prefix MONDO:  <http://purl.obolibrary.org/obo/MONDO_> .
@@ -70,6 +71,7 @@
 # namespace.
 @prefix individual: <https://w3id.org/synapse/ad/individual/> .
 @prefix sample:     <https://w3id.org/synapse/ad/sample/> .
+@prefix association: <https://w3id.org/synapse/ad/association/> .
 
 ###  Participants  ##############################################
 #
@@ -131,7 +133,7 @@ UBERON:0000956
 
 ###  Clinical vocabulary  #######################################
 #
-# GROUNDING FALLBACK. Where the grounding ontology (HP) has the term, use it 
+# GROUNDING FALLBACK. Where the grounding ontology (HP) has the term, use it
 # Where it does not, the term is from / minted in the AD
 # Knowledge Portal data model (https://github.com/adknowledgeportal/data-models)
 
@@ -153,8 +155,8 @@ adkp:BRAAKStage3
     sagebrain:relates_to MONDO:0004975 .
 
 # Pathology draws from both HP and AD model, examples showing that AD is used for graded categories.
-# Plaque burden is graded, and CERAD is a scale of graded categories. 
-# Currently HP term does not do graded categories; HP:0100256 asserts senile plaques are present (indicator only). 
+# Plaque burden is graded, and CERAD is a scale of graded categories.
+# Currently HP term does not do graded categories; HP:0100256 asserts senile plaques are present (indicator only).
 # Tangles are the qualitative case, so they stay HP.
 adkp:FrequentDefiniteC3
     a sagebrain:Pathology ;
@@ -173,6 +175,17 @@ HGNC:613
     rdfs:label "APOE" ;
     sagebrain:expressed_in sample:01 , sample:02 , sample:03 ;
     sagebrain:participates_in REACT:R-HSA-977225 .
+
+# One expressed_in edge with its weight recorded, via the Biolink-style
+# reification introduced in v0.3 (see the "Associations" section of
+# ontology/main/sagebrain.ttl). The plain expressed_in triple above still
+# states the same edge for TREM2 and APP with no weight on record; both forms
+# are legitimate depending on what a curator actually has.
+association:apoe-expr-samp01
+    a sagebrain:GeneExpressionAssociation ;
+    biolink:subject HGNC:613 ;
+    biolink:object sample:01 ;
+    sagebrain:weight "1.4"^^xsd:decimal .
 
 HGNC:620
     a biolink:Gene ;
