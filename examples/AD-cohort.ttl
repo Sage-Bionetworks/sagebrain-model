@@ -1,0 +1,217 @@
+# A worked example: a small Alzheimer's disease slice of a SageBrain graph.
+#
+# Two participants, three samples, three genes, two pathways, one drug and one
+# trial, with real identifiers throughout. Validated on every run of
+# tests/validate.py.
+#
+# It exercises 17 of the model's 19 connections. The two it leaves out are the
+# point of the last section below: an example that cannot be written honestly is
+# telling us something about the model.
+#
+# IDENTIFIERS
+#
+# Resolved against the source registry (genenames.org, OLS, Reactome,
+# ClinicalTrials.gov) rather than recalled. Prefixes follow Biolink's prefix map,
+# since the model reuses Biolink terms.
+#
+#   HGNC:613            gene            APOE, ENSG00000130203
+#   HGNC:620            gene            APP, ENSG00000142192
+#   HGNC:17761          gene            TREM2, ENSG00000095970
+#   MONDO:0004975       disease         Alzheimer disease
+#   UBERON:0000955      organ           brain
+#   UBERON:0002421      organ subregion hippocampal formation
+#   UBERON:0000956      tissue          cerebral cortex
+#   HP:0002185          pathology       Neurofibrillary tangles
+#   REACT:R-HSA-977225  pathway         Amyloid fiber formation
+#   REACT:R-HSA-9664422 pathway         FCGR3A-mediated phagocytosis
+#   CHEBI:755918        drug            lecanemab
+#   NCT02094729         clinical trial  BAN2401 (lecanemab) phase 1 study
+#
+# Where no ontology has the term, it comes from the AD Knowledge Portal data model
+# instead (see the fallback note further down). All three are Attribute rows in
+# AD.model.csv, and Source is that row's own citation:
+#
+#   adkp:BRAAKStage3        disease stage  BRAAK Stage 3       
+#   adkp:FrequentDefiniteC3 pathology      Frequent Definite C3
+#
+# Participants and samples are presumed minted under https://w3id.org/synapse/ad/.
+#
+# Not in example:
+#   sagebrain:has_status    DiseaseStatus has no vocabulary. The AD model's nearest
+#     terms -- "no cognitive impairment", "mild cognitive impairment", "dementia" --
+#     are values of its `diagnosis` column, not a separate status axis. So either
+#     DiseaseStatus is a diagnosis under another name, in which case it duplicates
+#     has_diagnosis, or it is the symptomatic/pre-symptomatic axis.
+#
+#   sagebrain:belongs_to    Biodomain has no vocabulary either: no ontology, and no
+#     column in the AD model.
+
+@prefix sagebrain: <https://w3id.org/synapse/sagebrain#> .
+@prefix biolink:   <https://w3id.org/biolink/vocab/> .
+@prefix rdfs:      <http://www.w3.org/2000/01/rdf-schema#> .
+
+@prefix HGNC:   <http://identifiers.org/hgnc/> .
+@prefix MONDO:  <http://purl.obolibrary.org/obo/MONDO_> .
+@prefix UBERON: <http://purl.obolibrary.org/obo/UBERON_> .
+@prefix HP:     <http://purl.obolibrary.org/obo/HP_> .
+@prefix CHEBI:  <http://purl.obolibrary.org/obo/CHEBI_> .
+@prefix REACT:  <http://identifiers.org/reactome/> .
+@prefix NCT:    <http://identifiers.org/clinicaltrials/> .
+
+# AD Knowledge Portal data model terms. PROVISIONAL: the model is a CSV today and
+# has no published term IRIs, so this namespace presumes the most likely
+# setup.
+@prefix adkp: <https://raw.githubusercontent.com/adknowledgeportal/data-models/refs/heads/main/AD.model#> .
+
+# Study-local particulars are minted beside the model rather than inside it: the
+# model is <.../synapse/sagebrain>, the data it describes is <.../synapse/ad/>.
+# Data outlives and precedes any one model of it, and these participants may well
+# be described by something other than SageBrain, so they do not belong in its
+# namespace.
+@prefix individual: <https://w3id.org/synapse/ad/individual/> .
+@prefix sample:     <https://w3id.org/synapse/ad/sample/> .
+
+###  Participants  ##############################################
+#
+# One case, one control. Both are sagebrain:Individual by subclass, so
+# shape:IndividualShape reaches them without any inferencing.
+
+individual:01
+    a sagebrain:Case ;
+    rdfs:label "participant 01" ;
+    sagebrain:has_sample sample:01 , sample:02 ;
+    sagebrain:has_diagnosis MONDO:0004975 ;
+    sagebrain:staged_at adkp:BRAAKStage3 .
+
+individual:02
+    a sagebrain:Control ;
+    rdfs:label "participant 02" ;
+    sagebrain:has_sample sample:03 .
+
+###  Samples  ###################################################
+#
+# Note that no sample is shared between participants
+
+sample:01
+    a biolink:MaterialSample ;
+    rdfs:label "participant 01 cerebral cortex" ;
+    sagebrain:source_tissue UBERON:0000956 ;
+    sagebrain:has_pathology adkp:FrequentDefiniteC3 ;
+    sagebrain:de_associated_with REACT:R-HSA-977225 .
+
+sample:02
+    a biolink:MaterialSample ;
+    rdfs:label "participant 01 cerebral cortex, second aliquot" ;
+    sagebrain:source_tissue UBERON:0000956 ;
+    sagebrain:has_pathology HP:0002185 .
+
+sample:03
+    a biolink:MaterialSample ;
+    rdfs:label "participant 02 cerebral cortex" ;
+    sagebrain:source_tissue UBERON:0000956 .
+
+###  Anatomy  ###################################################
+
+# Use / map to UBERON for anatomy, using portal-specific vocab only when not possible
+
+UBERON:0000955
+    a sagebrain:Organ ;
+    rdfs:label "brain" ;
+    sagebrain:has_subregion UBERON:0002421 ;
+    sagebrain:contains_tissue UBERON:0000956 .
+
+UBERON:0002421
+    a sagebrain:OrganSubregion ;
+    rdfs:label "hippocampal formation" ;
+    sagebrain:contains_tissue UBERON:0000956 .
+
+UBERON:0000956
+    a sagebrain:Tissue ;
+    rdfs:label "cerebral cortex" .
+
+###  Clinical vocabulary  #######################################
+#
+# GROUNDING FALLBACK. Where the grounding ontology (HP) has the term, use it 
+# Where it does not, the term is from / minted in the AD
+# Knowledge Portal data model (https://github.com/adknowledgeportal/data-models)
+
+# For example, Braak staging is the worked case: no ontology on OLS has a Braak term at all,
+# but AD model does define `Braak` with "BRAAK Stage 1"-"6", so the
+# stage node below is an adkp: term rather than an external ontology.
+#
+# The same fallback covers plaque burden, via `CERAD`. It does not cover disease
+# status or biodomain, which is why neither appears in this file at all.
+
+MONDO:0004975
+    a biolink:Disease ;
+    rdfs:label "Alzheimer disease" ;
+    sagebrain:has_trial NCT:NCT02094729 .
+
+adkp:BRAAKStage3
+    a sagebrain:DiseaseStage ;
+    rdfs:label "BRAAK Stage 3" ;
+    sagebrain:relates_to MONDO:0004975 .
+
+# Pathology draws from both HP and AD model, examples showing that AD is used for graded categories.
+# Plaque burden is graded, and CERAD is a scale of graded categories. 
+# Currently HP term does not do graded categories; HP:0100256 asserts senile plaques are present (indicator only). 
+# Tangles are the qualitative case, so they stay HP.
+adkp:FrequentDefiniteC3
+    a sagebrain:Pathology ;
+    rdfs:label "Frequent Definite C3" ;
+    sagebrain:relates_to MONDO:0004975 .
+
+HP:0002185
+    a sagebrain:Pathology ;
+    rdfs:label "Neurofibrillary tangles" ;
+    sagebrain:relates_to MONDO:0004975 .
+
+###  Genes and pathways  ########################################
+
+HGNC:613
+    a biolink:Gene ;
+    rdfs:label "APOE" ;
+    sagebrain:expressed_in sample:01 , sample:02 , sample:03 ;
+    sagebrain:participates_in REACT:R-HSA-977225 .
+
+HGNC:620
+    a biolink:Gene ;
+    rdfs:label "APP" ;
+    sagebrain:expressed_in sample:01 ;
+    sagebrain:participates_in REACT:R-HSA-977225 .
+
+HGNC:17761
+    a biolink:Gene ;
+    rdfs:label "TREM2" ;
+    sagebrain:expressed_in sample:01 , sample:03 ;
+    sagebrain:participates_in REACT:R-HSA-9664422 .
+
+REACT:R-HSA-977225
+    a biolink:Pathway ;
+    rdfs:label "Amyloid fiber formation" ;
+    sagebrain:associated_with MONDO:0004975 ;
+    sagebrain:related_pathway REACT:R-HSA-9664422 ;
+    sagebrain:de_associated_with adkp:BRAAKStage3 .
+
+REACT:R-HSA-9664422
+    a biolink:Pathway ;
+    rdfs:label "FCGR3A-mediated phagocytosis" ;
+    sagebrain:de_associated_with adkp:BRAAKStage3 .
+
+###  Translational  #############################################
+#
+# `targets` ranges over biolink:Gene, so a therapeutic antibody against the
+# amyloid-beta peptide is recorded against APP, the gene whose product it
+# derives from. Worth knowing that this is a modelling compromise rather than a
+# fact about lecanemab: the drug binds a protein aggregate, not a gene.
+
+CHEBI:755918
+    a biolink:Drug ;
+    rdfs:label "lecanemab" ;
+    sagebrain:targets HGNC:620 ;
+    sagebrain:used_to_treat MONDO:0004975 .
+
+NCT:NCT02094729
+    a biolink:ClinicalTrial ;
+    rdfs:label "BAN2401 phase 1 study" ;
+    sagebrain:tests CHEBI:755918 .

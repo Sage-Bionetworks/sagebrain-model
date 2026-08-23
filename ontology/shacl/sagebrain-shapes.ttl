@@ -1,0 +1,706 @@
+@prefix sagebrain: <https://w3id.org/synapse/sagebrain#> .
+@prefix biolink:   <https://w3id.org/biolink/vocab/> .
+@prefix shape:     <https://w3id.org/synapse/sagebrain/shapes#> .
+@prefix sh:        <http://www.w3.org/ns/shacl#> .
+@prefix owl:       <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs:      <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:       <http://www.w3.org/2001/XMLSchema#> .
+@prefix skos:      <http://www.w3.org/2004/02/skos/core#> .
+@prefix dcterms:   <http://purl.org/dc/terms/> .
+
+#################################################################
+#    Shapes graph
+#################################################################
+
+<https://w3id.org/synapse/sagebrain/shapes>
+    a owl:Ontology ;
+    dcterms:title "SageBrain Graph Model -- SHACL shapes" ;
+    rdfs:comment """Constraints for the SageBrain graph model. Kept separate from the
+ontology so that the ontology stays a monotonic, open-world T-Box for reasoners while
+validation lives here under closed-world semantics.
+
+Three groups of shapes:
+
+  1. MODEL INTEGRITY -- validates the ontology itself: that every element class and every
+     connection carries its required metadata. Run these over ontology/main/sagebrain.ttl
+     plus its import modules to catch transcription errors when the model is revised.
+
+  2. INSTANCE SHAPES -- validates graph data against the schema. This is also the only
+     place the exact permitted (source, target) pairings are recorded: the ontology can
+     only state the union over each property's uses. Two things here are strictly
+     stronger than the ontology's OWL axioms:
+       - sh:class is asserted per (source, target) pair, whereas rdfs:range on a reused
+         property can only state the union of all its targets. The union permits
+         combinations the model does not, e.g. Sample de_associated_with DiseaseStage.
+       - cardinality is scoped per source shape, so relates_to can be at most 1 from
+         DiseaseStage while remaining unbounded from Pathology.
+
+  3. INVERSE CARDINALITY (DEACTIVATED) -- see the extended note in that section. The
+     source model's cardinality column cannot be mechanically compiled in the inverse
+     direction, so those shapes are authored but carry sh:deactivated true.""" ;
+    rdfs:seeAlso "See the VALIDATION CONFIGURATION section below before running these shapes." ;
+    owl:imports <https://w3id.org/synapse/sagebrain> ;
+    owl:versionIRI <https://w3id.org/synapse/sagebrain/shapes/0.2.0> ;
+    owl:versionInfo "v0.2" ;
+    dcterms:created "2026-08-14"^^xsd:date ;
+    rdfs:seeAlso <https://github.com/Sage-Bionetworks/sagebrain-model> .
+
+
+#################################################################
+#################################################################
+##
+##  VALIDATION CONFIGURATION -- READ THIS FIRST
+##
+##  These shapes MUST be run WITHOUT RDFS or OWL entailment over the data
+##  graph. Enabling inference silently disables every sh:class constraint
+##  here.
+##
+##  Why: the ontology declares rdfs:range on its object properties, and
+##  rdfs:range is an entailment rule, not a check. Given
+##
+##      sagebrain:has_diagnosis rdfs:range biolink:Disease .
+##      ex:ind1 sagebrain:has_diagnosis ex:pathway1 .
+##
+##  an RDFS inferencer derives "ex:pathway1 a biolink:Disease",
+##  manufacturing exactly the type the shape is testing for. The constraint
+##  then passes vacuously no matter what ex:pathway1 actually is. Verified:
+##  tests/violating.ttl, with six planted defects, reports 8 violations with
+##  inference off and 7 with inference='rdfs', the suppressed one being a range
+##  error. (Eight rather than six because two defects each trip both an
+##  sh:class and an sh:nodeKind constraint.)
+##
+##  Correct invocation (pySHACL):
+##
+##      pyshacl -s ontology/shacl/sagebrain-shapes.ttl \
+##             -e <(cat ontology/main/sagebrain.ttl ontology/imports/biolink.ttl) \
+##             data.ttl
+##
+##  Note -e (ont_graph) rather than -i (inference). The ontology is supplied
+##  so that class hierarchies resolve; no entailment is computed. The biolink
+##  import module goes in with it: the shapes target biolink:Gene and
+##  biolink:Pathway, which sagebrain.ttl uses but does not declare. Subclass
+##  targeting still works -- sh:targetClass traverses rdfs:subClassOf* by
+##  definition, so IndividualShape reaches Case and Control without any
+##  inferencing. See tests/validate.py for the exercised configuration.
+##
+##  This tension between rdfs:range and sh:class is a known consequence of
+##  carrying both layers; resolving it properly is tracked as a cleanup item
+##  rather than papered over here.
+##
+#################################################################
+#################################################################
+
+
+#################################################################
+#################################################################
+##
+##  1. MODEL INTEGRITY
+##
+##  Target: the ontology document itself, not graph data.
+##
+#################################################################
+#################################################################
+
+shape:ConnectionShape
+    a sh:NodeShape ;
+    sh:targetSubjectsOf sagebrain:weighted ;
+    rdfs:label "Connection shape" ;
+    rdfs:comment """Every connection carried over from the source model's Connections sheet must
+be documented and must declare whether it is weighted. Targets subjects of sagebrain:weighted
+rather than owl:ObjectProperty, so that the shape says "everything the sheet calls a
+connection", not "every property that happens to exist".""" ;
+
+    sh:property [
+        sh:path rdfs:label ;
+        sh:name "label" ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "A connection needs an rdfs:label, as a plain string with no language tag." ;
+    ] ;
+    sh:property [
+        sh:path sagebrain:weighted ;
+        sh:name "weighted" ;
+        sh:minCount 1 ; sh:maxCount 1 ;
+        sh:datatype xsd:boolean ;
+        sh:message "sagebrain:weighted must be exactly one xsd:boolean." ;
+    ] ;
+    sh:property [
+        sh:path sagebrain:optional ;
+        sh:name "optional" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:boolean ;
+        sh:message "sagebrain:optional, when present, must be a single xsd:boolean." ;
+    ] ;
+    sh:property [
+        sh:path owl:versionInfo ;
+        sh:name "version" ;
+        sh:minCount 1 ; sh:maxCount 1 ;
+        sh:message "A connection needs exactly one owl:versionInfo." ;
+    ] .
+
+shape:ElementClassShape
+    a sh:NodeShape ;
+    sh:targetSubjectsOf sagebrain:elementCategory ;
+    rdfs:label "Element class shape" ;
+    rdfs:comment "Every element type carried over from the source model's Elements sheet must be documented and categorised." ;
+
+    sh:property [
+        sh:path rdfs:label ;
+        sh:name "label" ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "An element class needs an rdfs:label, as a plain string with no language tag." ;
+    ] ;
+    sh:property [
+        sh:path sagebrain:elementCategory ;
+        sh:name "element category" ;
+        sh:minCount 1 ; sh:maxCount 1 ;
+        sh:class sagebrain:ElementCategory ;
+        sh:message "An element class needs exactly one sagebrain:elementCategory drawn from the category scheme." ;
+    ] ;
+    sh:property [
+        sh:path owl:versionInfo ;
+        sh:name "version" ;
+        sh:minCount 1 ; sh:maxCount 1 ;
+        sh:message "An element class needs exactly one owl:versionInfo." ;
+    ] .
+
+shape:ElementDescriptionShape
+    a sh:NodeShape ;
+    sh:targetSubjectsOf sagebrain:elementCategory ;
+    rdfs:label "Element description shape" ;
+    rdfs:comment """Every element type needs the description the source sheet gives it, but in
+one of two places depending on who owns the term. A class minted here carries it as
+rdfs:comment, the ordinary place to define your own class. A class reused from another
+vocabulary carries it as skos:scopeNote: rdfs:comment on an imported class reads as a
+definition of that class, which is not ours to give -- Biolink defines those terms itself,
+with skos:definition. Hence sh:or rather than one required path.
+
+Note the looseness: this accepts either path on any element class, because deciding which
+one applies means testing the term's namespace, and that is not worth an sh:sparql
+constraint here. Which path is correct for a given class is a convention, documented in the
+"Reused terms" section of the ontology; what this shape guarantees is that a description
+exists and is a plain string.""" ;
+    sh:or (
+        [ sh:property [ sh:path rdfs:comment ;    sh:minCount 1 ; sh:datatype xsd:string ] ]
+        [ sh:property [ sh:path skos:scopeNote ; sh:minCount 1 ; sh:datatype xsd:string ] ]
+    ) ;
+    sh:message "An element class needs its description as a plain string with no language tag -- rdfs:comment if the class is minted here, skos:scopeNote if it is reused from another vocabulary." .
+
+
+#################################################################
+#################################################################
+##
+##  2. INSTANCE SHAPES
+##
+##  Target: graph data. One node shape per element class that has at
+##  least one outgoing connection. Biodomain and Tissue are omitted --
+##  they appear only as targets in the model, so they carry no outgoing
+##  constraints. Case and Control are validated by IndividualShape,
+##  since SHACL class targets include subclasses.
+##
+#################################################################
+#################################################################
+
+###  Biological  ###############################################
+
+shape:GeneShape
+    a sh:NodeShape ;
+    sh:targetClass biolink:Gene ;
+    rdfs:label "Gene shape" ;
+
+    sh:property [
+        sh:path sagebrain:expressed_in ;
+        sh:name "expressed in" ;
+        sh:class biolink:MaterialSample ;
+        sh:nodeKind sh:IRI ;
+        sh:message "Gene expressed_in must point to a Sample." ;
+    ] ;
+    sh:property [
+        sh:path sagebrain:participates_in ;
+        sh:name "participates in" ;
+        sh:class biolink:Pathway ;
+        sh:nodeKind sh:IRI ;
+        sh:message "Gene participates_in must point to a Pathway." ;
+    ] .
+
+shape:IndividualShape
+    a sh:NodeShape ;
+    sh:targetClass sagebrain:Individual ;
+    rdfs:label "Individual shape" ;
+    rdfs:comment "Also validates Case and Control, which are subclasses of Individual." ;
+
+    sh:property [
+        sh:path sagebrain:has_sample ;
+        sh:name "has sample" ;
+        sh:class biolink:MaterialSample ;
+        sh:nodeKind sh:IRI ;
+        sh:message "Individual has_sample must point to a Sample." ;
+    ] ;
+    sh:property [
+        sh:path sagebrain:has_diagnosis ;
+        sh:name "has diagnosis" ;
+        sh:class biolink:Disease ;
+        sh:nodeKind sh:IRI ;
+        sh:message "Individual has_diagnosis must point to a DiseaseLabel." ;
+    ] ;
+    sh:property [
+        sh:path sagebrain:staged_at ;
+        sh:name "staged at" ;
+        sh:class sagebrain:DiseaseStage ;
+        sh:nodeKind sh:IRI ;
+        sh:message "Individual staged_at must point to a DiseaseStage." ;
+    ] ;
+    sh:property [
+        sh:path sagebrain:has_status ;
+        sh:name "has status" ;
+        sh:class sagebrain:DiseaseStatus ;
+        sh:nodeKind sh:IRI ;
+        sh:message "Individual has_status must point to a DiseaseStatus." ;
+    ] .
+
+shape:OrganShape
+    a sh:NodeShape ;
+    sh:targetClass sagebrain:Organ ;
+    rdfs:label "Organ shape" ;
+
+    sh:property [
+        sh:path sagebrain:has_subregion ;
+        sh:name "has sub-region" ;
+        sh:class sagebrain:OrganSubregion ;
+        sh:nodeKind sh:IRI ;
+        sh:message "Organ has_subregion must point to an OrganSubregion." ;
+    ] ;
+    sh:property [
+        sh:path sagebrain:contains_tissue ;
+        sh:name "contains tissue" ;
+        sh:class sagebrain:Tissue ;
+        sh:nodeKind sh:IRI ;
+        sh:message "Organ contains_tissue must point to a Tissue." ;
+    ] .
+
+shape:OrganSubregionShape
+    a sh:NodeShape ;
+    sh:targetClass sagebrain:OrganSubregion ;
+    rdfs:label "Organ sub-region shape" ;
+
+    sh:property [
+        sh:path sagebrain:contains_tissue ;
+        sh:name "contains tissue" ;
+        sh:class sagebrain:Tissue ;
+        sh:nodeKind sh:IRI ;
+        sh:message "OrganSubregion contains_tissue must point to a Tissue." ;
+    ] .
+
+shape:SampleShape
+    a sh:NodeShape ;
+    sh:targetClass biolink:MaterialSample ;
+    rdfs:label "Sample shape" ;
+
+    sh:property [
+        sh:path sagebrain:source_tissue ;
+        sh:name "source tissue" ;
+        sh:class sagebrain:Tissue ;
+        sh:nodeKind sh:IRI ;
+        sh:message "Sample source_tissue must point to a Tissue." ;
+    ] ;
+    # No sh:maxCount. The source model records this connection 1:1, but that bound
+    # does not survive contact with the data: a sample can carry more than one
+    # pathology statement, and they are not even the same kind of statement -- a
+    # graded score (CERAD) and a qualitative finding (neurofibrillary tangles) can
+    # both be true of one sample. Capping at 1 forced a choice between them. See
+    # ISSUE-4 below, and B1c on whether a graded score is a node at all.
+    sh:property [
+        sh:path sagebrain:has_pathology ;
+        sh:name "has pathology" ;
+        sh:class sagebrain:Pathology ;
+        sh:nodeKind sh:IRI ;
+        sh:message "Sample has_pathology must point to a Pathology." ;
+    ] ;
+    sh:property [
+        sh:path sagebrain:de_associated_with ;
+        sh:name "DE associated with" ;
+        sh:class biolink:Pathway ;
+        sh:nodeKind sh:IRI ;
+        sh:message "From a Sample, de_associated_with may only point to a Pathway -- not to a DiseaseStage or DiseaseStatus, which are permitted only from a Pathway." ;
+    ] .
+
+###  Clinical  #################################################
+
+shape:DiseaseLabelShape
+    a sh:NodeShape ;
+    sh:targetClass biolink:Disease ;
+    rdfs:label "Disease label shape" ;
+
+    sh:property [
+        sh:path sagebrain:has_trial ;
+        sh:name "has trial" ;
+        sh:class biolink:ClinicalTrial ;
+        sh:nodeKind sh:IRI ;
+        sh:message "DiseaseLabel has_trial must point to a ClinicalTrial." ;
+    ] .
+
+shape:DiseaseStatusShape
+    a sh:NodeShape ;
+    sh:targetClass sagebrain:DiseaseStatus ;
+    rdfs:label "Disease status shape" ;
+
+    sh:property [
+        sh:path sagebrain:relates_to ;
+        sh:name "relates to" ;
+        sh:class biolink:Disease ;
+        sh:nodeKind sh:IRI ;
+        sh:maxCount 1 ;
+        sh:message "A DiseaseStatus relates_to at most one DiseaseLabel (source model: many:1)." ;
+    ] .
+
+shape:DiseaseStageShape
+    a sh:NodeShape ;
+    sh:targetClass sagebrain:DiseaseStage ;
+    rdfs:label "Disease stage shape" ;
+
+    sh:property [
+        sh:path sagebrain:relates_to ;
+        sh:name "relates to" ;
+        sh:class biolink:Disease ;
+        sh:nodeKind sh:IRI ;
+        sh:maxCount 1 ;
+        sh:message "A DiseaseStage relates_to at most one DiseaseLabel (source model: many:1)." ;
+    ] .
+
+shape:PathologyShape
+    a sh:NodeShape ;
+    sh:targetClass sagebrain:Pathology ;
+    rdfs:label "Pathology shape" ;
+    rdfs:comment """No sh:maxCount on relates_to here: the source model records this row as
+1:many, unlike the many:1 recorded for DiseaseStage and DiseaseStatus on the same property.
+See issue note ISSUE-2 in the inverse-cardinality section.""" ;
+
+    sh:property [
+        sh:path sagebrain:relates_to ;
+        sh:name "relates to" ;
+        sh:class biolink:Disease ;
+        sh:nodeKind sh:IRI ;
+        sh:message "Pathology relates_to must point to a DiseaseLabel." ;
+    ] .
+
+shape:CaseShape
+    a sh:NodeShape ;
+    sh:targetClass sagebrain:Case ;
+    rdfs:label "Case shape" ;
+    rdfs:comment "Enforces the owl:disjointWith declared between Case and Control. OWL disjointness only yields an inconsistency under a reasoner; this makes it a validation error." ;
+
+    sh:not [ sh:class sagebrain:Control ] ;
+    sh:message "An Individual cannot be both a Case and a Control." .
+
+shape:ControlShape
+    a sh:NodeShape ;
+    sh:targetClass sagebrain:Control ;
+    rdfs:label "Control shape" ;
+
+    sh:not [ sh:class sagebrain:Case ] ;
+    sh:message "An Individual cannot be both a Control and a Case." .
+
+###  Systems Biology  ##########################################
+
+shape:PathwayShape
+    a sh:NodeShape ;
+    sh:targetClass biolink:Pathway ;
+    rdfs:label "Pathway shape" ;
+
+    sh:property [
+        sh:path sagebrain:belongs_to ;
+        sh:name "belongs to" ;
+        sh:class sagebrain:Biodomain ;
+        sh:nodeKind sh:IRI ;
+        sh:maxCount 1 ;
+        sh:message "A Pathway belongs_to at most one Biodomain (source model: many:1)." ;
+    ] ;
+    sh:property [
+        sh:path sagebrain:associated_with ;
+        sh:name "associated with" ;
+        sh:class biolink:Disease ;
+        sh:nodeKind sh:IRI ;
+        sh:message "Pathway associated_with must point to a DiseaseLabel." ;
+    ] ;
+    sh:property [
+        sh:path sagebrain:related_pathway ;
+        sh:name "related pathway" ;
+        sh:class biolink:Pathway ;
+        sh:nodeKind sh:IRI ;
+        sh:message "Pathway related_pathway must point to another Pathway." ;
+    ] ;
+    sh:property [
+        sh:path sagebrain:de_associated_with ;
+        sh:name "DE associated with" ;
+        sh:nodeKind sh:IRI ;
+        sh:or ( [ sh:class sagebrain:DiseaseStatus ]
+                [ sh:class sagebrain:DiseaseStage ] ) ;
+        sh:message "From a Pathway, de_associated_with may only point to a DiseaseStatus or a DiseaseStage." ;
+    ] .
+
+###  Translational  ############################################
+
+shape:DrugCompoundShape
+    a sh:NodeShape ;
+    sh:targetClass biolink:Drug ;
+    rdfs:label "Drug compound shape" ;
+
+    sh:property [
+        sh:path sagebrain:targets ;
+        sh:name "targets" ;
+        sh:class biolink:Gene ;
+        sh:nodeKind sh:IRI ;
+        sh:message "DrugCompound targets must point to a Gene." ;
+    ] ;
+    sh:property [
+        sh:path sagebrain:used_to_treat ;
+        sh:name "used to treat" ;
+        sh:class biolink:Disease ;
+        sh:nodeKind sh:IRI ;
+        sh:message "DrugCompound used_to_treat must point to a DiseaseLabel." ;
+    ] .
+
+shape:ClinicalTrialShape
+    a sh:NodeShape ;
+    sh:targetClass biolink:ClinicalTrial ;
+    rdfs:label "Clinical trial shape" ;
+
+    sh:property [
+        sh:path sagebrain:tests ;
+        sh:name "tests" ;
+        sh:class biolink:Drug ;
+        sh:nodeKind sh:IRI ;
+        sh:maxCount 1 ;
+        sh:message "A ClinicalTrial tests at most one DrugCompound (source model: many:1)." ;
+    ] .
+
+
+#################################################################
+#################################################################
+##
+##  3. INVERSE CARDINALITY -- DEACTIVATED
+##
+##  The source model states cardinality as "From:To". Read strictly, the
+##  "1" on the From side of a 1:many row is a constraint on the INVERSE
+##  direction: at most one source per target. Compiling that mechanically
+##  produces false constraints, because the model mixes two kinds of node
+##  without distinguishing them:
+##
+##    - instance-level nodes, one per real-world thing (Individual, Sample)
+##    - vocabulary-level nodes, shared across many instances
+##      (DiseaseLabel "one node per disease", DiseaseStatus/DiseaseStage/
+##       Pathology "multiple nodes, disease-specific", Tissue, Pathway)
+##
+##  An inverse cardinality of 1 is meaningful between two instance-level
+##  nodes and generally false when the target is a shared vocabulary node.
+##  Until the model distinguishes these, each shape below is authored with
+##  sh:deactivated true and an explanation. Flip the flag once the intended
+##  reading is confirmed; two cases that ARE defensible today are already
+##  active and appear at the end of this section.
+##
+#################################################################
+#################################################################
+
+shape:InverseHasDiagnosisShape
+    a sh:NodeShape ;
+    sh:targetClass biolink:Disease ;
+    sh:deactivated true ;
+    rdfs:label "Inverse of has_diagnosis (deactivated)" ;
+    rdfs:comment """ISSUE-1. Strict reading of Individual --has_diagnosis--> DiseaseLabel [1:many]
+is "at most one Individual per DiseaseLabel", which contradicts the class description
+"one node per disease (e.g. Alzheimer's Disease, ALS)" -- every diagnosed individual points
+at the same shared node. The same defect applies to has_status and staged_at below.""" ;
+
+    sh:property [
+        sh:path [ sh:inversePath sagebrain:has_diagnosis ] ;
+        sh:maxCount 1 ;
+        sh:message "At most one Individual may have this DiseaseLabel as a diagnosis." ;
+    ] .
+
+shape:InverseHasStatusShape
+    a sh:NodeShape ;
+    sh:targetClass sagebrain:DiseaseStatus ;
+    sh:deactivated true ;
+    rdfs:label "Inverse of has_status (deactivated)" ;
+    rdfs:comment "ISSUE-1. DiseaseStatus is a shared vocabulary node (\"multiple nodes, disease-specific\"), so at most one Individual per status is false." ;
+
+    sh:property [
+        sh:path [ sh:inversePath sagebrain:has_status ] ;
+        sh:maxCount 1 ;
+        sh:message "At most one Individual may have this DiseaseStatus." ;
+    ] .
+
+shape:InverseStagedAtShape
+    a sh:NodeShape ;
+    sh:targetClass sagebrain:DiseaseStage ;
+    sh:deactivated true ;
+    rdfs:label "Inverse of staged_at (deactivated)" ;
+    rdfs:comment "ISSUE-1. DiseaseStage is a shared vocabulary node, so at most one Individual per stage is false." ;
+
+    sh:property [
+        sh:path [ sh:inversePath sagebrain:staged_at ] ;
+        sh:maxCount 1 ;
+        sh:message "At most one Individual may be staged at this DiseaseStage." ;
+    ] .
+
+shape:InverseRelatesToShape
+    a sh:NodeShape ;
+    sh:targetClass biolink:Disease ;
+    sh:deactivated true ;
+    rdfs:label "Inverse of relates_to from Pathology (deactivated)" ;
+    rdfs:comment """ISSUE-2. Pathology --relates_to--> DiseaseLabel is recorded 1:many while
+DiseaseStage --relates_to--> DiseaseLabel and DiseaseStatus --relates_to--> DiseaseLabel are
+recorded many:1, all on the same property. Those readings are mutually exclusive: an inverse
+maxCount of 1 on DiseaseLabel would forbid the many-to-one fan-in the other two rows require.
+This is not merely unconfirmed, it is inconsistent as recorded.""" ;
+
+    sh:property [
+        sh:path [ sh:inversePath sagebrain:relates_to ] ;
+        sh:maxCount 1 ;
+        sh:message "At most one node may relate to this DiseaseLabel." ;
+    ] .
+
+shape:InverseSourceTissueShape
+    a sh:NodeShape ;
+    sh:targetClass sagebrain:Tissue ;
+    sh:deactivated true ;
+    rdfs:label "Inverse of source_tissue (deactivated)" ;
+    rdfs:comment """ISSUE-3. Sample --source_tissue--> Tissue is recorded 1:many, but the row's
+own note reads "One tissue is the source of many samples" -- the opposite orientation. Under the
+recorded value each Tissue would admit at most one Sample; under the note each Sample has at
+most one source Tissue, i.e. many:1 with a forward maxCount instead.""" ;
+
+    sh:property [
+        sh:path [ sh:inversePath sagebrain:source_tissue ] ;
+        sh:maxCount 1 ;
+        sh:message "At most one Sample may draw from this Tissue." ;
+    ] .
+
+shape:InverseHasPathologyShape
+    a sh:NodeShape ;
+    sh:targetClass sagebrain:Pathology ;
+    sh:deactivated true ;
+    rdfs:label "Inverse of has_pathology (deactivated)" ;
+    rdfs:comment """ISSUE-4. Sample --has_pathology--> Pathology is recorded 1:1, and neither
+half of that survives.
+
+The inverse half never did: Pathology is described as a classification node with "multiple
+nodes, disease-specific", so many Samples are expected to share one pathology classification.
+The row is probably many:1, and this shape stays deactivated.
+
+The forward half looked defensible and was active, until writing examples/AD-cohort.ttl
+showed otherwise -- a sample can carry a graded score (CERAD) and a qualitative finding
+(neurofibrillary tangles) at once, which are different kinds of statement rather than
+competing values. That cap is now removed from shape:SampleShape, so the connection is
+unbounded in both directions.""" ;
+
+    sh:property [
+        sh:path [ sh:inversePath sagebrain:has_pathology ] ;
+        sh:maxCount 1 ;
+        sh:message "At most one Sample may carry this Pathology." ;
+    ] .
+
+shape:InverseContainsTissueShape
+    a sh:NodeShape ;
+    sh:targetClass sagebrain:Tissue ;
+    sh:deactivated true ;
+    rdfs:label "Inverse of contains_tissue (deactivated)" ;
+    rdfs:comment """ISSUE-5. contains_tissue is asserted from both Organ and OrganSubregion,
+each recorded 1:many. A single inverse maxCount of 1 on Tissue would forbid a Tissue being
+contained by both an Organ and a sub-region of that organ -- yet the OrganSubregion row's note,
+"A sub-region may also be the source of a tissue", suggests exactly that is intended. Splitting
+into two qualified shapes needs the intended containment semantics settled first.""" ;
+
+    sh:property [
+        sh:path [ sh:inversePath sagebrain:contains_tissue ] ;
+        sh:maxCount 1 ;
+        sh:message "At most one Organ or OrganSubregion may contain this Tissue." ;
+    ] .
+
+shape:InverseHasTrialShape
+    a sh:NodeShape ;
+    sh:targetClass biolink:ClinicalTrial ;
+    sh:deactivated true ;
+    rdfs:label "Inverse of has_trial (deactivated)" ;
+    rdfs:comment """ISSUE-6. DiseaseLabel --has_trial--> ClinicalTrial is recorded 1:many, so
+each trial would belong to at most one disease. Plausible, but nothing in the source model
+corroborates it and basket or platform trials span indications. Left deactivated pending
+confirmation rather than assumed.""" ;
+
+    sh:property [
+        sh:path [ sh:inversePath sagebrain:has_trial ] ;
+        sh:maxCount 1 ;
+        sh:message "At most one DiseaseLabel may claim this ClinicalTrial." ;
+    ] .
+
+###  Active inverse constraints  ################################
+##
+##  Enabled because the source model's own Description or Notes
+##  independently corroborate the orientation, and both endpoints are
+##  instance-level or both are vocabulary-level.
+
+shape:InverseHasSampleShape
+    a sh:NodeShape ;
+    sh:targetClass biolink:MaterialSample ;
+    rdfs:label "Inverse of has_sample" ;
+    rdfs:comment """Active. Corroborated twice in the source model: the Sample description
+"Many samples per individual" and the row note "One individual contributes many samples".
+Both endpoints are instance-level nodes, so the constraint is meaningful.""" ;
+
+    sh:property [
+        sh:path [ sh:inversePath sagebrain:has_sample ] ;
+        sh:maxCount 1 ;
+        sh:message "A Sample may belong to at most one Individual." ;
+    ] .
+
+shape:InverseHasSubregionShape
+    a sh:NodeShape ;
+    sh:targetClass sagebrain:OrganSubregion ;
+    rdfs:label "Inverse of has_subregion" ;
+    rdfs:comment """Active. Corroborated by the OrganSubregion description, "a distinct
+anatomical sub-region within an organ", and its note, "Component of Organ". Both endpoints are
+vocabulary-level anatomical concepts standing in a part-of hierarchy.""" ;
+
+    sh:property [
+        sh:path [ sh:inversePath sagebrain:has_subregion ] ;
+        sh:maxCount 1 ;
+        sh:message "An OrganSubregion may be a sub-region of at most one Organ." ;
+    ] .
+
+
+#################################################################
+#################################################################
+##
+##  4. EDGE WEIGHTS -- NOT YET CONSTRAINABLE
+##
+##  Six connections are marked weighted in the source model:
+##    Gene expressed_in Sample; Individual has_status DiseaseStatus;
+##    Pathway de_associated_with DiseaseStatus; Pathway de_associated_with
+##    DiseaseStage; Pathway associated_with DiseaseLabel;
+##    Sample de_associated_with Pathway.
+##
+##  A weight is a property OF an edge, which plain RDF triples cannot carry.
+##  Validating weights requires first choosing how they are materialised:
+##
+##    (a) not in RDF at all -- weights live only in the property-graph load,
+##        and this ontology stays a schema-level description. No shapes needed.
+##    (b) reification -- introduce an association class carrying source,
+##        target and an xsd:decimal weight. Fully validatable with SHACL today,
+##        but it adds a class to the ontology that the source model does not have.
+##    (c) RDF-star / RDF 1.2 quoted triples -- closest to the property-graph
+##        model, but SHACL support across tooling is still thin.
+##    (d) don't represent the number -- represent its interpretation, as
+##        directional predicates (de_over_* / de_under_*) derived by
+##        thresholding whatever score the method produced. Constrainable with
+##        ordinary sh:class shapes, so this is the one option that needs no new
+##        machinery here; it trades magnitude away and moves the threshold into
+##        the pipeline. See B11 for the full argument.
+##
+##  No shapes are emitted here on purpose: each option implies a different
+##  instance representation, and picking one is a modelling decision rather
+##  than a validation detail. The sagebrain:weighted flag on each object
+##  property records which edges would be in scope.
+##
+#################################################################
+#################################################################

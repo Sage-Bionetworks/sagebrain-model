@@ -1,0 +1,16 @@
+__pycache__/
+*.pyc
+
+# Makefile build artifacts: the merged and pruned TTL plus the converted VOWL
+# JSON. All reproducible from ontology/ with `make json`.
+build/
+
+# ROBOT is 78 MB and is a published release artifact, so should not be committed:
+# `make tools` sets it up along with owl2vowl.jar. OWL2VOWL has no upstream release
+# asset for 0.3.7, so it is fetched from a mirror on Sage-WebVOWL and checksummed --
+# see the OWL2VOWL_URL comment in the Makefile for why that is necessary.
+tools/robot.jar
+tools/owl2vowl.jar
+
+# Scratch directory
+tmp/

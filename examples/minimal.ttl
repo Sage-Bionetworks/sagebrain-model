@@ -1,0 +1,18 @@
+# Minimal pathway example
+
+@prefix sagebrain: <https://w3id.org/synapse/sagebrain#> .
+@prefix biolink:   <https://w3id.org/biolink/vocab/> .
+@prefix rdfs:      <http://www.w3.org/2000/01/rdf-schema#> .
+
+@prefix HGNC:  <http://identifiers.org/hgnc/> .
+@prefix REACT: <http://identifiers.org/reactome/> .
+
+HGNC:613
+    a biolink:Gene ;
+    rdfs:label "APOE" ;
+    sagebrain:participates_in REACT:R-HSA-977225 .
+
+# Pathway imported from Reactome
+REACT:R-HSA-977225
+    a biolink:Pathway ;
+    rdfs:label "Amyloid fiber formation" .

@@ -1,0 +1,3 @@
+[submodule "webvowl"]
+	path = webvowl
+	url = git@github.com:anngvu/Sage-WebVOWL.git
