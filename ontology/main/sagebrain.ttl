@@ -241,10 +241,10 @@ sagebrain:Biodomain
 #    Connections (object properties)
 #
 #    Where a property is used on more than one (source, target) pair, its
-#    rdfs:domain / rdfs:range is the union over those pairs. The union is
-#    deliberately permissive -- it admits combinations the model does not, e.g.
-#    Sample de_associated_with DiseaseStage -- so the permitted pairings are
-#    stated per pair in the shapes graph, and only there.
+#    rdfs:domain / rdfs:range is the union over those pairs. Where a property's
+#    domain and range are each unions, the union is deliberately permissive --
+#    it can admit combinations the model does not intend -- so the permitted
+#    pairings are stated per pair in the shapes graph, and only there.
 #################################################################
 
 sagebrain:tests
@@ -384,14 +384,11 @@ sagebrain:belongs_to
 sagebrain:de_associated_with
     a owl:ObjectProperty ;
     rdfs:label "DE associated with" ;
-    rdfs:comment "Links entities via a differential-expression association." ;
-    rdfs:domain [ a owl:Class ;
-                  owl:unionOf ( biolink:Pathway biolink:MaterialSample ) ] ;
-    rdfs:range [ a owl:Class ;
-                 owl:unionOf ( sagebrain:DiseaseStatus sagebrain:DiseaseStage biolink:Pathway ) ] ;
+    rdfs:comment "Links a material sample to a pathway via a differential-expression result." ;
+    rdfs:domain biolink:MaterialSample ;
+    rdfs:range biolink:Pathway ;
     sagebrain:weighted true ;
     sagebrain:optional true ;
-    skos:editorialNote "Optional. DE state associated with pathway activity." ;
     skos:editorialNote "Optional. Differential expression result linking sample to pathway." ;
     owl:versionInfo "v0.2" .
 

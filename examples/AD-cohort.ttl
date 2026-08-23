@@ -190,13 +190,11 @@ REACT:R-HSA-977225
     a biolink:Pathway ;
     rdfs:label "Amyloid fiber formation" ;
     sagebrain:associated_with MONDO:0004975 ;
-    sagebrain:related_pathway REACT:R-HSA-9664422 ;
-    sagebrain:de_associated_with adkp:BRAAKStage3 .
+    sagebrain:related_pathway REACT:R-HSA-9664422 .
 
 REACT:R-HSA-9664422
     a biolink:Pathway ;
-    rdfs:label "FCGR3A-mediated phagocytosis" ;
-    sagebrain:de_associated_with adkp:BRAAKStage3 .
+    rdfs:label "FCGR3A-mediated phagocytosis" .
 
 ###  Translational  #############################################
 #

@@ -2,11 +2,11 @@
 # tests/validate.py asserts on the expected violation set, so this doubles as
 # documentation of what the shapes actually catch.
 #
-# Defect (a) is the headline: the ontology's OWL axioms PERMIT it, because
-# de_associated_with has a union range covering DiseaseStatus, DiseaseStage and
-# Pathway. Only the per-source-shape sh:class in SHACL rules it out. It is the
-# clearest demonstration of why the constraint layer is not redundant with the
-# T-Box.
+# Defect (a) is the headline: it is only the per-source-shape sh:class on
+# SampleShape that rules it out. Under naive RDFS entailment over
+# de_associated_with's own rdfs:range, this defect would be suppressed the
+# same way defect (c) is -- see VALIDATION CONFIGURATION in
+# sagebrain-shapes.ttl.
 
 @prefix sagebrain: <https://w3id.org/synapse/sagebrain#> .
 @prefix biolink:   <https://w3id.org/biolink/vocab/> .

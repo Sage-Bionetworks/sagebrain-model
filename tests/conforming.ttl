@@ -87,8 +87,7 @@ ex:apoptosisPathway
     a biolink:Pathway ;
     sagebrain:belongs_to ex:neuroinflammation ;
     sagebrain:associated_with ex:ad ;
-    sagebrain:related_pathway ex:synapticPathway ;
-    sagebrain:de_associated_with ex:symptomatic , ex:braakStage3 .
+    sagebrain:related_pathway ex:synapticPathway .
 
 ex:synapticPathway a biolink:Pathway .
 

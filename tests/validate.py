@@ -76,7 +76,7 @@ SH_RESULT_MESSAGE = URIRef("http://www.w3.org/ns/shacl#resultMessage")
 # wording of a message can be edited without breaking the test.
 EXPECTED_VIOLATIONS = {
     "a: per-pair range, Sample de_associated_with DiseaseStage":
-        "From a Sample, de_associated_with may only point to a Pathway",
+        "Sample de_associated_with must point to a Pathway",
     "b: forward cardinality, trial tests two compounds":
         "tests at most one DrugCompound",
     "c: wrong target class, has_diagnosis to a Pathway":

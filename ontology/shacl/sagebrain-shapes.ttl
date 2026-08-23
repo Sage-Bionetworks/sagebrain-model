@@ -30,8 +30,8 @@ Three groups of shapes:
      only state the union over each property's uses. Two things here are strictly
      stronger than the ontology's OWL axioms:
        - sh:class is asserted per (source, target) pair, whereas rdfs:range on a reused
-         property can only state the union of all its targets. The union permits
-         combinations the model does not, e.g. Sample de_associated_with DiseaseStage.
+         property can only state the union of all its targets. Where a property's domain
+         and range are both unions, that union can permit combinations the model does not.
        - cardinality is scoped per source shape, so relates_to can be at most 1 from
          DiseaseStage while remaining unbounded from Pathology.
 
@@ -322,7 +322,7 @@ shape:SampleShape
         sh:name "DE associated with" ;
         sh:class biolink:Pathway ;
         sh:nodeKind sh:IRI ;
-        sh:message "From a Sample, de_associated_with may only point to a Pathway -- not to a DiseaseStage or DiseaseStatus, which are permitted only from a Pathway." ;
+        sh:message "Sample de_associated_with must point to a Pathway." ;
     ] .
 
 ###  Clinical  #################################################
@@ -429,14 +429,6 @@ shape:PathwayShape
         sh:class biolink:Pathway ;
         sh:nodeKind sh:IRI ;
         sh:message "Pathway related_pathway must point to another Pathway." ;
-    ] ;
-    sh:property [
-        sh:path sagebrain:de_associated_with ;
-        sh:name "DE associated with" ;
-        sh:nodeKind sh:IRI ;
-        sh:or ( [ sh:class sagebrain:DiseaseStatus ]
-                [ sh:class sagebrain:DiseaseStage ] ) ;
-        sh:message "From a Pathway, de_associated_with may only point to a DiseaseStatus or a DiseaseStage." ;
     ] .
 
 ###  Translational  ############################################
@@ -674,11 +666,9 @@ vocabulary-level anatomical concepts standing in a part-of hierarchy.""" ;
 ##
 ##  4. EDGE WEIGHTS -- NOT YET CONSTRAINABLE
 ##
-##  Six connections are marked weighted in the source model:
+##  Four connections are marked weighted in the source model:
 ##    Gene expressed_in Sample; Individual has_status DiseaseStatus;
-##    Pathway de_associated_with DiseaseStatus; Pathway de_associated_with
-##    DiseaseStage; Pathway associated_with DiseaseLabel;
-##    Sample de_associated_with Pathway.
+##    Pathway associated_with DiseaseLabel; Sample de_associated_with Pathway.
 ##
 ##  A weight is a property OF an edge, which plain RDF triples cannot carry.
 ##  Validating weights requires first choosing how they are materialised:
