@@ -14,3 +14,17 @@ tools/owl2vowl.jar
 
 # Scratch directory
 tmp/
+
+# Working data for the kg/ ingests -- downloads, generated Turtle, triple
+# stores. Reproducible from the pipelines plus the committed manifests
+# (see kg/README.md).
+/data/
+
+# QLever demo build context: load_qlever.py stages one release's ttl/*.ttl
+# here before `docker build`. Regenerated on every run.
+kg/reactome/qlever/data/
+
+# Explorer: npm deps and the production bundle. Both reproducible with
+# `npm install` / `npm run build` in explorer/ (or `make explore`).
+explorer/node_modules/
+explorer/dist/

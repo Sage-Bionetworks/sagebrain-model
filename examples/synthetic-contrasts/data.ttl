@@ -1,0 +1,247 @@
+@prefix MONDO: <http://purl.obolibrary.org/obo/MONDO_> .
+@prefix REACT: <https://identifiers.org/reactome:> .
+@prefix UBERON: <http://purl.obolibrary.org/obo/UBERON_> .
+@prefix biolink: <https://w3id.org/biolink/vocab/> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sagebrain: <https://w3id.org/synapse/sagebrain#> .
+@prefix syn: <https://w3id.org/synapse/synthetic/contrast/> .
+@prefix syncontrast: <https://w3id.org/synapse/synthetic/contrast/analysis/> .
+@prefix syngroup: <https://w3id.org/synapse/synthetic/contrast/group/> .
+@prefix synresult: <https://w3id.org/synapse/synthetic/contrast/result/> .
+@prefix synstudy: <https://w3id.org/synapse/synthetic/contrast/study/> .
+@prefix synv: <https://w3id.org/synapse/synthetic/contrast/vocab/> .
+@prefix void: <http://rdfs.org/ns/void#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+# SYNTHETIC demonstration data. No study, group, effect estimate or p-value in
+# this file is observed. Reactome, MONDO and UBERON IRIs are real identifiers.
+
+syn:dataset-v1
+    a void:Dataset ;
+    dcterms:title "Synthetic Alzheimer and ALS pathway contrast results" ;
+    dcterms:description "Two case-versus-control pathway activity contrasts with shared, disease-specific and null synthetic results." ;
+    dcterms:hasVersion "1.0.0" ;
+    synv:reactome_release "97" ;
+    synv:significance_threshold "0.05"^^xsd:decimal ;
+    synv:synthetic true .
+
+MONDO:0004975
+    a biolink:Disease ;
+    rdfs:label "Alzheimer disease" .
+
+MONDO:0004976
+    a biolink:Disease ;
+    rdfs:label "amyotrophic lateral sclerosis" .
+
+UBERON:0001384
+    rdfs:label "primary motor cortex" .
+
+synstudy:AD-01
+    a biolink:Study ;
+    rdfs:label "synthetic Alzheimer primary motor cortex study" ;
+    synv:study_disease MONDO:0004975 ;
+    synv:source_tissue UBERON:0001384 ;
+    synv:has_contrast syncontrast:AD-vs-control .
+
+synstudy:ALS-01
+    a biolink:Study ;
+    rdfs:label "synthetic ALS primary motor cortex study" ;
+    synv:study_disease MONDO:0004976 ;
+    synv:source_tissue UBERON:0001384 ;
+    synv:has_contrast syncontrast:ALS-vs-control .
+
+syngroup:AD-cases
+    a synv:StudyGroup ;
+    rdfs:label "Alzheimer cases" ;
+    synv:group_disease MONDO:0004975 ;
+    synv:sample_count 60 .
+
+syngroup:AD-controls
+    a synv:StudyGroup ;
+    rdfs:label "Alzheimer study controls" ;
+    synv:healthy_control true ;
+    synv:sample_count 60 .
+
+syngroup:ALS-cases
+    a synv:StudyGroup ;
+    rdfs:label "ALS cases" ;
+    synv:group_disease MONDO:0004976 ;
+    synv:sample_count 50 .
+
+syngroup:ALS-controls
+    a synv:StudyGroup ;
+    rdfs:label "ALS study controls" ;
+    synv:healthy_control true ;
+    synv:sample_count 50 .
+
+syncontrast:AD-vs-control
+    a synv:PathwayActivityContrast ;
+    rdfs:label "Alzheimer disease versus control pathway activity" ;
+    synv:part_of_study synstudy:AD-01 ;
+    synv:case_group syngroup:AD-cases ;
+    synv:reference_group syngroup:AD-controls ;
+    synv:source_tissue UBERON:0001384 ;
+    synv:analysis_method "linear model of single-sample pathway activity scores" ;
+    synv:effect_measure "standardized mean difference: case minus control" ;
+    synv:multiple_testing_method "Benjamini-Hochberg" ;
+    synv:has_result
+        synresult:AD-TLR4,
+        synresult:AD-chemical-synapse,
+        synresult:AD-cholesterol,
+        synresult:AD-glutamate-release,
+        synresult:AD-mitochondrial-translation ;
+    sagebrain:de_associated_with
+        REACT:R-HSA-166016,
+        REACT:R-HSA-112315,
+        REACT:R-HSA-1655829 ;
+    synv:synthetic true .
+
+syncontrast:ALS-vs-control
+    a synv:PathwayActivityContrast ;
+    rdfs:label "amyotrophic lateral sclerosis versus control pathway activity" ;
+    synv:part_of_study synstudy:ALS-01 ;
+    synv:case_group syngroup:ALS-cases ;
+    synv:reference_group syngroup:ALS-controls ;
+    synv:source_tissue UBERON:0001384 ;
+    synv:analysis_method "linear model of single-sample pathway activity scores" ;
+    synv:effect_measure "standardized mean difference: case minus control" ;
+    synv:multiple_testing_method "Benjamini-Hochberg" ;
+    synv:has_result
+        synresult:ALS-TLR4,
+        synresult:ALS-chemical-synapse,
+        synresult:ALS-cholesterol,
+        synresult:ALS-glutamate-release,
+        synresult:ALS-mitochondrial-translation ;
+    sagebrain:de_associated_with
+        REACT:R-HSA-166016,
+        REACT:R-HSA-112315,
+        REACT:R-HSA-210500 ;
+    synv:synthetic true .
+
+# Shared result: increased in both diseases.
+synresult:AD-TLR4
+    a synv:PathwayContrastResult, biolink:StudyResult ;
+    biolink:subject syncontrast:AD-vs-control ;
+    biolink:object REACT:R-HSA-166016 ;
+    biolink:predicate synv:increased_in_case_group ;
+    biolink:effect_size "0.82"^^xsd:decimal ;
+    biolink:p_value "0.0003"^^xsd:decimal ;
+    biolink:adjusted_p_value "0.004"^^xsd:decimal ;
+    synv:effect_measure "standardized mean difference: case minus control" ;
+    prov:wasGeneratedBy syncontrast:AD-vs-control ;
+    synv:synthetic true .
+
+synresult:ALS-TLR4
+    a synv:PathwayContrastResult, biolink:StudyResult ;
+    biolink:subject syncontrast:ALS-vs-control ;
+    biolink:object REACT:R-HSA-166016 ;
+    biolink:predicate synv:increased_in_case_group ;
+    biolink:effect_size "0.67"^^xsd:decimal ;
+    biolink:p_value "0.0015"^^xsd:decimal ;
+    biolink:adjusted_p_value "0.012"^^xsd:decimal ;
+    synv:effect_measure "standardized mean difference: case minus control" ;
+    prov:wasGeneratedBy syncontrast:ALS-vs-control ;
+    synv:synthetic true .
+
+# Shared result: decreased in both diseases.
+synresult:AD-chemical-synapse
+    a synv:PathwayContrastResult, biolink:StudyResult ;
+    biolink:subject syncontrast:AD-vs-control ;
+    biolink:object REACT:R-HSA-112315 ;
+    biolink:predicate synv:decreased_in_case_group ;
+    biolink:effect_size "-0.74"^^xsd:decimal ;
+    biolink:p_value "0.0008"^^xsd:decimal ;
+    biolink:adjusted_p_value "0.009"^^xsd:decimal ;
+    synv:effect_measure "standardized mean difference: case minus control" ;
+    prov:wasGeneratedBy syncontrast:AD-vs-control ;
+    synv:synthetic true .
+
+synresult:ALS-chemical-synapse
+    a synv:PathwayContrastResult, biolink:StudyResult ;
+    biolink:subject syncontrast:ALS-vs-control ;
+    biolink:object REACT:R-HSA-112315 ;
+    biolink:predicate synv:decreased_in_case_group ;
+    biolink:effect_size "-0.91"^^xsd:decimal ;
+    biolink:p_value "0.0005"^^xsd:decimal ;
+    biolink:adjusted_p_value "0.006"^^xsd:decimal ;
+    synv:effect_measure "standardized mean difference: case minus control" ;
+    prov:wasGeneratedBy syncontrast:ALS-vs-control ;
+    synv:synthetic true .
+
+# Alzheimer-only result. The ALS estimate is retained but is not significant.
+synresult:AD-cholesterol
+    a synv:PathwayContrastResult, biolink:StudyResult ;
+    biolink:subject syncontrast:AD-vs-control ;
+    biolink:object REACT:R-HSA-1655829 ;
+    biolink:predicate synv:decreased_in_case_group ;
+    biolink:effect_size "-0.61"^^xsd:decimal ;
+    biolink:p_value "0.003"^^xsd:decimal ;
+    biolink:adjusted_p_value "0.018"^^xsd:decimal ;
+    synv:effect_measure "standardized mean difference: case minus control" ;
+    prov:wasGeneratedBy syncontrast:AD-vs-control ;
+    synv:synthetic true .
+
+synresult:ALS-cholesterol
+    a synv:PathwayContrastResult, biolink:StudyResult ;
+    biolink:subject syncontrast:ALS-vs-control ;
+    biolink:object REACT:R-HSA-1655829 ;
+    biolink:predicate synv:decreased_in_case_group ;
+    biolink:effect_size "-0.12"^^xsd:decimal ;
+    biolink:p_value "0.18"^^xsd:decimal ;
+    biolink:adjusted_p_value "0.31"^^xsd:decimal ;
+    synv:effect_measure "standardized mean difference: case minus control" ;
+    prov:wasGeneratedBy syncontrast:ALS-vs-control ;
+    synv:synthetic true .
+
+# ALS-only result. The Alzheimer estimate is retained but is not significant.
+synresult:AD-glutamate-release
+    a synv:PathwayContrastResult, biolink:StudyResult ;
+    biolink:subject syncontrast:AD-vs-control ;
+    biolink:object REACT:R-HSA-210500 ;
+    biolink:predicate synv:decreased_in_case_group ;
+    biolink:effect_size "-0.08"^^xsd:decimal ;
+    biolink:p_value "0.49"^^xsd:decimal ;
+    biolink:adjusted_p_value "0.67"^^xsd:decimal ;
+    synv:effect_measure "standardized mean difference: case minus control" ;
+    prov:wasGeneratedBy syncontrast:AD-vs-control ;
+    synv:synthetic true .
+
+synresult:ALS-glutamate-release
+    a synv:PathwayContrastResult, biolink:StudyResult ;
+    biolink:subject syncontrast:ALS-vs-control ;
+    biolink:object REACT:R-HSA-210500 ;
+    biolink:predicate synv:decreased_in_case_group ;
+    biolink:effect_size "-1.05"^^xsd:decimal ;
+    biolink:p_value "0.0001"^^xsd:decimal ;
+    biolink:adjusted_p_value "0.002"^^xsd:decimal ;
+    synv:effect_measure "standardized mean difference: case minus control" ;
+    prov:wasGeneratedBy syncontrast:ALS-vs-control ;
+    synv:synthetic true .
+
+# Null in both studies. Keeping the tested result demonstrates that the query
+# uses the declared threshold rather than treating every result as an alteration.
+synresult:AD-mitochondrial-translation
+    a synv:PathwayContrastResult, biolink:StudyResult ;
+    biolink:subject syncontrast:AD-vs-control ;
+    biolink:object REACT:R-HSA-5368287 ;
+    biolink:predicate synv:increased_in_case_group ;
+    biolink:effect_size "0.11"^^xsd:decimal ;
+    biolink:p_value "0.28"^^xsd:decimal ;
+    biolink:adjusted_p_value "0.44"^^xsd:decimal ;
+    synv:effect_measure "standardized mean difference: case minus control" ;
+    prov:wasGeneratedBy syncontrast:AD-vs-control ;
+    synv:synthetic true .
+
+synresult:ALS-mitochondrial-translation
+    a synv:PathwayContrastResult, biolink:StudyResult ;
+    biolink:subject syncontrast:ALS-vs-control ;
+    biolink:object REACT:R-HSA-5368287 ;
+    biolink:predicate synv:decreased_in_case_group ;
+    biolink:effect_size "-0.09"^^xsd:decimal ;
+    biolink:p_value "0.36"^^xsd:decimal ;
+    biolink:adjusted_p_value "0.51"^^xsd:decimal ;
+    synv:effect_measure "standardized mean difference: case minus control" ;
+    prov:wasGeneratedBy syncontrast:ALS-vs-control ;
+    synv:synthetic true .

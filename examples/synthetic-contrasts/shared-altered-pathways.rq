@@ -1,0 +1,50 @@
+PREFIX MONDO: <http://purl.obolibrary.org/obo/MONDO_>
+PREFIX biolink: <https://w3id.org/biolink/vocab/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX sagebrain: <https://w3id.org/synapse/sagebrain#>
+PREFIX syn: <https://w3id.org/synapse/synthetic/contrast/>
+PREFIX synv: <https://w3id.org/synapse/synthetic/contrast/vocab/>
+
+# Which pathways are altered in both Alzheimer disease and ALS?
+#
+# Self-joining the two contrasts makes the result auditable: each output row
+# shows the direction, effect size and adjusted p-value for both diseases.
+SELECT ?pathway ?pathway_label
+       ?ad_direction ?ad_effect ?ad_adjusted_p
+       ?als_direction ?als_effect ?als_adjusted_p
+WHERE {
+  syn:dataset-v1 synv:significance_threshold ?threshold .
+
+  ?ad_contrast
+      a synv:PathwayActivityContrast ;
+      synv:case_group/synv:group_disease MONDO:0004975 ;
+      sagebrain:de_associated_with ?pathway .
+
+  ?ad_result
+      a synv:PathwayContrastResult ;
+      biolink:subject ?ad_contrast ;
+      biolink:object ?pathway ;
+      biolink:predicate/rdfs:label ?ad_direction ;
+      biolink:effect_size ?ad_effect ;
+      biolink:adjusted_p_value ?ad_adjusted_p .
+
+  ?als_contrast
+      a synv:PathwayActivityContrast ;
+      synv:case_group/synv:group_disease MONDO:0004976 ;
+      sagebrain:de_associated_with ?pathway .
+
+  ?als_result
+      a synv:PathwayContrastResult ;
+      biolink:subject ?als_contrast ;
+      biolink:object ?pathway ;
+      biolink:predicate/rdfs:label ?als_direction ;
+      biolink:effect_size ?als_effect ;
+      biolink:adjusted_p_value ?als_adjusted_p .
+
+  ?pathway a biolink:Pathway ;
+           rdfs:label ?pathway_label .
+
+  FILTER(?ad_adjusted_p <= ?threshold)
+  FILTER(?als_adjusted_p <= ?threshold)
+}
+ORDER BY ?pathway

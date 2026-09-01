@@ -1,0 +1,17 @@
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix sagegov: <https://synapse.org/synbiont/governance/> .
+
+# SHACL shapes that constrain governance access levels
+
+sagegov:AnonymousOrOpenShape a sh:NodeShape ;
+  sh:targetClass sagegov:AnonymousOrOpen ;
+  sh:property [
+    sh:path sagegov:species ;
+    sh:or (
+      [ sh:hasValue sagegov:NonHumanSpecies ]
+      [ sh:message "Anonymous / Open datasets must be non-human" ]
+    ) ;
+  ] .

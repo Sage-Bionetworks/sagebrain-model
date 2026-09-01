@@ -1,0 +1,38 @@
+# Every stored sample-to-pathway result, with the two things that make it
+# interpretable: the DIRECTION (which a plain has_altered_activity_in edge cannot
+# carry) and the REFERENCE GROUP the z score was measured against.
+#
+# ?pathway_label is the join across the graph seam. It is not in data.ttl --
+# pathway nodes are referenced there, never defined -- so this query only
+# answers when the Reactome graph is loaded alongside. That is the design, and
+# running it against data.ttl alone returning zero rows is the correct failure.
+
+PREFIX biolink: <https://w3id.org/biolink/vocab/>
+PREFIX prov: <http://www.w3.org/ns/prov#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX sagebrain: <https://w3id.org/synapse/sagebrain#>
+PREFIX sbkg: <https://w3id.org/sagebrain/vocab/>
+
+SELECT ?pathway_label ?disease_label ?sample ?direction ?z ?adjusted_p ?reference_group
+WHERE {
+  ?result a biolink:StudyResult ;
+          biolink:subject ?sample ;
+          biolink:object ?pathway ;
+          biolink:predicate ?direction ;
+          biolink:z_score ?z ;
+          biolink:adjusted_p_value ?adjusted_p ;
+          prov:wasGeneratedBy ?analysis .
+
+  # Provenance is not decoration: a z score with no reference group is not a
+  # number anyone can act on, because the scale is defined by that group.
+  ?analysis sbkg:reference_group ?reference_group .
+
+  # Disease reaches the sample through the individual, not the sample itself.
+  # A sample is not diseased; the person it came from has a diagnosis.
+  ?individual sagebrain:has_sample ?sample ;
+              sagebrain:has_diagnosis ?disease .
+  ?disease rdfs:label ?disease_label .
+
+  ?pathway rdfs:label ?pathway_label .
+}
+ORDER BY ?pathway_label ?disease_label ?sample

@@ -1,22 +1,27 @@
-# Instance data with seven planted defects, each of which MUST be reported.
+# Instance data with eight planted defects, each of which MUST be reported.
 # tests/validate.py asserts on the expected violation set, so this doubles as
 # documentation of what the shapes actually catch.
 #
 # Defect (a) is the headline: it is only the per-source-shape sh:class on
 # SampleShape that rules it out. Under naive RDFS entailment over
-# de_associated_with's own rdfs:range, this defect would be suppressed the
+# has_altered_activity_in's own rdfs:range, this defect would be suppressed the
 # same way defect (c) is -- see VALIDATION CONFIGURATION in
 # sagebrain-shapes.ttl.
+#
+# Defect (g) is the same mistake made from the other subject. The two properties
+# are domained on different classes on purpose -- a per-sample activity claim vs
+# a per-contrast DE result -- so each needs its own planted defect, or a shape
+# could go missing without any test noticing.
 
 @prefix sagebrain: <https://w3id.org/synapse/sagebrain#> .
 @prefix biolink:   <https://w3id.org/biolink/vocab/> .
 @prefix ex:        <https://example.org/sagebrain-test/> .
 
 # (a) per-pair range violation -- allowed by the OWL union range, forbidden here.
-#     From a Sample, de_associated_with may only reach a Pathway.
+#     From a Sample, has_altered_activity_in may only reach a Pathway.
 ex:samp1
     a biolink:MaterialSample ;
-    sagebrain:de_associated_with ex:braakStage3 .
+    sagebrain:has_altered_activity_in ex:braakStage3 .
 
 # (b) forward cardinality -- tests is many:1, so one trial, one compound.
 ex:trial1
@@ -49,6 +54,12 @@ ex:samp9 a biolink:MaterialSample .
 ex:apoe
     a biolink:Gene ;
     sagebrain:participates_in "KEGG:hsa04010" .
+
+# (g) per-pair range violation on the contrast side -- from a
+#     PathwayActivityContrast, de_associated_with may only reach a Pathway.
+ex:contrast1
+    a sagebrain:PathwayActivityContrast ;
+    sagebrain:de_associated_with ex:braakStage3 .
 
 ###  Supporting well-formed nodes  ##############################
 

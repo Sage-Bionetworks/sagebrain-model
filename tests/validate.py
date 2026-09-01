@@ -7,7 +7,7 @@ Run from the repository root:
 
 Requires rdflib and pyshacl.
 
-Six checks:
+Seven checks:
 
   1. The shapes graph is itself valid SHACL.
   2. The ontology satisfies its own model-integrity shapes -- catches
@@ -31,6 +31,15 @@ Six checks:
      realistic data with real registry identifiers -- but validating them here
      means a model change that would break plausible curator data fails the test
      run rather than being discovered later.
+
+  7. Every prefix the examples share with the kg/ ingests expands to the same base.
+     SHACL cannot catch this: a mistyped base is still a well-formed IRI, so an
+     example edge points at a node that simply does not exist and every shape
+     passes. That is exactly what happened -- examples/ minted Reactome pathways
+     under http://identifiers.org/reactome/ while the ingest used
+     https://identifiers.org/reactome:, so the two graphs could not join, and
+     nothing failed. This check compares the declared bases directly against
+     kg/common/rdf.py, which is the single registry both ingests read.
 
 Inference is deliberately OFF. The ontology is passed as ont_graph so class
 hierarchies resolve, but no entailment is computed: rdfs:range is an entailment
@@ -75,8 +84,8 @@ SH_RESULT_MESSAGE = URIRef("http://www.w3.org/ns/shacl#resultMessage")
 # One entry per planted defect in tests/violating.ttl. Substrings, so the
 # wording of a message can be edited without breaking the test.
 EXPECTED_VIOLATIONS = {
-    "a: per-pair range, Sample de_associated_with DiseaseStage":
-        "Sample de_associated_with must point to a Pathway",
+    "a: per-pair range, Sample has_altered_activity_in DiseaseStage":
+        "Sample has_altered_activity_in must point to a Pathway",
     "b: forward cardinality, trial tests two compounds":
         "tests at most one DrugCompound",
     "c: wrong target class, has_diagnosis to a Pathway":
@@ -87,6 +96,8 @@ EXPECTED_VIOLATIONS = {
         "may belong to at most one Individual",
     "f: node kind, literal edge target":
         "participates_in must point to a Pathway",
+    "g: per-pair range, Contrast de_associated_with DiseaseStage":
+        "Contrast de_associated_with must point to a Pathway",
 }
 
 
@@ -140,6 +151,37 @@ def check_connection_coverage(ontology, shapes):
     """
     connections = set(ontology.subjects(SAGEBRAIN.weighted, None))
     return sorted(local_name(c) for c in connections - constrained_paths(shapes))
+
+
+def check_prefix_agreement():
+    """Compare each example's @prefix bases against the kg/ namespace registry.
+
+    Only prefixes that BOTH sides declare are compared -- examples legitimately
+    use prefixes the ingests have no opinion on (adkp:, NCT:, sample:), and the
+    ingests declare plenty the examples never mention. A prefix nobody shares is
+    not a disagreement.
+    """
+    sys.path.insert(0, str(ROOT))
+    try:
+        from kg.common.rdf import NAMESPACES
+    except ImportError as error:
+        return [f"SKIP  kg/common/rdf.py not importable ({error})"]
+
+    lines, shared_total = [], 0
+    for path in EXAMPLES:
+        declared = dict(load(path).namespace_manager.namespaces())
+        shared = sorted(set(declared) & set(NAMESPACES))
+        bad = [(p, declared[p], NAMESPACES[p]) for p in shared
+               if str(declared[p]) != NAMESPACES[p]]
+        shared_total += len(shared)
+        for prefix, got, want in bad:
+            lines.append(f"MISMATCH  {path.name}: {prefix}: is <{got}>, "
+                         f"kg/common/rdf.py says <{want}>")
+        if not bad:
+            lines.append(f"PASS  {path.name} ({len(shared)} shared prefix(es))")
+    if not shared_total:
+        lines.append("SKIP  no prefix is declared by both an example and the registry")
+    return lines
 
 
 def main():
@@ -205,6 +247,14 @@ def main():
         if not conforms:
             failures.append(f"example does not conform -- {example.name}")
             print(text)
+
+    # 7. examples and ingests must agree on what a prefix means
+    print("[7] example prefixes agree with the ingest registry:")
+    for line in check_prefix_agreement():
+        print(f"      {line}")
+        if line.startswith("MISMATCH") or line.startswith("SKIP"):
+            if line.startswith("MISMATCH"):
+                failures.append(f"prefix disagreement -- {line}")
 
     print()
     if failures:

@@ -38,12 +38,18 @@ ex:samp1
     a biolink:MaterialSample ;
     sagebrain:source_tissue ex:cortexTissue ;
     sagebrain:has_pathology ex:plaqueBurden ;
-    sagebrain:de_associated_with ex:apoptosisPathway .
+    sagebrain:has_altered_activity_in ex:apoptosisPathway .
 
 ex:samp2
     a biolink:MaterialSample ;
     sagebrain:source_tissue ex:cortexTissue ;
     sagebrain:has_pathology ex:plaqueBurden .
+
+###  Systems biology  ###########################################
+
+ex:contrast1
+    a sagebrain:PathwayActivityContrast ;
+    sagebrain:de_associated_with ex:apoptosisPathway .
 
 ###  Anatomy  ###################################################
 

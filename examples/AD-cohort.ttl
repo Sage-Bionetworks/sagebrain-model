@@ -4,15 +4,20 @@
 # trial, with real identifiers throughout. Validated on every run of
 # tests/validate.py.
 #
-# It exercises 17 of the model's 19 connections. The two it leaves out are the
-# point of the last section below: an example that cannot be written honestly is
-# telling us something about the model.
+# It exercises 17 of the model's 20 connections. The three it leaves out are the
+# point of the "Not in example" section below: an example that cannot be written
+# honestly is telling us something about the model.
 #
 # IDENTIFIERS
 #
 # Resolved against the source registry (genenames.org, OLS, Reactome,
-# ClinicalTrials.gov) rather than recalled. Prefixes follow Biolink's prefix map,
-# since the model reuses Biolink terms.
+# ClinicalTrials.gov) rather than recalled. Prefix bases match the kg/ ingests --
+# kg/common/rdf.py is the one registry both sides read -- so every REACT: and HGNC:
+# node here exists in the ingested Reactome graph. Verified: all five resolve.
+#
+# Not "Biolink's prefix map", which this comment used to claim: Biolink declares no
+# REACT prefix, and via its default_curi_maps that CURIE expands to a Reactome
+# web-UI URL rather than an identifiers.org IRI.
 #
 #   HGNC:613            gene            APOE, ENSG00000130203
 #   HGNC:620            gene            APP, ENSG00000142192
@@ -45,17 +50,25 @@
 #
 #   sagebrain:belongs_to    Biodomain has no vocabulary either: no ontology, and no
 #     column in the AD model.
+#
+#   sagebrain:de_associated_with    Since v0.3 this hangs off a
+#     sagebrain:PathwayActivityContrast, not a sample: a differential-expression
+#     result is a property of a case-versus-control comparison over many samples.
+#     This file is a cohort slice with no analysis in it, so there is no honest
+#     subject for the edge here. The per-sample claim below is
+#     has_altered_activity_in instead, which is what it should always have been --
+#     two participants' worth of samples cannot carry a DE result.
 
 @prefix sagebrain: <https://w3id.org/synapse/sagebrain#> .
 @prefix biolink:   <https://w3id.org/biolink/vocab/> .
 @prefix rdfs:      <http://www.w3.org/2000/01/rdf-schema#> .
 
-@prefix HGNC:   <http://identifiers.org/hgnc/> .
+@prefix HGNC:   <https://identifiers.org/hgnc:> .
 @prefix MONDO:  <http://purl.obolibrary.org/obo/MONDO_> .
 @prefix UBERON: <http://purl.obolibrary.org/obo/UBERON_> .
 @prefix HP:     <http://purl.obolibrary.org/obo/HP_> .
 @prefix CHEBI:  <http://purl.obolibrary.org/obo/CHEBI_> .
-@prefix REACT:  <http://identifiers.org/reactome/> .
+@prefix REACT:  <https://identifiers.org/reactome:> .
 @prefix NCT:    <http://identifiers.org/clinicaltrials/> .
 
 # AD Knowledge Portal data model terms. PROVISIONAL: the model is a CSV today and
@@ -97,7 +110,7 @@ sample:01
     rdfs:label "participant 01 cerebral cortex" ;
     sagebrain:source_tissue UBERON:0000956 ;
     sagebrain:has_pathology adkp:FrequentDefiniteC3 ;
-    sagebrain:de_associated_with REACT:R-HSA-977225 .
+    sagebrain:has_altered_activity_in REACT:R-HSA-977225 .
 
 sample:02
     a biolink:MaterialSample ;

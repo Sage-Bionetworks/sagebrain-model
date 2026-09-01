@@ -1,0 +1,126 @@
+@prefix biolink: <https://w3id.org/biolink/vocab/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sagebrain: <https://w3id.org/synapse/sagebrain#> .
+@prefix synv: <https://w3id.org/synapse/synthetic/contrast/vocab/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+# Prototype vocabulary used only by this synthetic contrast fixture. These terms
+# are deliberately outside the production sagebrain: namespace: the fixture is a
+# concrete proposal for review, not an implicit ontology migration.
+
+# Now a subclass of the production class rather than a free-standing proposal.
+# sagebrain:de_associated_with is domained on sagebrain:PathwayActivityContrast as
+# of model v0.3, so this subClassOf is what makes the fixture's use of that
+# predicate correct rather than merely tolerated -- and it is what lets
+# sh:targetClass reach these contrasts, since SHACL traverses rdfs:subClassOf*.
+synv:PathwayActivityContrast
+    a owl:Class ;
+    rdfs:label "pathway activity contrast" ;
+    rdfs:subClassOf prov:Activity , sagebrain:PathwayActivityContrast ;
+    rdfs:comment "A comparison of pathway-level activity between a case group and a reference group." .
+
+synv:StudyGroup
+    a owl:Class ;
+    rdfs:label "study group" ;
+    rdfs:subClassOf prov:Entity .
+
+synv:PathwayContrastResult
+    a owl:Class ;
+    rdfs:label "pathway contrast result" ;
+    rdfs:subClassOf biolink:StudyResult ;
+    rdfs:comment "A pathway-level effect estimate and significance result produced by one contrast." .
+
+synv:has_contrast
+    a owl:ObjectProperty ;
+    rdfs:label "has contrast" ;
+    rdfs:range synv:PathwayActivityContrast .
+
+synv:part_of_study
+    a owl:ObjectProperty ;
+    rdfs:label "part of study" ;
+    rdfs:domain synv:PathwayActivityContrast .
+
+synv:case_group
+    a owl:ObjectProperty ;
+    rdfs:label "case group" ;
+    rdfs:domain synv:PathwayActivityContrast ;
+    rdfs:range synv:StudyGroup .
+
+synv:reference_group
+    a owl:ObjectProperty ;
+    rdfs:label "reference group" ;
+    rdfs:domain synv:PathwayActivityContrast ;
+    rdfs:range synv:StudyGroup .
+
+synv:group_disease
+    a owl:ObjectProperty ;
+    rdfs:label "group disease" ;
+    rdfs:domain synv:StudyGroup ;
+    rdfs:range biolink:Disease .
+
+synv:source_tissue
+    a owl:ObjectProperty ;
+    rdfs:label "source tissue" .
+
+synv:has_result
+    a owl:ObjectProperty ;
+    rdfs:label "has result" ;
+    rdfs:domain synv:PathwayActivityContrast ;
+    rdfs:range synv:PathwayContrastResult .
+
+synv:increased_in_case_group
+    a owl:ObjectProperty ;
+    rdfs:label "increased in case group" ;
+    rdfs:subPropertyOf biolink:associated_with .
+
+synv:decreased_in_case_group
+    a owl:ObjectProperty ;
+    rdfs:label "decreased in case group" ;
+    rdfs:subPropertyOf biolink:associated_with .
+
+synv:study_disease
+    a owl:ObjectProperty ;
+    rdfs:label "study disease" ;
+    rdfs:range biolink:Disease .
+
+synv:sample_count
+    a owl:DatatypeProperty ;
+    rdfs:label "sample count" ;
+    rdfs:range xsd:integer .
+
+synv:healthy_control
+    a owl:DatatypeProperty ;
+    rdfs:label "healthy control" ;
+    rdfs:range xsd:boolean .
+
+synv:analysis_method
+    a owl:DatatypeProperty ;
+    rdfs:label "analysis method" ;
+    rdfs:range xsd:string .
+
+synv:effect_measure
+    a owl:DatatypeProperty ;
+    rdfs:label "effect measure" ;
+    rdfs:range xsd:string .
+
+synv:multiple_testing_method
+    a owl:DatatypeProperty ;
+    rdfs:label "multiple-testing method" ;
+    rdfs:range xsd:string .
+
+synv:significance_threshold
+    a owl:DatatypeProperty ;
+    rdfs:label "significance threshold" ;
+    rdfs:range xsd:decimal .
+
+synv:reactome_release
+    a owl:DatatypeProperty ;
+    rdfs:label "Reactome release" ;
+    rdfs:range xsd:string .
+
+synv:synthetic
+    a owl:DatatypeProperty ;
+    rdfs:label "synthetic" ;
+    rdfs:range xsd:boolean .

@@ -1,0 +1,345 @@
+@prefix MONDO: <http://purl.obolibrary.org/obo/MONDO_> .
+@prefix NCBITaxon: <http://purl.obolibrary.org/obo/NCBITaxon_> .
+@prefix REACT: <https://identifiers.org/reactome:> .
+@prefix UBERON: <http://purl.obolibrary.org/obo/UBERON_> .
+@prefix biolink: <https://w3id.org/biolink/vocab/> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix infores: <https://w3id.org/biolink/infores/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sagebrain: <https://w3id.org/synapse/sagebrain#> .
+@prefix sbkg: <https://w3id.org/sagebrain/vocab/> .
+@prefix synind: <https://w3id.org/synapse/synthetic/individual/> .
+@prefix synrun: <https://w3id.org/synapse/synthetic/analysis/> .
+@prefix synsample: <https://w3id.org/synapse/synthetic/sample/> .
+@prefix synstudy: <https://w3id.org/synapse/synthetic/study/> .
+
+# Sample-to-pathway output, as it would be loaded into <urn:sagebrain:synthetic:v1>.
+#
+# NOT hand-written: cut from a real pipeline run by
+# kg/synthetic/make_example.py, which asserts that every triple here is
+# present in the full output. Regenerate rather than edit.
+#
+# 4 samples out of 150, and 11 of the 3,759
+# materialised results. The curated pathways carry the whole argument:
+#
+#   REACT:R-HSA-166016     shared, positive -- up in cases of both diseases
+#   REACT:R-HSA-112315     shared, negative -- down in cases of both diseases
+#   REACT:R-HSA-1655829    replicated in both AD cohorts, absent from ALS
+#   REACT:R-HSA-8978868    DISCORDANT -- down in AD, up in ALS
+#   REACT:R-HSA-5368287    the batch decoy -- deliberately has NO results
+#
+# The decoy has NO results on purpose. Grep this file for R-HSA-5368287 and
+# you will find nothing: it carries a library-chemistry offset applied to cases
+# AND controls alike, so standardising each sample against its own study's
+# controls removes it, and nothing is materialised. The fixture's central claim
+# is expressed here as an absent triple.
+#
+# The control sample is included for the same reason. It has a sample node and
+# no result node -- it is the reference group the other samples' z scores are
+# measured against, so a file that showed only samples with edges would imply
+# the reference was missing from the data.
+#
+# Pathway nodes are REFERENCED, never defined: they belong to
+# <urn:sagebrain:reactome:v97> and are minted by kg/reactome/. That seam is the
+# design -- a Reactome release refresh stays drop-and-reload with no blast
+# radius here. Run validate.py to resolve the labels across it.
+#
+# SYNTHETIC. No participant, sample, count or score below was observed.
+
+# ── STUDIES  — one per cohort, each with its own reference group ──────────────
+
+synstudy:SYN-AD-1 a biolink:Study ;
+    rdfs:label "synthetic AD cortex study 1" ;
+    dcterms:description "polyA-selected, 100bp paired-end" ;
+    sbkg:case_count 30 ;
+    sbkg:control_count 30 ;
+    sbkg:study_disease MONDO:0004975 .
+
+synstudy:SYN-AD-2 a biolink:Study ;
+    rdfs:label "synthetic AD cortex study 2 (replication)" ;
+    dcterms:description "polyA-selected, 150bp paired-end" ;
+    sbkg:case_count 20 ;
+    sbkg:control_count 20 ;
+    sbkg:study_disease MONDO:0004975 .
+
+synstudy:SYN-ALS-1 a biolink:Study ;
+    rdfs:label "synthetic ALS motor cortex study 1" ;
+    dcterms:description "ribo-depleted total RNA, 75bp paired-end" ;
+    sbkg:case_count 25 ;
+    sbkg:control_count 25 ;
+    sbkg:study_disease MONDO:0004976 .
+
+# ── DISEASES  — real MONDO terms, resolved not recalled ───────────────────────
+
+MONDO:0004975 a biolink:Disease ;
+    rdfs:label "Alzheimer disease" .
+
+MONDO:0004976 a biolink:Disease ;
+    rdfs:label "amyotrophic lateral sclerosis" .
+
+# ── INDIVIDUALS  — one sample each; two aliquots of one brain are not two observations ────
+
+synind:SYN-AD-1-IND-CASE-002 a sagebrain:Case ;
+    rdfs:label "SYN-AD-1-IND-CASE-002" ;
+    sagebrain:has_diagnosis MONDO:0004975 ;
+    sagebrain:has_sample synsample:SYN-AD-1-CASE-002 .
+
+synind:SYN-AD-1-IND-CTRL-001 a sagebrain:Control ;
+    rdfs:label "SYN-AD-1-IND-CTRL-001" ;
+    sagebrain:has_sample synsample:SYN-AD-1-CTRL-001 .
+
+synind:SYN-AD-2-IND-CASE-006 a sagebrain:Case ;
+    rdfs:label "SYN-AD-2-IND-CASE-006" ;
+    sagebrain:has_diagnosis MONDO:0004975 ;
+    sagebrain:has_sample synsample:SYN-AD-2-CASE-006 .
+
+synind:SYN-ALS-1-IND-CASE-001 a sagebrain:Case ;
+    rdfs:label "SYN-ALS-1-IND-CASE-001" ;
+    sagebrain:has_diagnosis MONDO:0004976 ;
+    sagebrain:has_sample synsample:SYN-ALS-1-CASE-001 .
+
+# ── SAMPLES  — sagebrain:has_altered_activity_in is the plain traversal edge; it cannot say 'down' ────
+
+synsample:SYN-AD-1-CASE-002 a biolink:MaterialSample ;
+    rdfs:label "SYN-AD-1-CASE-002" ;
+    biolink:in_taxon NCBITaxon:9606 ;
+    sbkg:from_study synstudy:SYN-AD-1 ;
+    sagebrain:has_altered_activity_in REACT:R-HSA-112315,
+        REACT:R-HSA-1655829,
+        REACT:R-HSA-166016,
+        REACT:R-HSA-8978868 ;
+    sagebrain:source_tissue UBERON:0000956 .
+
+synsample:SYN-AD-1-CTRL-001 a biolink:MaterialSample ;
+    rdfs:label "SYN-AD-1-CTRL-001" ;
+    biolink:in_taxon NCBITaxon:9606 ;
+    sbkg:from_study synstudy:SYN-AD-1 ;
+    sagebrain:source_tissue UBERON:0000956 .
+
+synsample:SYN-AD-2-CASE-006 a biolink:MaterialSample ;
+    rdfs:label "SYN-AD-2-CASE-006" ;
+    biolink:in_taxon NCBITaxon:9606 ;
+    sbkg:from_study synstudy:SYN-AD-2 ;
+    sagebrain:has_altered_activity_in REACT:R-HSA-112315,
+        REACT:R-HSA-1655829,
+        REACT:R-HSA-166016,
+        REACT:R-HSA-8978868 ;
+    sagebrain:source_tissue UBERON:0000956 .
+
+synsample:SYN-ALS-1-CASE-001 a biolink:MaterialSample ;
+    rdfs:label "SYN-ALS-1-CASE-001" ;
+    biolink:in_taxon NCBITaxon:9606 ;
+    sbkg:from_study synstudy:SYN-ALS-1 ;
+    sagebrain:has_altered_activity_in REACT:R-HSA-112315,
+        REACT:R-HSA-166016,
+        REACT:R-HSA-8978868 ;
+    sagebrain:source_tissue UBERON:0001384 .
+
+# ── ANALYSES  — what makes the z scores comparable: the reference group, the unit, the gene universe ────
+
+synrun:SYN-AD-1-singscore-reactome-v97 a prov:Activity,
+        sbkg:PathwayScoringAnalysis ;
+    rdfs:label "singscore pathway activity, SYN-AD-1, Reactome v97" ;
+    dcterms:description "Only results passing both thresholds are materialised as triples. The complete score table for every (sample, pathway) pair is the out-of-band file named in sbkg:full_result_table, so the threshold above can be re-derived rather than trusted." ;
+    prov:used synstudy:SYN-AD-1 ;
+    sbkg:expression_unit "log2(TPM + 1)" ;
+    sbkg:fdr_threshold 0.05 ;
+    sbkg:full_result_table "interim/scores.tsv.gz" ;
+    sbkg:gene_set_max_size 500 ;
+    sbkg:gene_set_min_size 15 ;
+    sbkg:gene_set_release "v97" ;
+    sbkg:gene_set_source infores:reactome ;
+    sbkg:gene_universe_digest "sha256:81fe01e4fd4f5b7c" ;
+    sbkg:gene_universe_size 19297 ;
+    sbkg:reference_group "the 30 control samples of SYN-AD-1; leave-one-out for control samples themselves" ;
+    sbkg:results_materialised 1508 ;
+    sbkg:sample_intrinsic true ;
+    sbkg:scoring_method "singscore" ;
+    sbkg:scoring_method_variant "unidirectional normalised mean rank, centred on zero" ;
+    sbkg:statistic "z = (score - mean(reference)) / sd(reference); p from Student t on n-1 df with sqrt(1 + 1/n) prediction scaling; BH within study" ;
+    sbkg:synthetic true ;
+    sbkg:tests_performed 78960 ;
+    sbkg:z_threshold 2.0 .
+
+synrun:SYN-AD-2-singscore-reactome-v97 a prov:Activity,
+        sbkg:PathwayScoringAnalysis ;
+    rdfs:label "singscore pathway activity, SYN-AD-2, Reactome v97" ;
+    dcterms:description "Only results passing both thresholds are materialised as triples. The complete score table for every (sample, pathway) pair is the out-of-band file named in sbkg:full_result_table, so the threshold above can be re-derived rather than trusted." ;
+    prov:used synstudy:SYN-AD-2 ;
+    sbkg:expression_unit "log2(TPM + 1)" ;
+    sbkg:fdr_threshold 0.05 ;
+    sbkg:full_result_table "interim/scores.tsv.gz" ;
+    sbkg:gene_set_max_size 500 ;
+    sbkg:gene_set_min_size 15 ;
+    sbkg:gene_set_release "v97" ;
+    sbkg:gene_set_source infores:reactome ;
+    sbkg:gene_universe_digest "sha256:81fe01e4fd4f5b7c" ;
+    sbkg:gene_universe_size 19297 ;
+    sbkg:reference_group "the 20 control samples of SYN-AD-2; leave-one-out for control samples themselves" ;
+    sbkg:results_materialised 1279 ;
+    sbkg:sample_intrinsic true ;
+    sbkg:scoring_method "singscore" ;
+    sbkg:scoring_method_variant "unidirectional normalised mean rank, centred on zero" ;
+    sbkg:statistic "z = (score - mean(reference)) / sd(reference); p from Student t on n-1 df with sqrt(1 + 1/n) prediction scaling; BH within study" ;
+    sbkg:synthetic true ;
+    sbkg:tests_performed 52640 ;
+    sbkg:z_threshold 2.0 .
+
+synrun:SYN-ALS-1-singscore-reactome-v97 a prov:Activity,
+        sbkg:PathwayScoringAnalysis ;
+    rdfs:label "singscore pathway activity, SYN-ALS-1, Reactome v97" ;
+    dcterms:description "Only results passing both thresholds are materialised as triples. The complete score table for every (sample, pathway) pair is the out-of-band file named in sbkg:full_result_table, so the threshold above can be re-derived rather than trusted." ;
+    prov:used synstudy:SYN-ALS-1 ;
+    sbkg:expression_unit "log2(TPM + 1)" ;
+    sbkg:fdr_threshold 0.05 ;
+    sbkg:full_result_table "interim/scores.tsv.gz" ;
+    sbkg:gene_set_max_size 500 ;
+    sbkg:gene_set_min_size 15 ;
+    sbkg:gene_set_release "v97" ;
+    sbkg:gene_set_source infores:reactome ;
+    sbkg:gene_universe_digest "sha256:81fe01e4fd4f5b7c" ;
+    sbkg:gene_universe_size 19297 ;
+    sbkg:reference_group "the 25 control samples of SYN-ALS-1; leave-one-out for control samples themselves" ;
+    sbkg:results_materialised 972 ;
+    sbkg:sample_intrinsic true ;
+    sbkg:scoring_method "singscore" ;
+    sbkg:scoring_method_variant "unidirectional normalised mean rank, centred on zero" ;
+    sbkg:statistic "z = (score - mean(reference)) / sd(reference); p from Student t on n-1 df with sqrt(1 + 1/n) prediction scaling; BH within study" ;
+    sbkg:synthetic true ;
+    sbkg:tests_performed 65800 ;
+    sbkg:z_threshold 2.0 .
+
+# ── RESULTS  — the reified edge, where the direction and the statistics live ────
+
+[] a biolink:StudyResult ;
+    prov:wasGeneratedBy synrun:SYN-AD-1-singscore-reactome-v97 ;
+    biolink:adjusted_p_value 0.000000577198 ;
+    biolink:object REACT:R-HSA-8978868 ;
+    biolink:p_value 0.00000000020468 ;
+    biolink:predicate biolink:negatively_correlated_with ;
+    biolink:subject synsample:SYN-AD-1-CASE-002 ;
+    biolink:z_score -9.6652 ;
+    sbkg:enrichment_score -0.116962 ;
+    sbkg:gene_set_size 139 ;
+    sbkg:rank_dispersion 0.201105 .
+
+[] a biolink:StudyResult ;
+    prov:wasGeneratedBy synrun:SYN-AD-2-singscore-reactome-v97 ;
+    biolink:adjusted_p_value 0.000407953 ;
+    biolink:object REACT:R-HSA-112315 ;
+    biolink:p_value 0.00000101523 ;
+    biolink:predicate biolink:negatively_correlated_with ;
+    biolink:subject synsample:SYN-AD-2-CASE-006 ;
+    biolink:z_score -7.2359 ;
+    sbkg:enrichment_score -0.159485 ;
+    sbkg:gene_set_size 243 ;
+    sbkg:rank_dispersion 0.201718 .
+
+[] a biolink:StudyResult ;
+    prov:wasGeneratedBy synrun:SYN-AD-2-singscore-reactome-v97 ;
+    biolink:adjusted_p_value 0.00356367 ;
+    biolink:object REACT:R-HSA-1655829 ;
+    biolink:p_value 0.0000316154 ;
+    biolink:predicate biolink:negatively_correlated_with ;
+    biolink:subject synsample:SYN-AD-2-CASE-006 ;
+    biolink:z_score -5.5505 ;
+    sbkg:enrichment_score -0.047850 ;
+    sbkg:gene_set_size 44 ;
+    sbkg:rank_dispersion 0.228613 .
+
+[] a biolink:StudyResult ;
+    prov:wasGeneratedBy synrun:SYN-AD-2-singscore-reactome-v97 ;
+    biolink:adjusted_p_value 0.000652842 ;
+    biolink:object REACT:R-HSA-166016 ;
+    biolink:p_value 0.0000024928 ;
+    biolink:predicate biolink:positively_correlated_with ;
+    biolink:subject synsample:SYN-AD-2-CASE-006 ;
+    biolink:z_score 6.7785 ;
+    sbkg:enrichment_score 0.117283 ;
+    sbkg:gene_set_size 130 ;
+    sbkg:rank_dispersion 0.205247 .
+
+[] a biolink:StudyResult ;
+    prov:wasGeneratedBy synrun:SYN-AD-2-singscore-reactome-v97 ;
+    biolink:adjusted_p_value 0.00104126 ;
+    biolink:object REACT:R-HSA-8978868 ;
+    biolink:p_value 0.00000486605 ;
+    biolink:predicate biolink:negatively_correlated_with ;
+    biolink:subject synsample:SYN-AD-2-CASE-006 ;
+    biolink:z_score -6.4465 ;
+    sbkg:enrichment_score -0.094014 ;
+    sbkg:gene_set_size 139 ;
+    sbkg:rank_dispersion 0.214483 .
+
+[] a biolink:StudyResult ;
+    prov:wasGeneratedBy synrun:SYN-ALS-1-singscore-reactome-v97 ;
+    biolink:adjusted_p_value 0.00000043293 ;
+    biolink:object REACT:R-HSA-112315 ;
+    biolink:p_value 0.0000000000394769 ;
+    biolink:predicate biolink:negatively_correlated_with ;
+    biolink:subject synsample:SYN-ALS-1-CASE-001 ;
+    biolink:z_score -11.5712 ;
+    sbkg:enrichment_score -0.267832 ;
+    sbkg:gene_set_size 243 ;
+    sbkg:rank_dispersion 0.140104 .
+
+[] a biolink:StudyResult ;
+    prov:wasGeneratedBy synrun:SYN-ALS-1-singscore-reactome-v97 ;
+    biolink:adjusted_p_value 0.000942457 ;
+    biolink:object REACT:R-HSA-166016 ;
+    biolink:p_value 0.00000274331 ;
+    biolink:predicate biolink:positively_correlated_with ;
+    biolink:subject synsample:SYN-ALS-1-CASE-001 ;
+    biolink:z_score 6.2089 ;
+    sbkg:enrichment_score 0.089749 ;
+    sbkg:gene_set_size 130 ;
+    sbkg:rank_dispersion 0.232955 .
+
+[] a biolink:StudyResult ;
+    prov:wasGeneratedBy synrun:SYN-ALS-1-singscore-reactome-v97 ;
+    biolink:adjusted_p_value 0.0000015174 ;
+    biolink:object REACT:R-HSA-8978868 ;
+    biolink:p_value 0.00000000018621 ;
+    biolink:predicate biolink:positively_correlated_with ;
+    biolink:subject synsample:SYN-ALS-1-CASE-001 ;
+    biolink:z_score 10.7130 ;
+    sbkg:enrichment_score 0.173288 ;
+    sbkg:gene_set_size 139 ;
+    sbkg:rank_dispersion 0.153728 .
+
+[] a biolink:StudyResult ;
+    prov:wasGeneratedBy synrun:SYN-AD-1-singscore-reactome-v97 ;
+    biolink:adjusted_p_value 0.000102098 ;
+    biolink:object REACT:R-HSA-112315 ;
+    biolink:p_value 0.00000026378 ;
+    biolink:predicate biolink:negatively_correlated_with ;
+    biolink:subject synsample:SYN-AD-1-CASE-002 ;
+    biolink:z_score -6.7720 ;
+    sbkg:enrichment_score -0.191345 ;
+    sbkg:gene_set_size 243 ;
+    sbkg:rank_dispersion 0.190242 .
+
+[] a biolink:StudyResult ;
+    prov:wasGeneratedBy synrun:SYN-AD-1-singscore-reactome-v97 ;
+    biolink:adjusted_p_value 0.0000157437 ;
+    biolink:object REACT:R-HSA-1655829 ;
+    biolink:p_value 0.0000000155523 ;
+    biolink:predicate biolink:negatively_correlated_with ;
+    biolink:subject synsample:SYN-AD-1-CASE-002 ;
+    biolink:z_score -7.8675 ;
+    sbkg:enrichment_score -0.115647 ;
+    sbkg:gene_set_size 44 ;
+    sbkg:rank_dispersion 0.201166 .
+
+[] a biolink:StudyResult ;
+    prov:wasGeneratedBy synrun:SYN-AD-1-singscore-reactome-v97 ;
+    biolink:adjusted_p_value 0.000469791 ;
+    biolink:object REACT:R-HSA-166016 ;
+    biolink:p_value 0.00000213001 ;
+    biolink:predicate biolink:positively_correlated_with ;
+    biolink:subject synsample:SYN-AD-1-CASE-002 ;
+    biolink:z_score 5.9916 ;
+    sbkg:enrichment_score 0.073115 ;
+    sbkg:gene_set_size 130 ;
+    sbkg:rank_dispersion 0.249494 .

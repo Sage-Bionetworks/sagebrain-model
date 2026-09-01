@@ -46,6 +46,20 @@ python tests/validate.py
 
 ## Visualization
 
+Two different graphs get visualized here, and they are not the same thing:
+
+| | ontology (TBox) | data (ABox) |
+|---|---|---|
+| Command | `make viz` | `make explore` |
+| Shows | ~60 classes and properties | 1.2M triples of Reactome + synthetic cohorts |
+| Tool | WebVOWL | [Reactodia](https://github.com/reactodia/reactodia-workspace) over Oxigraph |
+| Answers | what the model *can* say | what the data *does* say |
+
+The ontology viewer is described below; the data explorer lives in
+[`explorer/`](explorer/README.md).
+
+### Ontology
+
 The graph is rendered by [Sage-WebVOWL](https://github.com/anngvu/Sage-WebVOWL),
 a fork of [WebVOWL](https://github.com/VisualDataWeb/WebVOWL) tailored to these
 ontologies. It is vendored here as a git submodule at `webvowl/`.
@@ -66,7 +80,7 @@ Or, in a clone that already exists:
 git submodule update --init --recursive
 ```
 
-### Updating the viewer
+#### Updating the viewer
 
 The submodule is pinned to a specific commit; update deliberately with a commit:
 

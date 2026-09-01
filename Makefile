@@ -15,7 +15,13 @@
 #   make watch      just the ontology watcher (if the dev server already runs)
 #   make config     print the resolved paths
 #
-# Overridable: ROBOT_JAR, OWL2VOWL_JAR, WEBVOWL_DIR, WATCH_INTERVAL.
+#   make kg-serve   serve the loaded KG (Reactome + synthetic) as SPARQL
+#   make explore    browse that KG as an interactive graph (Reactodia)
+#   make kg-probe   check the explorer's config against the live store
+#   make kg-stop    stop the SPARQL endpoint
+#
+# Overridable: ROBOT_JAR, OWL2VOWL_JAR, WEBVOWL_DIR, WATCH_INTERVAL,
+# OXIGRAPH_VERSION, KG_STORE, KG_PORT, EXPLORER_PORT.
 
 ROBOT_JAR      ?= tools/robot.jar
 OWL2VOWL_JAR   ?= tools/owl2vowl.jar
@@ -149,7 +155,8 @@ $(foreach src,$(ONTOLOGY_SOURCES),$(if $(wildcard $(src)),,$(error Ontology modu
 $(if $(WITH_GOVERNANCE),$(if $(GOVERNANCE_MODULES),,$(error WITH_GOVERNANCE=1 but ontology/governance/ holds no .ttl files -- the governance modules are not committed, see the note in TODO.md)))
 endif
 
-.PHONY: all json viz serve dev watch config tools imports check-submodule clean FORCE
+.PHONY: all json viz serve dev watch config tools imports check-submodule clean FORCE \
+        kg-serve kg-stop kg-probe explore
 
 all: viz
 
@@ -350,6 +357,85 @@ FORCE:
 # Depends on the installed ontology, so the build always bundles it.
 $(WEBVOWL_DEPLOY_INDEX): $(WEBVOWL_DATA) $(WEBVOWL_NODE_STAMP) $(VIEWER_BUILD_CHANGED)
 	cd $(WEBVOWL_DIR) && npm run $(VIEWER_BUILD)
+
+# --- KG data explorer ------------------------------------------------------
+#
+# Two different graphs get visualized in this repo and they are not the same
+# thing. `make viz` renders the ONTOLOGY (the TBox: classes and properties)
+# through WebVOWL. The targets below render the DATA (the ABox: 1.2M triples of
+# Reactome pathways joined to synthetic sample-level results) through Reactodia.
+# Neither tool substitutes for the other.
+#
+# Keep the server in the same 0.5.x series as the pyoxigraph writer. Oxigraph
+# 0.5.9 also exposes /sparql (alongside /query), which is the endpoint path
+# required by AWS Graph Explorer. The existing 0.5.x store opens read-only on
+# this version; do not jump to 0.6.x without rebuilding and validating it.
+OXIGRAPH_VERSION ?= 0.5.9
+OXIGRAPH_IMAGE   ?= ghcr.io/oxigraph/oxigraph:$(OXIGRAPH_VERSION)
+
+KG_STORE      ?= data/synthetic/v1/store
+KG_PORT       ?= 7020
+KG_CONTAINER  ?= sagebrain-oxigraph
+KG_TIMEOUT    ?= 30
+EXPLORER_DIR  ?= explorer
+EXPLORER_PORT ?= 5180
+
+# Serves the store that kg/synthetic/load_graph.py already built, rather than
+# re-ingesting it: the CLI and pyoxigraph share one Rust core, so this opens the
+# very bytes the pipeline validated against. No second copy, and no chance of the
+# demo store and the validated store disagreeing.
+#
+# --union-default-graph is REQUIRED, not a tuning flag. Everything is loaded into
+# two named graphs, so the SPARQL default graph is empty and an unqualified
+# pattern matches nothing -- this is the server-side equivalent of the
+# use_default_graph_as_union=True that load_graph.py passes.
+#
+# read-only because RocksDB allows a single writer: while this is up, a pipeline
+# run that rewrites the store would fail. Stop it first (`make kg-stop`).
+kg-serve:
+	@test -d $(KG_STORE) || { \
+	  echo "No store at $(KG_STORE). Build it first:"; \
+	  echo "    python -m kg.synthetic.pipeline"; exit 1; }
+	@if [ -n "$$(docker ps -q -f name=^/$(KG_CONTAINER)$$)" ]; then \
+	  if curl -fsS --get --data-urlencode 'query=ASK {}' \
+	      -H 'Accept: application/sparql-results+json' \
+	      http://127.0.0.1:$(KG_PORT)/sparql >/dev/null; then \
+	    echo "already serving $(KG_STORE) at http://127.0.0.1:$(KG_PORT)/sparql"; \
+	  else \
+	    echo "$(KG_CONTAINER) does not expose /sparql (required by AWS Graph Explorer)."; \
+	    echo "Run: make kg-stop && make kg-serve"; exit 1; \
+	  fi; \
+	else \
+	  docker rm -f $(KG_CONTAINER) >/dev/null 2>&1 || true; \
+	  docker run -d --name $(KG_CONTAINER) \
+	    -p 127.0.0.1:$(KG_PORT):7878 \
+	    -v "$(CURDIR)/$(KG_STORE):/store:ro" \
+	    $(OXIGRAPH_IMAGE) \
+	    serve-read-only --location /store --bind 0.0.0.0:7878 \
+	      --cors --union-default-graph --timeout-s $(KG_TIMEOUT) >/dev/null; \
+	  echo "serving $(KG_STORE) at http://127.0.0.1:$(KG_PORT)/sparql"; \
+	fi
+
+kg-stop:
+	@docker rm -f $(KG_CONTAINER) >/dev/null 2>&1 && echo "stopped $(KG_CONTAINER)" \
+	  || echo "$(KG_CONTAINER) was not running"
+
+$(EXPLORER_DIR)/node_modules: $(EXPLORER_DIR)/package.json
+	cd $(EXPLORER_DIR) && npm install
+	@touch $@
+
+# Every query the app issues, run headlessly and required to return rows. Worth
+# running before a demo: a mistyped link configuration is invisible in the UI --
+# the edge simply never appears -- and this is what turns that silence into a
+# failure. See explorer/probe.mjs.
+kg-probe: kg-serve $(EXPLORER_DIR)/node_modules
+	@cd $(EXPLORER_DIR) && SAGEBRAIN_SPARQL=http://127.0.0.1:$(KG_PORT)/query node probe.mjs
+
+explore: kg-serve $(EXPLORER_DIR)/node_modules
+	@echo "Explorer on http://localhost:$(EXPLORER_PORT) -- Ctrl-C stops it (the endpoint keeps running; 'make kg-stop')."
+	cd $(EXPLORER_DIR) && SAGEBRAIN_SPARQL=http://127.0.0.1:$(KG_PORT) \
+	  npm run dev -- --port $(EXPLORER_PORT)
+
 
 # Deliberately keeps tools/robot.jar -- re-downloading 78 MB is not "clean".
 clean:

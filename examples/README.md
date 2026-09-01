@@ -1,23 +1,33 @@
 # Examples
 
-Instance data that conforms to the model. These files are documentation first —
-this is the answer to "what does a SageBrain graph actually look like?" — and a
-test second: `tests/validate.py` validates every `*.ttl` in this directory on
-every run (check 6), so a model change that would break data a curator could
-plausibly have written fails the test run.
+Instance data that conforms to the model. These files are documentation first
+for showing "what does a SageBrain graph actually look like?" and a
+test second; `tests/validate.py` validates `*.ttl` in this directory on
+every run.
 
-| File | What it is |
+| File | Description |
 |---|---|
-| `minimal.ttl` | One gene in one pathway. A one-screen answer to "show me the format" |
+| **synthetic-contrasts/** | Provisional contrast-level Alzheimer/ALS pathway results, their intersection query and a validator; intentionally isolated from the production ontology |
+| **synthetic-samples/** | The *sample*-level counterpart, extracted from a real `kg/synthetic/` run and verified to be a subgraph of it; reuses the production model for the cohort spine |
+| `minimal.ttl` | One gene in one pathway; short answer to "show me the format" |
 | `AD-cohort.ttl` | Two participants, three samples, three genes, two pathways, a drug and a trial — 76 triples exercising 17 of the model's 19 connections |
 
 ## Identifiers
 
 Every external identifier in these files was resolved against its source
-registry — genenames.org, OLS, Reactome, ClinicalTrials.gov — rather than
-pattern-matched from memory, because a plausible-looking wrong CURIE in an
-example is worse than no example. Prefixes follow Biolink's prefix map, since
-the model reuses Biolink terms.
+registry — genenames.org, OLS, Reactome, ClinicalTrials.gov. 
+Prefixes match the `kg/` ingests, so an example edge lands on a node the ingested
+graph actually contains — see `kg/common/rdf.py`, which is the single registry both
+sides read, and the prefix check in `tests/validate.py`.
+
+This is deliberately **not** "Biolink's prefix map", which the earlier wording claimed.
+Biolink 4.4.4 declares no `REACT` prefix of its own; following its `default_curi_maps`,
+`REACT:` resolves via `monarch_context` to `http://www.reactome.org/PathwayBrowser/#/`,
+a web-UI URL, while the identifiers.org base sits under the label `REACTOME:`. So there
+was no form of `REACT:` that was both Biolink's and an identifiers.org IRI. These files
+use identifiers.org's current compact-identifier form,
+`https://identifiers.org/reactome:R-HSA-977225`. OBO terms still use OBO PURLs, which
+both sides already agreed on.
 
 Pathology draws on both tiers, because its two findings differ in kind. Plaque
 burden is graded, and CERAD is a scale of graded categories, so `adkp:FrequentDefiniteC3`
@@ -28,8 +38,7 @@ stop. Tangles are the qualitative case, so they stay `HP:0002185`.
 
 Nodes with no external identifier split in two. **Participants and samples** are
 study-local particulars, minted under `https://w3id.org/synapse/ad/individual/` and
-`https://w3id.org/synapse/ad/sample/` — one path per collection, so the local name
-is the identifier within it.
+`https://w3id.org/synapse/ad/sample/` — one path per collection.
 
 Beside the model, not inside it: the model is `.../synapse/sagebrain`, its parts are
 `sagebrain/shapes` and `sagebrain/imports/biolink`, and the data it describes is
@@ -43,20 +52,18 @@ so a sibling path is an entry in that file rather than a new registration.
 Everything else keeps a placeholder `ex:` namespace, because each is an open
 question in `TODO.md` rather than something we have decided not to anchor:
 
-- **tissue** — the source model states that tissue names are not standardised
-  across diseases (`A3`)
+- **tissue** — note that tissue names are not yet standardised across diseases
 - **disease status, disease stage** — no anchor identified. Verified gaps, not
   unfinished searching: Braak staging has no term in any ontology on OLS, and
-  ALSFRS-R exists only in SNOMED CT, which needs an affiliate licence (`B15`).
-  Biolink also models these as attributes rather than nodes (`B1c`)
+  ALSFRS-R exists only in SNOMED CT, which needs an affiliate licence.
+  Biolink also models these as attributes rather than nodes
 - **biodomain** — deliberately SageBrain-native; names come from the AD biodomain
-  paper cited on `sagebrain:belongs_to` (`B5`)
+  paper cited on `sagebrain:belongs_to`
 
 **The example does not have to cover the model.** It covers 17 of 19 connections, and
-the two it drops are findings rather than gaps in the example: `has_status` and
+the two excluded are less important/certain currently: `has_status` and
 `belongs_to` could not be written without inventing a vocabulary, so they were left
-out. The model is a work in progress, and a statement that cannot be written honestly
-is a signal about where to look — see "What is missing" below.
+out. The model is WIP.
 
 ### Where a term comes from
 
@@ -80,7 +87,7 @@ checking rather than assuming.
 
 ### What is missing
 
-- **`sagebrain:has_status` / `DiseaseStatus`.** No vocabulary anywhere. The AD model's
+- **`sagebrain:has_status` / `DiseaseStatus`.** No vocabulary yet. The AD model's
   nearest terms — `no cognitive impairment`, `mild cognitive impairment`, `dementia` —
   are values of its `diagnosis` column, not a separate status axis. So either
   `DiseaseStatus` is a diagnosis under another name, in which case it duplicates
@@ -113,25 +120,6 @@ The local name follows schematic's own label derivation, so `BRAAK Stage 3` →
 - label-derived local names break on rename, which is exactly why OBO uses opaque
   numeric IDs.
 
-So the policy these files demonstrate, which `B5` still has to ratify, has three
-tiers: a registry identifier where the thing is in a registry, a Synapse-minted
-IRI under `w3id.org/synapse/` where we own the thing, and a placeholder where the
-modelling is still open. The third tier is meant to shrink — when `B1c` settles
-what a disease status is, those nodes move up a tier.
-
-## Why these are not the test fixtures
-
-`tests/conforming.ttl` and `tests/violating.ttl` stay where they are. They are
-fixtures, not examples: synthetic, minimal, and pinned to specific validator
-behaviour. `violating.ttl` carries six planted defects that the shapes must
-report, and `conforming.ttl` deliberately exercises the shared-vocabulary-node
-pattern so that wrongly activating an `ISSUE-1` inverse shape breaks a test.
-Neither reads as data anyone would collect.
-
-These files are the opposite trade: realistic enough to hand to a curator, and
-therefore not pinned to any particular validator edge case. Both roles are worth
-having — but a fixture that drifts toward being a demo stops testing what it was
-written to test.
 
 ## Adding an example
 

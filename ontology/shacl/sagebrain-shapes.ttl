@@ -318,11 +318,37 @@ shape:SampleShape
         sh:message "Sample has_pathology must point to a Pathology." ;
     ] ;
     sh:property [
+        sh:path sagebrain:has_altered_activity_in ;
+        sh:name "has altered activity in" ;
+        sh:class biolink:Pathway ;
+        sh:nodeKind sh:IRI ;
+        sh:message "Sample has_altered_activity_in must point to a Pathway." ;
+    ] .
+
+
+###  Systems Biology  ##########################################
+
+# A contrast is the subject of a differential-expression result, which is why
+# sagebrain:de_associated_with is domained here and not on Sample: DE is a
+# property of a case-versus-control comparison, not of one specimen. The
+# per-sample claim is has_altered_activity_in on SampleShape above.
+#
+# Both edges point at a Pathway, so the two sh:class constraints look alike. They
+# are not redundant: the ontology can only state each property's range as the
+# union over its uses, and it is only the per-source-shape sh:class that forbids
+# a contrast from reaching a DiseaseStage. See tests/violating.ttl defects (a)
+# and (g), which plant exactly that error on each of the two subjects.
+shape:PathwayActivityContrastShape
+    a sh:NodeShape ;
+    sh:targetClass sagebrain:PathwayActivityContrast ;
+    rdfs:label "Pathway activity contrast shape" ;
+
+    sh:property [
         sh:path sagebrain:de_associated_with ;
         sh:name "DE associated with" ;
         sh:class biolink:Pathway ;
         sh:nodeKind sh:IRI ;
-        sh:message "Sample de_associated_with must point to a Pathway." ;
+        sh:message "Contrast de_associated_with must point to a Pathway." ;
     ] .
 
 ###  Clinical  #################################################
@@ -666,9 +692,18 @@ vocabulary-level anatomical concepts standing in a part-of hierarchy.""" ;
 ##
 ##  4. EDGE WEIGHTS -- NOT YET CONSTRAINABLE
 ##
-##  Four connections are marked weighted in the source model:
+##  Three connections are marked weighted in the source model:
 ##    Gene expressed_in Sample; Individual has_status DiseaseStatus;
-##    Pathway associated_with DiseaseLabel; Sample de_associated_with Pathway.
+##    Pathway associated_with DiseaseLabel.
+##
+##  The sample-to-pathway case USED TO BE the fourth, and is now resolved rather
+##  than pending: sagebrain:has_altered_activity_in took option (b) below. The
+##  score, its p-values and the direction live on a reified biolink:StudyResult,
+##  and the plain edge carries no number -- so the property is weighted false and
+##  drops out of this list. The reified node is minted by the ingest
+##  (sbkg:PathwayScoringAnalysis and friends) rather than by this ontology, which
+##  is why option (b)'s "adds a class the source model does not have" caveat did
+##  not bite here.
 ##
 ##  A weight is a property OF an edge, which plain RDF triples cannot carry.
 ##  Validating weights requires first choosing how they are materialised:

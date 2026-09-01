@@ -235,6 +235,24 @@ sagebrain:Biodomain
     sagebrain:elementCategory sagebrain:SystemsBiology ;
     owl:versionInfo "v0.2" .
 
+sagebrain:PathwayActivityContrast
+    a owl:Class ;
+    rdfs:label "Pathway activity contrast" ;
+    rdfs:comment """A comparison of pathway-level activity between a case group and a
+reference group: case versus control, over many samples, by a stated method, yielding an
+effect estimate and a p-value per pathway.
+
+Minted because sagebrain:de_associated_with needs a domain that can actually hold a
+differential-expression result. A DE result is a property of a contrast, not of any one
+sample -- so a Sample was the wrong subject for it, and until v0.3 that was what the
+model declared.""" ;
+    sagebrain:elementCategory sagebrain:SystemsBiology ;
+    skos:editorialNote """A contrast is an analysis, not a specimen. It corresponds to
+prov:Activity, but that alignment is deliberately not asserted here: the prov import
+module is not part of the default build (see MAIN_SOURCES in the Makefile), and a
+subClassOf pointing at an undeclared class would be worse than a note.""" ;
+    owl:versionInfo "v0.3" .
+
 ###  Translational
 
 #################################################################
@@ -381,16 +399,58 @@ sagebrain:belongs_to
     sagebrain:weighted false ;
     owl:versionInfo "v0.2" .
 
+sagebrain:has_altered_activity_in
+    a owl:ObjectProperty ;
+    rdfs:label "has altered activity in" ;
+    rdfs:comment """Relates a material sample to a pathway whose activity in that sample
+deviates significantly from a reference group. Derived, not measured: the claim is the
+output of a scoring method plus a threshold, and both live on the analysis reached via the
+reified biolink:StudyResult.""" ;
+    rdfs:subPropertyOf biolink:associated_with ;
+    rdfs:domain biolink:MaterialSample ;
+    rdfs:range biolink:Pathway ;
+    sagebrain:weighted false ;
+    sagebrain:optional true ;
+    skos:editorialNote """DIRECTION-NEUTRAL on purpose. Up and down are carried by
+biolink:predicate on the reified result, so splitting this property by direction would put
+the same fact in two places.""" ;
+    skos:editorialNote """METHOD-NEUTRAL on purpose. If the predicate name encodes the
+method, every new scoring tool becomes a schema change. Method, unit, reference group and
+thresholds all live on the analysis node instead.""" ;
+    skos:editorialNote """Parent is biolink:associated_with rather than
+biolink:correlated_with. Checked against Biolink 4.4.4: correlated_with requires a
+statistical correlation "as demonstrated using a correlation analysis method", and a
+single-sample deviation from a reference group is not one, so that branch would misstate
+the evidence. associated_with is defined as statistical non-independence and explicitly
+permits the subject and object to be the entities the analysed variables describe -- which
+is exactly a sample and a pathway.""" ;
+    skos:editorialNote """The threshold is an editorial decision, so this edge is an
+interpretation rather than an observation. It stays re-derivable because the full score
+table is kept out of band and named on the analysis.""" ;
+    owl:versionInfo "v0.3" .
+
 sagebrain:de_associated_with
     a owl:ObjectProperty ;
     rdfs:label "DE associated with" ;
-    rdfs:comment "Links a material sample to a pathway via a differential-expression result." ;
-    rdfs:domain biolink:MaterialSample ;
+    rdfs:comment """Relates a pathway activity contrast to a pathway that is
+differentially expressed between the contrast's case and reference groups.""" ;
+    rdfs:domain sagebrain:PathwayActivityContrast ;
     rdfs:range biolink:Pathway ;
-    sagebrain:weighted true ;
+    sagebrain:weighted false ;
     sagebrain:optional true ;
-    skos:editorialNote "Optional. Differential expression result linking sample to pathway." ;
-    owl:versionInfo "v0.2" .
+    skos:editorialNote """DOMAIN CHANGED IN v0.3, from biolink:MaterialSample to
+sagebrain:PathwayActivityContrast. The old domain made the property uninstantiable: its
+name asserts a differential-expression result, and a DE result is a property of a contrast
+-- case versus control, over many samples, with a p-value -- not of a single sample. The
+per-sample claim is now sagebrain:has_altered_activity_in, which is what the
+kg/synthetic ingest emits.""" ;
+    skos:editorialNote """The old domain was also actively harmful under RDFS entailment.
+examples/synthetic-contrasts/ has always used a contrast as this property's subject, so a
+reasoner reading the old rdfs:domain would have typed every contrast as a
+biolink:MaterialSample.""" ;
+    skos:editorialNote """Not weighted: the effect estimate and p-value belong to the
+reified per-pathway result, not to this edge, which exists for traversal.""" ;
+    owl:versionInfo "v0.3" .
 
 sagebrain:related_pathway
     a owl:ObjectProperty ;
