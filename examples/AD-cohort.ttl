@@ -4,11 +4,15 @@
 # trial, with real identifiers throughout. Validated on every run of
 # tests/validate.py.
 #
-# It exercises all 19 of the model's connections, including sagebrain:belongs_to
+# It exercises 20 of the model's 21 connections, including sagebrain:belongs_to
 # now that the 19 AD biodomains are minted as a SKOS vocabulary (see
 # sagebrain:BiodomainScheme in ontology/main/sagebrain.ttl) -- previously left out
 # on exactly this ground, per the "What is missing" section below before B5 was
-# resolved.
+# resolved. v0.4 added a QC layer (see plans/qc_layer_integration.md):
+# sagebrain:has_qc_status is exercised below via sample:03. sagebrain:derived_from
+# is not -- there is no File class yet to point at, and inventing a placeholder
+# IRI for it would recreate exactly the ex: problem the "Where a term comes from"
+# section below already avoids everywhere else in this file.
 #
 # IDENTIFIERS
 #
@@ -102,7 +106,26 @@ sample:02
 sample:03
     a biolink:MaterialSample ;
     rdfs:label "participant 02 cerebral cortex" ;
-    sagebrain:source_tissue UBERON:0000956 .
+    sagebrain:source_tissue UBERON:0000956 ;
+    sagebrain:has_qc_status sagebrain:QCFail .
+
+###  Quality control  ###########################################
+#
+# One worked QCResultAssociation: sample:03 failed the Phred score check,
+# which alone is enough to fail QC overall (plans/qc_elements.md: "They hit
+# a failure condition anywhere"), independent of how many other metrics
+# warned or passed. Restating sagebrain:PhredScore/sagebrain:QCFail's types
+# here for the same reason sagebrain:Proteostasis/sagebrain:ImmuneResponse
+# are restated below: pySHACL's sh:class only sees rdf:type triples present
+# in the graph actually being validated.
+sagebrain:PhredScore a sagebrain:QCMetric .
+sagebrain:QCFail a sagebrain:QCStatus .
+
+association:phred-samp03
+    a sagebrain:QCResultAssociation ;
+    biolink:subject sagebrain:PhredScore ;
+    biolink:object sample:03 ;
+    sagebrain:qc_status sagebrain:QCFail .
 
 ###  Anatomy  ###################################################
 
