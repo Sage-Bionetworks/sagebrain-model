@@ -1,5 +1,6 @@
 @prefix sagebrain: <https://w3id.org/synapse/sagebrain#> .
 @prefix biolink:   <https://w3id.org/biolink/vocab/> .
+@prefix gov:       <https://sagebionetworks.org/governance/> .
 @prefix shape:     <https://w3id.org/synapse/sagebrain/shapes#> .
 @prefix sh:        <http://www.w3.org/ns/shacl#> .
 @prefix owl:       <http://www.w3.org/2002/07/owl#> .
@@ -371,7 +372,8 @@ shape:SampleShape
         sh:path sagebrain:derived_from ;
         sh:name "derived from" ;
         sh:nodeKind sh:IRI ;
-        sh:message "Sample derived_from must point to an IRI (a Sample stand-in for a file, until a File class exists)." ;
+        sh:or ( [ sh:class biolink:MaterialSample ] [ sh:class gov:SynapseEntity ] ) ;
+        sh:message "Sample derived_from must point to a MaterialSample or a SynapseEntity." ;
     ] .
 
 ###  Clinical  #################################################
@@ -745,7 +747,8 @@ block across every individual association shape below.""" ;
         sh:path sagebrain:derived_from ;
         sh:name "derived from" ;
         sh:nodeKind sh:IRI ;
-        sh:message "An Association's derived_from must point to an IRI (a Sample stand-in for a file, until a File class exists)." ;
+        sh:or ( [ sh:class biolink:MaterialSample ] [ sh:class gov:SynapseEntity ] ) ;
+        sh:message "An Association's derived_from must point to a MaterialSample or a SynapseEntity." ;
     ] .
 
 shape:GeneExpressionAssociationShape
@@ -776,6 +779,31 @@ shape:GeneExpressionAssociationShape
         sh:datatype xsd:decimal ;
         sh:minCount 1 ; sh:maxCount 1 ;
         sh:message "A GeneExpressionAssociation needs exactly one xsd:decimal weight." ;
+    ] ;
+    # No sh:minCount on any of these three: unlike subject/object/weight, this is
+    # optional DE metadata a curator may not always have (see
+    # plans/gene_expression_de_metadata.md).
+    sh:property [
+        sh:path sagebrain:expression_classifier ;
+        sh:name "expression classifier" ;
+        sh:class sagebrain:ExpressionDirection ;
+        sh:nodeKind sh:IRI ;
+        sh:maxCount 1 ;
+        sh:message "A GeneExpressionAssociation's expression_classifier must point to at most one ExpressionDirection." ;
+    ] ;
+    sh:property [
+        sh:path sagebrain:reference_baseline ;
+        sh:name "reference baseline" ;
+        sh:datatype xsd:string ;
+        sh:maxCount 1 ;
+        sh:message "A GeneExpressionAssociation's reference_baseline, when present, must be a single xsd:string." ;
+    ] ;
+    sh:property [
+        sh:path sagebrain:analysis_tool ;
+        sh:name "analysis tool" ;
+        sh:datatype xsd:string ;
+        sh:maxCount 1 ;
+        sh:message "A GeneExpressionAssociation's analysis_tool, when present, must be a single xsd:string." ;
     ] .
 
 shape:SampleDEAssociationShape
