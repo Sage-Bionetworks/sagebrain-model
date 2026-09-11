@@ -9,7 +9,7 @@ plausibly have written fails the test run.
 | File | What it is |
 |---|---|
 | `minimal.ttl` | One gene in one pathway. A one-screen answer to "show me the format" |
-| `AD-cohort.ttl` | Two participants, three samples, three genes, two pathways, a drug and a trial — exercising 23 of the model's 24 connections |
+| `AD-cohort.ttl` | Two participants, three samples, three genes, two pathways, a drug and a trial — exercising all 24 of the model's connections |
 
 ## Identifiers
 
@@ -58,30 +58,39 @@ off this list for a different reason: it was removed from the model outright as
 redundant with `has_diagnosis` rather than left open (see the Clinical section of
 `ontology/main/sagebrain.ttl`).
 
-**The example covers 23 of the model's 24 connections.** Through v0.2 it covered
+**The example covers all 24 of the model's connections.** Through v0.2 it covered
 17, and the two it dropped were findings rather than gaps in the example:
 `has_status` and `belongs_to` could not be written without inventing a
 vocabulary. Both are resolved now -- `has_status` by removing the property,
-`belongs_to` by minting the vocabulary -- so both are exercised below.
-`de_associated_with` also split in two (`de_associated_with` and
-`de_associated_with_stage` -- see the "Connections" section of
-`ontology/main/sagebrain.ttl`), and both halves are still exercised, just under
-their own names now (`sample:01`'s Sample -> Pathway edge, and each pathway's
-Pathway -> DiseaseStage edge below). v0.4 added a QC layer
-(`plans/qc_layer_integration.md`): `sagebrain:has_qc_status` is exercised via
-`sample:03`. v0.4 also added `sagebrain:derived_from_organ`, which is
-exercised -- via `sample:01` (-> `Organ`) and `sample:03` (-> `OrganSubregion`)
--- since both range members already have real UBERON identifiers in play.
-Separately, `sagebrain:de_associated_with_disease` (Pathway -> DiseaseLabel,
-independent of any stage) is exercised on `REACT:R-HSA-977225` against the same
-`MONDO:0004975` its pre-existing `associated_with` edge already names --
+`belongs_to` by minting the vocabulary -- so both are exercised below. v0.4
+added a QC layer (`plans/qc_layer_integration.md`): `sagebrain:has_qc_status`
+is exercised via `sample:03`. v0.4 also added `sagebrain:derived_from_organ`,
+which is exercised -- via `sample:01` (-> `Organ`) and `sample:03` (->
+`OrganSubregion`) -- since both range members already have real UBERON
+identifiers in play. Separately, `de_associated_with` split in two
+(`de_associated_with` and `de_associated_with_stage` -- see the "Connections"
+section of `ontology/main/sagebrain.ttl`), and both halves are still
+exercised, just under their own names now (`sample:01`'s Sample -> Pathway
+edge, and each pathway's Pathway -> DiseaseStage edge below). A third v0.4
+addition, `sagebrain:de_associated_with_disease` (Pathway -> DiseaseLabel,
+independent of any stage), is exercised on `REACT:R-HSA-977225` against the
+same `MONDO:0004975` its pre-existing `associated_with` edge already names --
 deliberately the same disease, to show the two edges are a real distinction
 (DE-derived vs. not), not just two names for one fact.
 
-`sagebrain:derived_from` is the one connection still unexercised: through v0.4
-there is no real class to point at ("a Sample stands in for a file, until a
-File class exists"), and inventing a placeholder would recreate exactly the
-`ex:` problem this file already avoids everywhere else. The model is a work in
+`sagebrain:derived_from` was the last connection to go from unexercised to
+exercised: through v0.4 there was no real class to point at ("a Sample stands
+in for a file, until a File class exists"), and inventing a placeholder would
+have recreated exactly the `ex:` problem this file already avoids everywhere
+else. `gov:SynapseEntity` (reused from mc2-center/governanceDUO's governance
+graph -- see `ontology/imports/governance_graph.ttl` and
+`plans/gene_expression_de_metadata.md`) resolves that: `derived_from`'s range
+now includes it, and `association:apoe-expr-samp01` (also newly enriched with
+`expression_classifier`/`reference_baseline`/`analysis_tool`) points it at
+`syn:syn26999999` -- a fictional but well-formed `syn\d+` id, the same
+honest-fiction treatment `sample:`/`individual:` already get elsewhere in this
+file, just borrowing Synapse's own real id shape and namespace so a real id
+would resolve to the identical node in both graphs. The model is a work in
 progress, and a statement that cannot be written honestly is a signal about
 where to look; that is still true of what remains open, covered next.
 
