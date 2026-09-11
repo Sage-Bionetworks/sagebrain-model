@@ -1,4 +1,4 @@
-# Instance data with seven planted defects, each of which MUST be reported.
+# Instance data with eight planted defects, each of which MUST be reported.
 # tests/validate.py asserts on the expected violation set, so this doubles as
 # documentation of what the shapes actually catch.
 #
@@ -60,12 +60,17 @@ ex:qcResult1
     biolink:object ex:samp1 ;
     sagebrain:qc_status ex:apoptosisPathway .
 
+# (h) wrong target class -- derived_from_organ must reach an Organ or
+#     OrganSubregion, not a Tissue.
+ex:samp1 sagebrain:derived_from_organ ex:cortexTissue .
+
 ###  Supporting well-formed nodes  ##############################
 
 ex:braakStage3      a sagebrain:DiseaseStage .
 ex:donanemab        a biolink:Drug .
 ex:lecanemab        a biolink:Drug .
 ex:apoptosisPathway a biolink:Pathway .
+ex:cortexTissue     a sagebrain:Tissue .
 
 # Restated for the same reason examples/AD-cohort.ttl restates SageBrain-minted
 # terms it references: pySHACL's sh:class only sees rdf:type triples present in
