@@ -44,10 +44,15 @@ Four groups of shapes:
      questions (ISSUE-5, ISSUE-6) stay deactivated for a substantive reason rather than an
      unresolved one.
 
-  4. ASSOCIATION SHAPES -- constrains the reified weighted connections. A weight cannot
-     live on a plain RDF triple, so ontology/main/sagebrain.ttl reifies the six weighted
-     (source, target) pairs as Biolink-style association instances; these shapes require
-     each one to carry exactly one subject, one object, and one weight.""" ;
+  4. ASSOCIATION SHAPES -- constrains the reified weighted connections, plus two v0.4
+     additions that are not about weight at all. A weight cannot live on a plain RDF
+     triple, so ontology/main/sagebrain.ttl reifies the weighted (source, target) pairs
+     as Biolink-style association instances; these shapes require each one to carry
+     exactly one subject, one object, and one weight. QCResultAssociation is the same
+     reification pattern for a categorical (FAIL/WARN/PASS) outcome instead of a numeric
+     one -- see shape:QCResultAssociationShape -- and shape:AssociationShape targets
+     biolink:Association directly, covering sagebrain:derived_from generically across
+     every association subtype at once rather than repeating it per shape.""" ;
     rdfs:seeAlso "See the VALIDATION CONFIGURATION section below before running these shapes." ;
     owl:imports <https://w3id.org/synapse/sagebrain> ;
     owl:versionIRI <https://w3id.org/synapse/sagebrain/shapes/0.3.0> ;
@@ -343,6 +348,20 @@ shape:SampleShape
         sh:class biolink:Pathway ;
         sh:nodeKind sh:IRI ;
         sh:message "From a Sample, de_associated_with may only point to a Pathway -- not to a DiseaseStage, which is permitted only from a Pathway." ;
+    ] ;
+    sh:property [
+        sh:path sagebrain:has_qc_status ;
+        sh:name "has QC status" ;
+        sh:class sagebrain:QCStatus ;
+        sh:nodeKind sh:IRI ;
+        sh:maxCount 1 ;
+        sh:message "Sample has_qc_status must point to at most one QCStatus." ;
+    ] ;
+    sh:property [
+        sh:path sagebrain:derived_from ;
+        sh:name "derived from" ;
+        sh:nodeKind sh:IRI ;
+        sh:message "Sample derived_from must point to an IRI (a Sample stand-in for a file, until a File class exists)." ;
     ] .
 
 ###  Clinical  #################################################
@@ -692,6 +711,25 @@ containment is independently a one-parent hierarchy, unlike Tissue's many-parent
 #################################################################
 #################################################################
 
+shape:AssociationShape
+    a sh:NodeShape ;
+    sh:targetClass biolink:Association ;
+    rdfs:label "Association shape" ;
+    rdfs:comment """Targets biolink:Association directly, so this one shape reaches every
+current and future Association subtype at once (SHACL class targets traverse
+rdfs:subClassOf*, the same mechanism shape:IndividualShape already relies on
+for Case/Control). Added in v0.4 alongside sagebrain:derived_from -- see
+plans/qc_layer_integration.md -- to cover "this association was derived from
+these sample(s)/file(s)" generically rather than repeating the same property
+block across every individual association shape below.""" ;
+
+    sh:property [
+        sh:path sagebrain:derived_from ;
+        sh:name "derived from" ;
+        sh:nodeKind sh:IRI ;
+        sh:message "An Association's derived_from must point to an IRI (a Sample stand-in for a file, until a File class exists)." ;
+    ] .
+
 shape:GeneExpressionAssociationShape
     a sh:NodeShape ;
     sh:targetClass sagebrain:GeneExpressionAssociation ;
@@ -810,4 +848,35 @@ shape:PathwayDiseaseAssociationShape
         sh:datatype xsd:decimal ;
         sh:minCount 1 ; sh:maxCount 1 ;
         sh:message "A PathwayDiseaseAssociation needs exactly one xsd:decimal weight." ;
+    ] .
+
+shape:QCResultAssociationShape
+    a sh:NodeShape ;
+    sh:targetClass sagebrain:QCResultAssociation ;
+    rdfs:label "QC result association shape" ;
+    rdfs:comment "Reifies a single QC check's outcome. subject: a QCMetric. object: a Sample (stands in for a File until the file-metadata layer exists)." ;
+
+    sh:property [
+        sh:path biolink:subject ;
+        sh:name "subject" ;
+        sh:class sagebrain:QCMetric ;
+        sh:nodeKind sh:IRI ;
+        sh:minCount 1 ; sh:maxCount 1 ;
+        sh:message "A QCResultAssociation needs exactly one subject, a QCMetric." ;
+    ] ;
+    sh:property [
+        sh:path biolink:object ;
+        sh:name "object" ;
+        sh:class biolink:MaterialSample ;
+        sh:nodeKind sh:IRI ;
+        sh:minCount 1 ; sh:maxCount 1 ;
+        sh:message "A QCResultAssociation needs exactly one object, a Sample." ;
+    ] ;
+    sh:property [
+        sh:path sagebrain:qc_status ;
+        sh:name "QC status" ;
+        sh:class sagebrain:QCStatus ;
+        sh:nodeKind sh:IRI ;
+        sh:minCount 1 ; sh:maxCount 1 ;
+        sh:message "A QCResultAssociation needs exactly one QCStatus." ;
     ] .
