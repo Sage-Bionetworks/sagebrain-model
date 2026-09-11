@@ -58,9 +58,13 @@ OWL2VOWL_SHA256  ?= 2ddc42dc2ff7f66aad48ee8717eef4bd9ddae99aecbbf828c04a8074ea77
 # sagebrain reuses six Biolink classes by IRI and declares two of its properties
 # as subproperties of Biolink ones, so that import module is part of the default
 # build -- without it those terms are undeclared and the endpoint-integrity shapes
-# fail.
+# fail. sagebrain:derived_from's range likewise reuses gov:SynapseEntity (see
+# ontology/imports/governance_graph.ttl) unconditionally -- not gated behind
+# WITH_GOVERNANCE like GOVERNANCE_SOURCES below, since it's part of the core
+# model now, not the optional governance layer.
 MAIN_SOURCES = ontology/main/sagebrain.ttl \
-               ontology/imports/biolink.ttl
+               ontology/imports/biolink.ttl \
+               ontology/imports/governance_graph.ttl
 
 # Every .ttl in ontology/governance/ is built, so adding a module there is all it
 # takes -- there is no list here to fall out of sync with the folder. The imports
