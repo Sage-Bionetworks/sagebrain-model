@@ -229,3 +229,57 @@ implementing (introducing that convention to this repo, matching
 `mc2-center/data-models`' `plans/` pattern). After implementing, append an
 Implementation Report below this line — what was actually done, any
 deviations from the Approach section above, and verification results.
+
+## Implementation Report
+
+Implemented items 1-9 as designed, no deviations from the Approach section.
+
+**`ontology/main/sagebrain.ttl`**: added `sagebrain:QCMetric` +
+`QCMetricScheme` (5 individuals), `sagebrain:QCStatus` + `QCStatusScheme`
+(`QCPass`/`QCWarn`/`QCFail`), `sagebrain:has_qc_status`,
+`sagebrain:derived_from` (union domain over `MaterialSample`/`Association`,
+no cardinality bound), `sagebrain:qc_status`, and
+`sagebrain:QCResultAssociation` — all tagged `owl:versionInfo "v0.4"`, all
+placed and commented as described in items 1-6. The ontology-wide
+`owl:versionIRI`/`owl:versionInfo` (still 0.3.0/"v0.3") was deliberately left
+alone per item 8, to be bumped in a separate follow-up commit.
+
+**`ontology/shacl/sagebrain-shapes.ttl`**: extended `shape:SampleShape` with
+`has_qc_status`/`derived_from` property blocks; added `shape:AssociationShape`
+(`sh:targetClass biolink:Association`, one `derived_from` block covering
+every association subtype) and `shape:QCResultAssociationShape` (mirrors
+`GeneExpressionAssociationShape`); updated the file's own group-4 header
+comment to describe both new, non-weight-related shapes.
+
+**`examples/AD-cohort.ttl`**: `sample:03` now carries `has_qc_status
+sagebrain:QCFail` and a `QCResultAssociation` (`PhredScore` → `QCFail`),
+illustrating the "fail anywhere" rule from `plans/qc_elements.md`.
+`sagebrain:PhredScore`/`sagebrain:QCFail` types are restated inline per the
+file's own pySHACL caveat. `derived_from` is intentionally not demonstrated
+(no File class to point at yet). Header comment and `examples/README.md`
+updated from "19 of 19" to "20 of 21" connections, with an explicit note on
+why `derived_from` is the one gap.
+
+**`tests/violating.ttl` / `tests/validate.py`**: added a seventh planted
+defect (g) — a `QCResultAssociation` with `qc_status` pointing at a
+`biolink:Pathway` instead of a `QCStatus` — and registered its expected
+violation message, per the plan's Verification section (this turned out to
+be an implementation change, not just a verification step, since the
+fixture itself needed a new defect written).
+
+**Verification results**: `python tests/validate.py` — all six checks pass,
+including the new shapes; check 5 now reports `21/21` connections covered
+(19 pre-existing + `has_qc_status` + `derived_from`); check 4 reports all
+seven planted defects including the new one, with exactly one new violation
+(8→9) confirming no incidental extra violations were introduced by the
+supporting-node restatement. `make json`'s ROBOT `merge`/`remove` steps
+(the parts that depend on the ontology's own content) completed cleanly and
+the built, pruned ontology contains all six new terms; the subsequent
+OWL2VOWL-jar fetch failed on a pre-existing, platform-specific `sha256sum`
+flag incompatibility on this machine (expected and got hashes print
+identical) — unrelated to this change, not investigated further here.
+`derived_from` accepting multiple values from both a Sample and an
+Association was confirmed by construction (no `sh:maxCount` anywhere on it)
+rather than a separate scratch graph, since the shapes and OWL declarations
+themselves are the only place a cardinality bound could have been
+introduced, and none was.
