@@ -9,7 +9,7 @@ plausibly have written fails the test run.
 | File | What it is |
 |---|---|
 | `minimal.ttl` | One gene in one pathway. A one-screen answer to "show me the format" |
-| `AD-cohort.ttl` | Two participants, three samples, three genes, two pathways, a drug and a trial — exercising all 19 of the model's connections |
+| `AD-cohort.ttl` | Two participants, three samples, three genes, two pathways, a drug and a trial — exercising all 20 of the model's connections |
 
 ## Identifiers
 
@@ -58,13 +58,18 @@ off this list for a different reason: it was removed from the model outright as
 redundant with `has_diagnosis` rather than left open (see the Clinical section of
 `ontology/main/sagebrain.ttl`).
 
-**The example covers all 19 of the model's connections.** Through v0.2 it covered
+**The example covers all 20 of the model's connections.** Through v0.2 it covered
 17, and the two it dropped were findings rather than gaps in the example:
 `has_status` and `belongs_to` could not be written without inventing a
 vocabulary. Both are resolved now -- `has_status` by removing the property,
-`belongs_to` by minting the vocabulary -- so both are exercised below. The model
-is a work in progress, and a statement that cannot be written honestly is a
-signal about where to look; that is still true of what remains open, covered next.
+`belongs_to` by minting the vocabulary -- so both are exercised below.
+`de_associated_with` also split in two (`de_associated_with` and
+`de_associated_with_stage` -- see the "Connections" section of
+`ontology/main/sagebrain.ttl`), and both halves are still exercised, just under
+their own names now (`sample:01`'s Sample -> Pathway edge, and each pathway's
+Pathway -> DiseaseStage edge below). The model is a work in progress, and a
+statement that cannot be written honestly is a signal about where to look;
+that is still true of what remains open, covered next.
 
 ### Where a term comes from
 
