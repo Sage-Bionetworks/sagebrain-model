@@ -332,6 +332,13 @@ shape:SampleShape
         sh:nodeKind sh:IRI ;
         sh:message "Sample source_tissue must point to a Tissue." ;
     ] ;
+    sh:property [
+        sh:path sagebrain:derived_from_organ ;
+        sh:name "derived from organ" ;
+        sh:nodeKind sh:IRI ;
+        sh:or ( [ sh:class sagebrain:Organ ] [ sh:class sagebrain:OrganSubregion ] ) ;
+        sh:message "Sample derived_from_organ must point to an Organ or an OrganSubregion." ;
+    ] ;
     # No sh:maxCount. The source model records this connection 1:1, but that bound
     # does not survive contact with the data: a sample can carry more than one
     # pathology statement, and they are not even the same kind of statement -- a
