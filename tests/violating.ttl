@@ -1,4 +1,4 @@
-# Instance data with nine planted defects, each of which MUST be reported.
+# Instance data with ten planted defects, each of which MUST be reported.
 # tests/validate.py asserts on the expected violation set, so this doubles as
 # documentation of what the shapes actually catch.
 #
@@ -67,6 +67,12 @@ ex:samp1 sagebrain:derived_from_organ ex:cortexTissue .
 # (i) wrong target class -- de_associated_with_stage must reach a DiseaseStage,
 #     not a Drug.
 ex:apoptosisPathway sagebrain:de_associated_with_stage ex:donanemab .
+
+# (j) wrong target class -- de_associated_with_disease must reach a
+#     DiseaseLabel, not a Drug.
+ex:synapticPathway
+    a biolink:Pathway ;
+    sagebrain:de_associated_with_disease ex:lecanemab .
 
 ###  Supporting well-formed nodes  ##############################
 

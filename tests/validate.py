@@ -93,6 +93,8 @@ EXPECTED_VIOLATIONS = {
         "derived_from_organ must point to an Organ or an OrganSubregion",
     "i: wrong target class, Pathway de_associated_with_stage to a Drug":
         "de_associated_with_stage must point to a DiseaseStage",
+    "j: wrong target class, Pathway de_associated_with_disease to a Drug":
+        "de_associated_with_disease must point to a DiseaseLabel",
 }
 
 
