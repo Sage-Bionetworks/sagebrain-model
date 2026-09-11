@@ -30,8 +30,11 @@ Four groups of shapes:
      only state the union over each property's uses. Two things here are strictly
      stronger than the ontology's OWL axioms:
        - sh:class is asserted per (source, target) pair, whereas rdfs:range on a reused
-         property can only state the union of all its targets. The union permits
-         combinations the model does not, e.g. Sample de_associated_with DiseaseStage.
+         property can only state the union of all its targets -- still true for
+         sagebrain:contains_tissue, whose union is safe (every domain member maps to
+         the same range). sagebrain:de_associated_with used to union both domain and
+         range at once, the unsafe case, and was split into de_associated_with /
+         de_associated_with_stage specifically to remove it.
        - cardinality is scoped per source shape, so stage_of can be at most 1 from
          DiseaseStage while pathology_of remains unbounded from Pathology.
 
@@ -46,13 +49,13 @@ Four groups of shapes:
 
   4. ASSOCIATION SHAPES -- constrains the reified weighted connections, plus two v0.4
      additions that are not about weight at all. A weight cannot live on a plain RDF
-     triple, so ontology/main/sagebrain.ttl reifies the weighted (source, target) pairs
-     as Biolink-style association instances; these shapes require each one to carry
-     exactly one subject, one object, and one weight. QCResultAssociation is the same
-     reification pattern for a categorical (FAIL/WARN/PASS) outcome instead of a numeric
-     one -- see shape:QCResultAssociationShape -- and shape:AssociationShape targets
-     biolink:Association directly, covering sagebrain:derived_from generically across
-     every association subtype at once rather than repeating it per shape.""" ;
+     triple, so ontology/main/sagebrain.ttl reifies the four weighted (source, target)
+     pairs as Biolink-style association instances; these shapes require each one to
+     carry exactly one subject, one object, and one weight. QCResultAssociation is the
+     same reification pattern for a categorical (FAIL/WARN/PASS) outcome instead of a
+     numeric one -- see shape:QCResultAssociationShape -- and shape:AssociationShape
+     targets biolink:Association directly, covering sagebrain:derived_from generically
+     across every association subtype at once rather than repeating it per shape.""" ;
     rdfs:seeAlso "See the VALIDATION CONFIGURATION section below before running these shapes." ;
     owl:imports <https://w3id.org/synapse/sagebrain> ;
     owl:versionIRI <https://w3id.org/synapse/sagebrain/shapes/0.3.0> ;
@@ -354,7 +357,7 @@ shape:SampleShape
         sh:name "DE associated with" ;
         sh:class biolink:Pathway ;
         sh:nodeKind sh:IRI ;
-        sh:message "From a Sample, de_associated_with may only point to a Pathway -- not to a DiseaseStage, which is permitted only from a Pathway." ;
+        sh:message "Sample de_associated_with must point to a Pathway." ;
     ] ;
     sh:property [
         sh:path sagebrain:has_qc_status ;
@@ -464,11 +467,11 @@ shape:PathwayShape
         sh:message "Pathway related_pathway must point to another Pathway." ;
     ] ;
     sh:property [
-        sh:path sagebrain:de_associated_with ;
-        sh:name "DE associated with" ;
+        sh:path sagebrain:de_associated_with_stage ;
+        sh:name "DE associated with stage" ;
         sh:class sagebrain:DiseaseStage ;
         sh:nodeKind sh:IRI ;
-        sh:message "From a Pathway, de_associated_with may only point to a DiseaseStage." ;
+        sh:message "Pathway de_associated_with_stage must point to a DiseaseStage." ;
     ] .
 
 ###  Translational  ############################################
@@ -699,7 +702,7 @@ containment is independently a one-parent hierarchy, unlike Tissue's many-parent
 ##
 ##  Four (source, target) pairs are marked weighted in the source model:
 ##    Gene expressed_in Sample; Sample de_associated_with Pathway;
-##    Pathway de_associated_with DiseaseStage; Pathway associated_with DiseaseLabel.
+##    Pathway de_associated_with_stage DiseaseStage; Pathway associated_with DiseaseLabel.
 ##
 ##  A weight is a property OF an edge, which a plain RDF triple cannot carry. Of the
 ##  options once listed here (skip RDF entirely; reify; RDF-star; collapse to a
@@ -771,7 +774,7 @@ shape:SampleDEAssociationShape
     a sh:NodeShape ;
     sh:targetClass sagebrain:SampleDEAssociation ;
     rdfs:label "Sample differential-expression association shape" ;
-    rdfs:comment "Reifies the Sample -> Pathway pairing of sagebrain:de_associated_with. subject: a Sample. object: a Pathway." ;
+    rdfs:comment "Reifies sagebrain:de_associated_with. subject: a Sample. object: a Pathway." ;
 
     sh:property [
         sh:path biolink:subject ;
@@ -801,7 +804,7 @@ shape:PathwayDEAssociationShape
     a sh:NodeShape ;
     sh:targetClass sagebrain:PathwayDEAssociation ;
     rdfs:label "Pathway differential-expression association shape" ;
-    rdfs:comment "Reifies the Pathway -> DiseaseStage pairing of sagebrain:de_associated_with. subject: a Pathway. object: a DiseaseStage." ;
+    rdfs:comment "Reifies sagebrain:de_associated_with_stage. subject: a Pathway. object: a DiseaseStage." ;
 
     sh:property [
         sh:path biolink:subject ;

@@ -241,13 +241,13 @@ REACT:R-HSA-977225
     sagebrain:belongs_to sagebrain:Proteostasis ;
     sagebrain:associated_with MONDO:0004975 ;
     sagebrain:related_pathway REACT:R-HSA-9664422 ;
-    sagebrain:de_associated_with adkp:BRAAKStage3 .
+    sagebrain:de_associated_with_stage adkp:BRAAKStage3 .
 
 REACT:R-HSA-9664422
     a biolink:Pathway ;
     rdfs:label "FCGR3A-mediated phagocytosis" ;
     sagebrain:belongs_to sagebrain:ImmuneResponse ;
-    sagebrain:de_associated_with adkp:BRAAKStage3 .
+    sagebrain:de_associated_with_stage adkp:BRAAKStage3 .
 
 ###  Translational  #############################################
 #
