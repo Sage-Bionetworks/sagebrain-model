@@ -9,7 +9,7 @@ plausibly have written fails the test run.
 | File | What it is |
 |---|---|
 | `minimal.ttl` | One gene in one pathway. A one-screen answer to "show me the format" |
-| `AD-cohort.ttl` | Two participants, three samples, three genes, two pathways, a drug and a trial — exercising 20 of the model's 21 connections |
+| `AD-cohort.ttl` | Two participants, three samples, three genes, two pathways, a drug and a trial — exercising 21 of the model's 22 connections |
 
 ## Identifiers
 
@@ -58,7 +58,7 @@ off this list for a different reason: it was removed from the model outright as
 redundant with `has_diagnosis` rather than left open (see the Clinical section of
 `ontology/main/sagebrain.ttl`).
 
-**The example covers 20 of the model's 21 connections.** Through v0.2 it covered
+**The example covers 21 of the model's 22 connections.** Through v0.2 it covered
 17, and the two it dropped were findings rather than gaps in the example:
 `has_status` and `belongs_to` could not be written without inventing a
 vocabulary. Both are resolved now -- `has_status` by removing the property,
@@ -67,9 +67,12 @@ added a QC layer (`plans/qc_layer_integration.md`): `sagebrain:has_qc_status`
 is exercised via `sample:03`, but `sagebrain:derived_from` is not, for the
 same reason as before -- there is no File class yet for it to point at, and
 inventing a placeholder would recreate exactly the `ex:` problem this file
-already avoids everywhere else. The model is a work in progress, and a
-statement that cannot be written honestly is a signal about where to look;
-that is still true of what remains open, covered next.
+already avoids everywhere else. v0.4 also added `sagebrain:derived_from_organ`,
+which is exercised -- via `sample:01` (-> `Organ`) and `sample:03` (->
+`OrganSubregion`) -- since both range members already have real UBERON
+identifiers in play, unlike `derived_from`. The model is a work in progress,
+and a statement that cannot be written honestly is a signal about where to
+look; that is still true of what remains open, covered next.
 
 ### Where a term comes from
 
