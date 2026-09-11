@@ -619,6 +619,16 @@ sagebrain:source_tissue
     sagebrain:weighted false ;
     owl:versionInfo "v0.2" .
 
+sagebrain:derived_from_organ
+    a owl:ObjectProperty ;
+    rdfs:label "derived from organ" ;
+    rdfs:comment "Traces a Sample back to the organ or organ sub-region it was physically derived from, independent of sagebrain:source_tissue's tissue-level provenance." ;
+    rdfs:domain biolink:MaterialSample ;
+    rdfs:range [ a owl:Class ;
+                  owl:unionOf ( sagebrain:Organ sagebrain:OrganSubregion ) ] ;
+    sagebrain:weighted false ;
+    owl:versionInfo "v0.5" .
+
 sagebrain:has_pathology
     a owl:ObjectProperty ;
     rdfs:label "has pathology" ;
