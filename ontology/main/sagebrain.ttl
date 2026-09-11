@@ -2,6 +2,8 @@
 @prefix biolink:   <https://w3id.org/biolink/vocab/> .
 @prefix gov:       <https://sagebionetworks.org/governance/> .
 @prefix prov:      <http://www.w3.org/ns/prov#> .
+@prefix pato:      <http://purl.obolibrary.org/obo/PATO_> .
+@prefix ncit:      <http://purl.obolibrary.org/obo/NCIT_> .
 @prefix owl:       <http://www.w3.org/2002/07/owl#> .
 @prefix rdfs:      <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix xsd:       <http://www.w3.org/2001/XMLSchema#> .
@@ -817,6 +819,62 @@ biolink:Association
 #    both only when they are not asserting the same weighted fact twice.
 #################################################################
 
+#################################################################
+#    Expression direction vocabulary
+#
+#    Grounded rather than minted bare, per the "anchor before minting"
+#    convention (CLAUDE.md): each individual carries a skos:closeMatch (a
+#    generic composable PATO quality, not itself "upregulated gene
+#    expression") or skos:exactMatch (a genuine 1:1 concept, NCIT's own
+#    "Unknown") to a real external term. See plans/gene_expression_de_metadata.md
+#    for the OLS search behind each choice. Same class/scheme/individual shape
+#    as sagebrain:QCStatus above.
+#################################################################
+
+sagebrain:ExpressionDirection
+    a owl:Class ;
+    rdfs:subClassOf skos:Concept ;
+    rdfs:label "Expression Direction" ;
+    rdfs:comment "The direction of a gene's expression-level change in a differential-expression comparison: up, down, unchanged, or unknown." .
+
+sagebrain:ExpressionDirectionScheme
+    a skos:ConceptScheme ;
+    rdfs:label "SageBrain expression direction" ;
+    skos:hasTopConcept
+        sagebrain:Upregulated , sagebrain:Downregulated , sagebrain:NoChange , sagebrain:UnknownDirection .
+
+sagebrain:Upregulated
+    a sagebrain:ExpressionDirection ;
+    skos:prefLabel "Upregulated" ;
+    skos:definition "Expression level increased relative to the reference/baseline." ;
+    skos:closeMatch pato:0000470 ;
+    skos:editorialNote "pato:0000470 (\"increased amount\") is a generic composable quality, not itself a gene-expression-specific term -- closeMatch, not exactMatch." ;
+    skos:inScheme sagebrain:ExpressionDirectionScheme .
+
+sagebrain:Downregulated
+    a sagebrain:ExpressionDirection ;
+    skos:prefLabel "Downregulated" ;
+    skos:definition "Expression level decreased relative to the reference/baseline." ;
+    skos:closeMatch pato:0001997 ;
+    skos:editorialNote "pato:0001997 (\"decreased amount\"), same reasoning as Upregulated." ;
+    skos:inScheme sagebrain:ExpressionDirectionScheme .
+
+sagebrain:NoChange
+    a sagebrain:ExpressionDirection ;
+    skos:prefLabel "No Change" ;
+    skos:definition "Expression level not meaningfully different from the reference/baseline." ;
+    skos:closeMatch pato:0000461 ;
+    skos:editorialNote "pato:0000461 (\"normal\" -- \"exhibiting no deviation from normal or average\"), same reasoning as Upregulated." ;
+    skos:inScheme sagebrain:ExpressionDirectionScheme .
+
+sagebrain:UnknownDirection
+    a sagebrain:ExpressionDirection ;
+    skos:prefLabel "Unknown" ;
+    skos:definition "Direction of change not known, computed, or recorded." ;
+    skos:exactMatch ncit:C17998 ;
+    skos:editorialNote "ncit:C17998 (\"Unknown\") is a genuine 1:1 match, unlike the three PATO closeMatches above." ;
+    skos:inScheme sagebrain:ExpressionDirectionScheme .
+
 sagebrain:weight
     a owl:DatatypeProperty ;
     rdfs:label "weight" ;
@@ -831,8 +889,46 @@ sagebrain:GeneExpressionAssociation
         [ a owl:Restriction ; owl:onProperty biolink:subject ; owl:allValuesFrom biolink:Gene ] ,
         [ a owl:Restriction ; owl:onProperty biolink:object ; owl:allValuesFrom biolink:MaterialSample ] ;
     rdfs:label "Gene Expression Association" ;
-    rdfs:comment "Reifies sagebrain:expressed_in with its weight. subject: a Gene. object: a Sample. weight: expression level relative to differential-expression results." ;
+    rdfs:comment """Reifies sagebrain:expressed_in with its weight. subject: a Gene. object: a
+Sample. weight: expression level relative to differential-expression results.
+Optionally also carries: expression_classifier (up/down/no change/unknown --
+see sagebrain:ExpressionDirection), reference_baseline and analysis_tool
+(free-text -- what the comparison was made against, and what tool/protocol
+produced the classifier), and derived_from (the source Synapse file(s) the
+calculation came from -- see sagebrain:derived_from; no new property needed,
+GeneExpressionAssociation reaches it via shape:AssociationShape like every
+other Association subtype). Together, this is what lets a reader trace which
+gene(s) plausibly drove a Sample de_associated_with Pathway call: join this
+association's Gene (via participates_in) against the pathway, and its
+classifier against the DE result.""" ;
     owl:versionInfo "v0.3" .
+
+sagebrain:expression_classifier
+    a owl:ObjectProperty ;
+    rdfs:label "expression classifier" ;
+    rdfs:comment "The direction of expression-level change a differential-expression analysis assigned to this Gene-Sample pairing." ;
+    rdfs:domain sagebrain:GeneExpressionAssociation ;
+    rdfs:range sagebrain:ExpressionDirection ;
+    rdfs:subPropertyOf biolink:association_slot ;
+    owl:versionInfo "v0.4" .
+
+sagebrain:reference_baseline
+    a owl:DatatypeProperty ;
+    rdfs:label "reference baseline" ;
+    rdfs:comment "Free-text description of the reference/baseline condition this expression classifier was computed against (e.g. \"Control group\", \"untreated timepoint\")." ;
+    rdfs:domain sagebrain:GeneExpressionAssociation ;
+    rdfs:range xsd:string ;
+    rdfs:subPropertyOf biolink:association_slot ;
+    owl:versionInfo "v0.4" .
+
+sagebrain:analysis_tool
+    a owl:DatatypeProperty ;
+    rdfs:label "analysis tool" ;
+    rdfs:comment "Free-text name/version of the tool or protocol that produced this expression classifier (e.g. \"DESeq2 v1.34.0\")." ;
+    rdfs:domain sagebrain:GeneExpressionAssociation ;
+    rdfs:range xsd:string ;
+    rdfs:subPropertyOf biolink:association_slot ;
+    owl:versionInfo "v0.4" .
 
 sagebrain:SampleDEAssociation
     a owl:Class ;
