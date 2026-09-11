@@ -75,7 +75,7 @@ SH_RESULT_MESSAGE = URIRef("http://www.w3.org/ns/shacl#resultMessage")
 # One entry per planted defect in tests/violating.ttl. Substrings, so the
 # wording of a message can be edited without breaking the test.
 EXPECTED_VIOLATIONS = {
-    "a: per-pair range, Sample de_associated_with DiseaseStage":
+    "a: wrong target class, Sample de_associated_with to a DiseaseStage":
         "Sample de_associated_with must point to a Pathway",
     "b: forward cardinality, trial tests two compounds":
         "tests at most one DrugCompound",
@@ -87,6 +87,8 @@ EXPECTED_VIOLATIONS = {
         "may belong to at most one Individual",
     "f: node kind, literal edge target":
         "participates_in must point to a Pathway",
+    "g: wrong target class, Pathway de_associated_with_stage to a Drug":
+        "de_associated_with_stage must point to a DiseaseStage",
 }
 
 
