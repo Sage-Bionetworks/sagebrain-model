@@ -1,5 +1,7 @@
 @prefix sagebrain: <https://w3id.org/synapse/sagebrain#> .
 @prefix biolink:   <https://w3id.org/biolink/vocab/> .
+@prefix gov:       <https://sagebionetworks.org/governance/> .
+@prefix prov:      <http://www.w3.org/ns/prov#> .
 @prefix owl:       <http://www.w3.org/2002/07/owl#> .
 @prefix rdfs:      <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix xsd:       <http://www.w3.org/2001/XMLSchema#> .
@@ -196,6 +198,26 @@ biolink:ClinicalTrial
     sagebrain:elementCategory sagebrain:Translational ;
     sagebrain:nodeLevel sagebrain:Instance ;
     owl:versionInfo "v0.2" .
+
+#################################################################
+#    Reused terms (Sage Governance Graph)
+#
+#    gov:SynapseEntity ("a concrete Synapse entity (project, folder, file,
+#    etc.)") is reused by IRI from mc2-center/governanceDUO's governance
+#    graph rather than minting a SageBrain-native "File"/"Source" class --
+#    see ontology/imports/governance_graph.ttl for the extract and its
+#    provenance, and plans/gene_expression_de_metadata.md for why. This is
+#    what sagebrain:derived_from points at for source-file provenance below.
+#    Not given sagebrain:elementCategory/nodeLevel: pure structural reuse,
+#    the same treatment biolink:Association already gets (it isn't a "Type"
+#    row from the source model either).
+#################################################################
+
+gov:SynapseEntity
+    skos:scopeNote "A concrete Synapse entity (project, folder, file, etc.)." ;
+    skos:editorialNote "Reused from mc2-center/governanceDUO's governance graph (governance_graph.yaml/shapes/governance_graph.owl.ttl), which records it as a close match for prov:Entity." ;
+    skos:closeMatch prov:Entity ;
+    owl:versionInfo "v0.4" .
 
 #################################################################
 #    Elements (classes)
@@ -700,20 +722,52 @@ sagebrain:derived_from
     a owl:ObjectProperty ;
     rdfs:label "derived from" ;
     rdfs:comment """Traces a Sample, or a reified Association carrying derived information, back
-to the file(s) and/or sample(s) it was actually computed from. Range is
-biolink:MaterialSample for now -- there is no File class in this graph yet,
-file metadata being planned as a separate layer -- and is meant to widen to
-a union with that class once it exists, the same way sagebrain:contains_tissue's
-domain is already a union of two classes. No cardinality bound in either
-direction: a sample may be backed by more than one file (e.g. paired-end
-reads, multiple lanes), and an association may be derived from more than one
-sample or file where its own biolink:subject/biolink:object cannot represent
-every contributor (e.g. a comparison computed across samples).""" ;
+to the sample(s) and/or Synapse entity/entities (files, typically) it was
+actually computed from: biolink:MaterialSample when derived from another
+biological sample, gov:SynapseEntity when derived from a file or other
+Synapse-hosted entity. gov:SynapseEntity replaces the earlier "Sample stands
+in for a file, until a File class exists" placeholder (v0.4) -- see
+ontology/imports/governance_graph.ttl and plans/gene_expression_de_metadata.md.
+This remains the plain-property-level provenance edge; a full PROV-O
+Activity/Usage layer (mirroring mc2-center/governanceDUO's provenance.yaml,
+gated behind ontology/governance/ and `make WITH_GOVERNANCE=1`) would let a
+derivation record its inputs individually with roles and executed-vs-used
+detail, and is a separate, larger effort tracked on its own, not part of this
+property. No cardinality bound in either direction: a sample may be backed by
+more than one file (e.g. paired-end reads, multiple lanes), and an association
+may be derived from more than one sample or file where its own
+biolink:subject/biolink:object cannot represent every contributor (e.g. a
+comparison computed across samples).""" ;
     rdfs:domain [ a owl:Class ;
                   owl:unionOf ( biolink:MaterialSample biolink:Association ) ] ;
-    rdfs:range biolink:MaterialSample ;
+    rdfs:range [ a owl:Class ;
+                 owl:unionOf ( biolink:MaterialSample gov:SynapseEntity ) ] ;
     sagebrain:weighted false ;
     owl:versionInfo "v0.4" .
+
+#  Per-pair OWL restrictions for sagebrain:derived_from, needed for the same
+#  practical reason as contains_tissue/derived_from_organ above: OWL2VOWL
+#  drops a unionOf domain/range to null, so without these, neither this
+#  property nor gov:SynapseEntity render in the WebVOWL graph. derived_from's
+#  domain has been a union since v0.4 (never fixed until now); its range
+#  became one in this same change. Every (domain, range) combination is
+#  genuinely valid here (unlike the old de_associated_with union), so all
+#  four combinations get a restriction rather than a narrower subset.
+biolink:MaterialSample
+    rdfs:subClassOf [ a owl:Restriction ;
+                       owl:onProperty sagebrain:derived_from ;
+                       owl:allValuesFrom biolink:MaterialSample ] ,
+                     [ a owl:Restriction ;
+                       owl:onProperty sagebrain:derived_from ;
+                       owl:allValuesFrom gov:SynapseEntity ] .
+
+biolink:Association
+    rdfs:subClassOf [ a owl:Restriction ;
+                       owl:onProperty sagebrain:derived_from ;
+                       owl:allValuesFrom biolink:MaterialSample ] ,
+                     [ a owl:Restriction ;
+                       owl:onProperty sagebrain:derived_from ;
+                       owl:allValuesFrom gov:SynapseEntity ] .
 
 #################################################################
 #    Associations (reified weighted connections)
