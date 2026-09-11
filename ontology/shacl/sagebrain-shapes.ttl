@@ -49,7 +49,7 @@ Four groups of shapes:
 
   4. ASSOCIATION SHAPES -- constrains the reified weighted connections, plus two v0.4
      additions that are not about weight at all. A weight cannot live on a plain RDF
-     triple, so ontology/main/sagebrain.ttl reifies the four weighted (source, target)
+     triple, so ontology/main/sagebrain.ttl reifies the five weighted (source, target)
      pairs as Biolink-style association instances; these shapes require each one to
      carry exactly one subject, one object, and one weight. QCResultAssociation is the
      same reification pattern for a categorical (FAIL/WARN/PASS) outcome instead of a
@@ -472,6 +472,13 @@ shape:PathwayShape
         sh:class sagebrain:DiseaseStage ;
         sh:nodeKind sh:IRI ;
         sh:message "Pathway de_associated_with_stage must point to a DiseaseStage." ;
+    ] ;
+    sh:property [
+        sh:path sagebrain:de_associated_with_disease ;
+        sh:name "DE associated with disease" ;
+        sh:class biolink:Disease ;
+        sh:nodeKind sh:IRI ;
+        sh:message "Pathway de_associated_with_disease must point to a DiseaseLabel." ;
     ] .
 
 ###  Translational  ############################################
@@ -700,9 +707,10 @@ containment is independently a one-parent hierarchy, unlike Tissue's many-parent
 ##
 ##  4. EDGE WEIGHTS -- VIA REIFIED ASSOCIATIONS
 ##
-##  Four (source, target) pairs are marked weighted in the source model:
+##  Five (source, target) pairs are marked weighted in the source model:
 ##    Gene expressed_in Sample; Sample de_associated_with Pathway;
-##    Pathway de_associated_with_stage DiseaseStage; Pathway associated_with DiseaseLabel.
+##    Pathway de_associated_with_stage DiseaseStage;
+##    Pathway de_associated_with_disease DiseaseLabel; Pathway associated_with DiseaseLabel.
 ##
 ##  A weight is a property OF an edge, which a plain RDF triple cannot carry. Of the
 ##  options once listed here (skip RDF entirely; reify; RDF-star; collapse to a
@@ -828,6 +836,36 @@ shape:PathwayDEAssociationShape
         sh:datatype xsd:decimal ;
         sh:minCount 1 ; sh:maxCount 1 ;
         sh:message "A PathwayDEAssociation needs exactly one xsd:decimal weight." ;
+    ] .
+
+shape:PathwayDiseaseDEAssociationShape
+    a sh:NodeShape ;
+    sh:targetClass sagebrain:PathwayDiseaseDEAssociation ;
+    rdfs:label "Pathway disease differential-expression association shape" ;
+    rdfs:comment "Reifies sagebrain:de_associated_with_disease. subject: a Pathway. object: a DiseaseLabel." ;
+
+    sh:property [
+        sh:path biolink:subject ;
+        sh:name "subject" ;
+        sh:class biolink:Pathway ;
+        sh:nodeKind sh:IRI ;
+        sh:minCount 1 ; sh:maxCount 1 ;
+        sh:message "A PathwayDiseaseDEAssociation needs exactly one subject, a Pathway." ;
+    ] ;
+    sh:property [
+        sh:path biolink:object ;
+        sh:name "object" ;
+        sh:class biolink:Disease ;
+        sh:nodeKind sh:IRI ;
+        sh:minCount 1 ; sh:maxCount 1 ;
+        sh:message "A PathwayDiseaseDEAssociation needs exactly one object, a DiseaseLabel." ;
+    ] ;
+    sh:property [
+        sh:path sagebrain:weight ;
+        sh:name "weight" ;
+        sh:datatype xsd:decimal ;
+        sh:minCount 1 ; sh:maxCount 1 ;
+        sh:message "A PathwayDiseaseDEAssociation needs exactly one xsd:decimal weight." ;
     ] .
 
 shape:PathwayDiseaseAssociationShape
