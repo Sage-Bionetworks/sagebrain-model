@@ -122,6 +122,10 @@ EXPECTED_VIOLATIONS = {
         "derived_from_organ must point to an Organ or an OrganSubregion",
     "l: wrong target class, Pathway de_associated_with_disease to a Drug":
         "de_associated_with_disease must point to a DiseaseLabel",
+    "k: wrong target class, GeneExpressionAssociation expression_classifier to a Drug":
+        "expression_classifier must point to at most one ExpressionDirection",
+    "l: wrong target class, Sample derived_from to a Gene":
+        "derived_from must point to a MaterialSample or a SynapseEntity",
 }
 
 
