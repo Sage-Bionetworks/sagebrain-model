@@ -633,7 +633,7 @@ sagebrain:derived_from_organ
     rdfs:range [ a owl:Class ;
                   owl:unionOf ( sagebrain:Organ sagebrain:OrganSubregion ) ] ;
     sagebrain:weighted false ;
-    owl:versionInfo "v0.5" .
+    owl:versionInfo "v0.4" .
 
 sagebrain:has_pathology
     a owl:ObjectProperty ;
