@@ -110,6 +110,8 @@ EXPECTED_VIOLATIONS = {
         "GeneExpressionAssociation needs exactly one subject, a Gene",
     "i: missing weight, GeneExpressionAssociation carries no sagebrain:weight":
         "GeneExpressionAssociation needs exactly one xsd:double weight",
+    "g: wrong target class, QCResultAssociation qc_status to a Pathway":
+        "needs exactly one QCStatus",
 }
 
 
