@@ -591,6 +591,36 @@ sagebrain:de_associated_with_stage
     skos:editorialNote "Optional. DE state associated with pathway activity." ;
     owl:versionInfo "v0.3" .
 
+#  Per-pair OWL restrictions for sagebrain:contains_tissue and
+#  sagebrain:derived_from_organ, same rationale as de_associated_with above --
+#  plus a second, practical payoff: OWL2VOWL resolves rdfs:domain/rdfs:range
+#  only when it names a single class, and silently drops a property's
+#  domain/range entirely when it is an owl:unionOf blank node (confirmed by
+#  inspecting build/sage.json -- contains_tissue and derived_from_organ both
+#  came back with the union-side resolved to null). Without these
+#  restrictions, sagebrain:Organ and sagebrain:OrganSubregion render as
+#  disconnected nodes in the WebVOWL graph even though the model does connect
+#  them. A per-class owl:allValuesFrom restriction gives OWL2VOWL a concrete
+#  (domain, range) pair to draw per class, exactly as it already does for
+#  de_associated_with's two restrictions above.
+sagebrain:Organ
+    rdfs:subClassOf [ a owl:Restriction ;
+                       owl:onProperty sagebrain:contains_tissue ;
+                       owl:allValuesFrom sagebrain:Tissue ] .
+
+sagebrain:OrganSubregion
+    rdfs:subClassOf [ a owl:Restriction ;
+                       owl:onProperty sagebrain:contains_tissue ;
+                       owl:allValuesFrom sagebrain:Tissue ] .
+
+biolink:MaterialSample
+    rdfs:subClassOf [ a owl:Restriction ;
+                       owl:onProperty sagebrain:derived_from_organ ;
+                       owl:allValuesFrom sagebrain:Organ ] ,
+                     [ a owl:Restriction ;
+                       owl:onProperty sagebrain:derived_from_organ ;
+                       owl:allValuesFrom sagebrain:OrganSubregion ] .
+
 sagebrain:related_pathway
     a owl:ObjectProperty ;
     rdfs:label "related pathway" ;
