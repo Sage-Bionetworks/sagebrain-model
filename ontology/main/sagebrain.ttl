@@ -350,6 +350,65 @@ sagebrain:Vasculature a sagebrain:Biodomain ; skos:prefLabel "Vasculature" ; sko
 
 ###  Translational
 
+###  Quality Control
+#
+#  New in v0.4 (see plans/qc_layer_integration.md). QC results are computed
+#  from FASTQ/counts files, which have no representative class in this graph
+#  yet -- file metadata is planned as a separate graph layer. Until that
+#  exists, sagebrain:QCResultAssociation (in the "Associations" section
+#  below) anchors QC results on the Sample entity instead, and
+#  sagebrain:derived_from (in "Connections" below) provides a generic hook --
+#  usable from a Sample or any biolink:Association -- for tracing a piece of
+#  information back to the file(s)/sample(s) it came from once that layer
+#  lands.
+
+sagebrain:QCMetric
+    a owl:Class ;
+    rdfs:label "QC Metric" ;
+    rdfs:comment "A quality-control metric type computed for a sample's underlying sequencing data (e.g. Phred score, reads mapped)." ;
+    sagebrain:elementCategory sagebrain:Biological ;
+    sagebrain:nodeLevel sagebrain:Vocabulary ;
+    owl:versionInfo "v0.4" .
+
+sagebrain:QCStatus
+    a owl:Class ;
+    rdfs:subClassOf skos:Concept ;
+    rdfs:label "QC Status" ;
+    rdfs:comment "The outcome of a single QC check: pass, warn, or fail." .
+
+#################################################################
+#    QC vocabulary
+#
+#    QCMetric individuals: one node per plans/qc_elements.md "Attribute" row
+#    (DV200 and RIN share one node -- the source document always gates on
+#    them jointly). QCStatus individuals are prefixed (QCPass/QCWarn/QCFail),
+#    unlike sagebrain:NodeLevel's bare Instance/Vocabulary, since "Pass" and
+#    "Fail" are common enough words to risk future collisions in this flat
+#    namespace.
+#################################################################
+
+sagebrain:QCMetricScheme
+    a skos:ConceptScheme ;
+    rdfs:label "SageBrain QC metrics" ;
+    skos:hasTopConcept
+        sagebrain:PhredScore , sagebrain:ReadsMapped , sagebrain:DuplicatedReads ,
+        sagebrain:SexCheck , sagebrain:DV200RIN .
+
+sagebrain:PhredScore a sagebrain:QCMetric ; skos:prefLabel "Phred Score" ; skos:inScheme sagebrain:QCMetricScheme .
+sagebrain:ReadsMapped a sagebrain:QCMetric ; skos:prefLabel "Reads Mapped" ; skos:inScheme sagebrain:QCMetricScheme .
+sagebrain:DuplicatedReads a sagebrain:QCMetric ; skos:prefLabel "Duplicated Reads" ; skos:inScheme sagebrain:QCMetricScheme .
+sagebrain:SexCheck a sagebrain:QCMetric ; skos:prefLabel "Sex Check" ; skos:inScheme sagebrain:QCMetricScheme .
+sagebrain:DV200RIN a sagebrain:QCMetric ; skos:prefLabel "DV200 / RIN" ; skos:inScheme sagebrain:QCMetricScheme .
+
+sagebrain:QCStatusScheme
+    a skos:ConceptScheme ;
+    rdfs:label "SageBrain QC status" ;
+    skos:hasTopConcept sagebrain:QCPass , sagebrain:QCWarn , sagebrain:QCFail .
+
+sagebrain:QCPass a sagebrain:QCStatus ; skos:prefLabel "Pass" ; skos:definition "The metric met its threshold; no fail or warn condition was triggered." ; skos:inScheme sagebrain:QCStatusScheme .
+sagebrain:QCWarn a sagebrain:QCStatus ; skos:prefLabel "Warn" ; skos:definition "The metric triggered a warning condition, short of an outright failure." ; skos:inScheme sagebrain:QCStatusScheme .
+sagebrain:QCFail a sagebrain:QCStatus ; skos:prefLabel "Fail" ; skos:definition "The metric triggered a failure condition." ; skos:inScheme sagebrain:QCStatusScheme .
+
 #################################################################
 #    Connections (object properties)
 #
@@ -569,6 +628,34 @@ sagebrain:has_pathology
     skos:editorialNote "Pathology identifier for the sample." ;
     owl:versionInfo "v0.2" .
 
+sagebrain:has_qc_status
+    a owl:ObjectProperty ;
+    rdfs:label "has QC status" ;
+    rdfs:comment "The sample's overall QC verdict, computed externally per the roll-up rule in plans/qc_layer_integration.md (fail on any FAIL, or on 2+ WARN across metrics)." ;
+    rdfs:domain biolink:MaterialSample ;
+    rdfs:range sagebrain:QCStatus ;
+    sagebrain:weighted false ;
+    owl:versionInfo "v0.4" .
+
+sagebrain:derived_from
+    a owl:ObjectProperty ;
+    rdfs:label "derived from" ;
+    rdfs:comment """Traces a Sample, or a reified Association carrying derived information, back
+to the file(s) and/or sample(s) it was actually computed from. Range is
+biolink:MaterialSample for now -- there is no File class in this graph yet,
+file metadata being planned as a separate layer -- and is meant to widen to
+a union with that class once it exists, the same way sagebrain:contains_tissue's
+domain is already a union of two classes. No cardinality bound in either
+direction: a sample may be backed by more than one file (e.g. paired-end
+reads, multiple lanes), and an association may be derived from more than one
+sample or file where its own biolink:subject/biolink:object cannot represent
+every contributor (e.g. a comparison computed across samples).""" ;
+    rdfs:domain [ a owl:Class ;
+                  owl:unionOf ( biolink:MaterialSample biolink:Association ) ] ;
+    rdfs:range biolink:MaterialSample ;
+    sagebrain:weighted false ;
+    owl:versionInfo "v0.4" .
+
 #################################################################
 #    Associations (reified weighted connections)
 #
@@ -650,3 +737,28 @@ sagebrain:PathwayDiseaseAssociation
     rdfs:label "Pathway Disease Association" ;
     rdfs:comment "Reifies sagebrain:associated_with with its weight. subject: a Pathway. object: a DiseaseLabel. weight: strength of the pathway-disease association." ;
     owl:versionInfo "v0.3" .
+
+#  QCResultAssociation, added in v0.4 (see plans/qc_layer_integration.md), is
+#  a different case from the four above: it has no corresponding plain
+#  connection. A QC check's entire point is its outcome -- "this sample was
+#  assessed for Phred score, outcome unknown" is not a fact anyone would
+#  assert on its own -- so, like sagebrain:weight itself, this only exists
+#  inside its association.
+
+sagebrain:qc_status
+    a owl:ObjectProperty ;
+    rdfs:label "QC status" ;
+    rdfs:comment "The FAIL/WARN/PASS outcome of a QC check, carried on a QCResultAssociation -- the categorical counterpart to sagebrain:weight's numeric role." ;
+    rdfs:domain biolink:Association ;
+    rdfs:range sagebrain:QCStatus ;
+    rdfs:subPropertyOf biolink:association_slot ;
+    owl:versionInfo "v0.4" .
+
+sagebrain:QCResultAssociation
+    a owl:Class ;
+    rdfs:subClassOf biolink:Association ,
+        [ a owl:Restriction ; owl:onProperty biolink:subject ; owl:allValuesFrom sagebrain:QCMetric ] ,
+        [ a owl:Restriction ; owl:onProperty biolink:object ; owl:allValuesFrom biolink:MaterialSample ] ;
+    rdfs:label "QC Result Association" ;
+    rdfs:comment "Records a single QC check's outcome. subject: a QCMetric. object: a Sample (stands in for a File until the file-metadata layer exists). qc_status: the FAIL/WARN/PASS verdict." ;
+    owl:versionInfo "v0.4" .
