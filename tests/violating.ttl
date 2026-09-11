@@ -1,4 +1,4 @@
-# Instance data with six planted defects, each of which MUST be reported.
+# Instance data with seven planted defects, each of which MUST be reported.
 # tests/validate.py asserts on the expected violation set, so this doubles as
 # documentation of what the shapes actually catch.
 #
@@ -53,9 +53,21 @@ ex:apoe
     a biolink:Gene ;
     sagebrain:participates_in "KEGG:hsa04010" .
 
+# (g) wrong target class -- QCResultAssociation.qc_status must be a QCStatus.
+ex:qcResult1
+    a sagebrain:QCResultAssociation ;
+    biolink:subject sagebrain:PhredScore ;
+    biolink:object ex:samp1 ;
+    sagebrain:qc_status ex:apoptosisPathway .
+
 ###  Supporting well-formed nodes  ##############################
 
 ex:braakStage3      a sagebrain:DiseaseStage .
 ex:donanemab        a biolink:Drug .
 ex:lecanemab        a biolink:Drug .
 ex:apoptosisPathway a biolink:Pathway .
+
+# Restated for the same reason examples/AD-cohort.ttl restates SageBrain-minted
+# terms it references: pySHACL's sh:class only sees rdf:type triples present in
+# the graph actually being validated, not ones that live solely in ont_graph.
+sagebrain:PhredScore a sagebrain:QCMetric .

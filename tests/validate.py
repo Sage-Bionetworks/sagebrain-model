@@ -87,6 +87,8 @@ EXPECTED_VIOLATIONS = {
         "may belong to at most one Individual",
     "f: node kind, literal edge target":
         "participates_in must point to a Pathway",
+    "g: wrong target class, QCResultAssociation qc_status to a Pathway":
+        "needs exactly one QCStatus",
 }
 
 
