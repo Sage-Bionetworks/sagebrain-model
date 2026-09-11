@@ -88,3 +88,28 @@ Following this session's established convention (`plans/` + Implementation Repor
 ## Process
 
 Store this plan for review, then implement in the granular commits described above. Append the Implementation Report when done.
+
+## Implementation Report
+
+Implemented as planned, in the following commits (on branch `derived-expression-features`, off `add-qc-layer`):
+
+1. `plans: add gene expression DE metadata plan` -- this file.
+2. `Add CLAUDE.md: anchor new terms before minting, surface problems don't bury them`.
+3. `ontology/imports: add governance_graph.ttl (gov:SynapseEntity extract)`.
+4. `ontology/main/sagebrain.ttl: reuse gov:SynapseEntity, widen derived_from` -- includes the OWL2VOWL restriction fix, not deferred.
+5. `ontology/main/sagebrain.ttl: enrich GeneExpressionAssociation with DE metadata` -- `ExpressionDirection` vocabulary + the three new properties.
+6. `sagebrain-shapes.ttl: constrain derived_from's widened range, GeneExpressionAssociation's new fields`.
+7. `tests: plant violating.ttl defects for expression_classifier and derived_from` -- defects (k), (l).
+8. `examples: enrich apoe-expr-samp01, exercise derived_from for the first time`.
+
+Plus two commits outside this plan's own scope, done alongside it at the user's request: `.gitignore: keep .claude/ local only` and `.gitignore: keep CLAUDE.md local only too`.
+
+**Deviations from the Approach:**
+- Used the `gov:` prefix (not `sagegov:` as first drafted in this plan's Context section) for `https://sagebionetworks.org/governance/` throughout `sagebrain.ttl`/`sagebrain-shapes.ttl`/examples -- matches the prefix governanceDUO's own OWL TBox (`shapes/governance_graph.owl.ttl`) and this repo's new `ontology/imports/governance_graph.ttl` both use, rather than introducing a second prefix label for the identical IRI. No functional difference (same namespace either way).
+- Split step 1 into 3 commits as planned (1a/1b/1c), but 1b and 1c ended up as `ontology/main/sagebrain.ttl` commits with slightly different boundaries than first sketched -- 1b covers the SynapseEntity reuse, `derived_from` widening, and its OWL2VOWL fix together (they're one coherent change to one property); 1c is the GeneExpressionAssociation enrichment, unchanged from the plan.
+- `Makefile`'s `MAIN_SOURCES` update and `tests/validate.py`'s `IMPORTS` update (both needed so `gov:SynapseEntity` is actually declared when the ontology is loaded/built) weren't called out as separate line items in the Approach but were folded into commit 4, since they're direct, required consequences of adding the import module.
+
+**Verification results:**
+- `python3 tests/validate.py`: all 6 checks pass at every commit that touched ontology/shapes/tests. Final state: 24/24 connections constrained (unchanged count -- the 3 new `GeneExpressionAssociation` fields aren't "connections"), all 12 `tests/violating.ttl` defects caught (a-l), `tests/conforming.ttl` and both `examples/*.ttl` conform.
+- `make json` + inspecting `build/sage.json`'s `class`/`classAttribute`/`property`/`propertyAttribute` arrays: `gov:SynapseEntity` and `sagebrain:ExpressionDirection` both present as classes; `sagebrain:derived_from` resolves to 4 concrete (domain, range) pairs (`MaterialSample`/`Association` x `MaterialSample`/`SynapseEntity`), none `null`; `SynapseEntity` is not an orphan node.
+- Confirmed programmatically (a one-off script over the merged ontology + both example files) that all 24 connections are now exercised across `examples/*.ttl` -- `sagebrain:derived_from` was the last holdout since v0.4 and is now covered via `association:apoe-expr-samp01`'s `syn:syn26999999`.
