@@ -354,10 +354,17 @@ sagebrain:Vasculature a sagebrain:Biodomain ; skos:prefLabel "Vasculature" ; sko
 #    Connections (object properties)
 #
 #    Where a property is used on more than one (source, target) pair, its
-#    rdfs:domain / rdfs:range is the union over those pairs. The union is
-#    deliberately permissive -- it admits combinations the model does not, e.g.
-#    Sample de_associated_with DiseaseStage -- so the permitted pairings are
-#    stated per pair in the shapes graph, and only there.
+#    rdfs:domain / rdfs:range is the union over those pairs (e.g.
+#    sagebrain:contains_tissue's domain covers both Organ and OrganSubregion).
+#    That is safe as long as every member of the unioned side maps to the same
+#    fixed value on the other side. sagebrain:de_associated_with used to union
+#    BOTH domain and range at once (Pathway/MaterialSample -> DiseaseStage/Pathway),
+#    which is the dangerous case: OWL alone could not stop the union from
+#    admitting a combination the model never intended -- Sample de_associated_with
+#    DiseaseStage. Resolved by splitting it into sagebrain:de_associated_with
+#    (Sample -> Pathway) and sagebrain:de_associated_with_stage (Pathway ->
+#    DiseaseStage), the same fix already applied to sagebrain:relates_to below
+#    (see sagebrain:stage_of / sagebrain:pathology_of).
 #################################################################
 
 sagebrain:tests
@@ -506,37 +513,24 @@ sagebrain:belongs_to
 sagebrain:de_associated_with
     a owl:ObjectProperty ;
     rdfs:label "DE associated with" ;
-    rdfs:comment "Links entities via a differential-expression association." ;
-    rdfs:domain [ a owl:Class ;
-                  owl:unionOf ( biolink:Pathway biolink:MaterialSample ) ] ;
-    rdfs:range [ a owl:Class ;
-                 owl:unionOf ( sagebrain:DiseaseStage biolink:Pathway ) ] ;
+    rdfs:comment "Links a material sample to a pathway via a differential-expression result." ;
+    rdfs:domain biolink:MaterialSample ;
+    rdfs:range biolink:Pathway ;
     sagebrain:weighted true ;
     sagebrain:optional true ;
-    skos:editorialNote "Optional. DE state associated with pathway activity." ;
     skos:editorialNote "Optional. Differential expression result linking sample to pathway." ;
     owl:versionInfo "v0.3" .
 
-#  Per-pair OWL restrictions, added in v0.3. rdfs:range above states only the
-#  union over de_associated_with's two uses, which is what lets tests/violating.ttl's
-#  defect (a) -- Sample de_associated_with DiseaseStage -- pass under RDFS/OWL
-#  entailment even though sagebrain-shapes.ttl's sh:class rejects it per source
-#  class. These restrictions state the real, narrower truth per source class, so a
-#  reasoner's entailment stops disagreeing with the shapes graph. They do not
-#  replace the shapes graph: an open-world owl:allValuesFrom still cannot *cap* an
-#  edge the way sh:class does under closed-world validation, so
-#  sagebrain-shapes.ttl remains the actual enforcement layer. See the VALIDATION
-#  CONFIGURATION section of sagebrain-shapes.ttl for why the two layers coexist
-#  and must be run without entailment.
-biolink:MaterialSample
-    rdfs:subClassOf [ a owl:Restriction ;
-                       owl:onProperty sagebrain:de_associated_with ;
-                       owl:allValuesFrom biolink:Pathway ] .
-
-biolink:Pathway
-    rdfs:subClassOf [ a owl:Restriction ;
-                       owl:onProperty sagebrain:de_associated_with ;
-                       owl:allValuesFrom sagebrain:DiseaseStage ] .
+sagebrain:de_associated_with_stage
+    a owl:ObjectProperty ;
+    rdfs:label "DE associated with stage" ;
+    rdfs:comment "Links a pathway to a disease stage via a differential-expression result." ;
+    rdfs:domain biolink:Pathway ;
+    rdfs:range sagebrain:DiseaseStage ;
+    sagebrain:weighted true ;
+    sagebrain:optional true ;
+    skos:editorialNote "Optional. DE state associated with pathway activity." ;
+    owl:versionInfo "v0.3" .
 
 sagebrain:related_pathway
     a owl:ObjectProperty ;
@@ -579,7 +573,7 @@ sagebrain:has_pathology
 #    Associations (reified weighted connections)
 #
 #    Four of the plain connections above are marked sagebrain:weighted true:
-#    expressed_in, de_associated_with (two source/target pairs), and
+#    expressed_in, de_associated_with, de_associated_with_stage, and
 #    associated_with. A weight is a property OF an edge, which a plain RDF
 #    triple cannot carry, and sagebrain-shapes.ttl's old #4 section left this
 #    unconstrained rather than choosing between reification, RDF-star, or
@@ -597,12 +591,13 @@ sagebrain:has_pathology
 #    biolink:treats: Biolink supplies the reification structure, SageBrain
 #    supplies the one slot Biolink does not have.
 #
-#    One class per plain property rather than per (source, target) pair --
-#    de_associated_with's two pairs get two association classes instead of one
-#    with an owl:onProperty/owl:allValuesFrom scoped by an sh:or, which would
-#    recreate exactly the kind of per-property overloading this model avoids
-#    elsewhere. subject/object typing is stated once per class as an OWL
-#    restriction, so it does not depend only on the shapes graph.
+#    One class per plain property: de_associated_with and de_associated_with_stage
+#    (split from one union-typed property for exactly this reason -- see the
+#    "Connections" section above) each get their own association class rather than
+#    sharing one scoped by an sh:or, which would recreate the kind of per-property
+#    overloading this model avoids elsewhere. subject/object typing is stated once
+#    per class as an OWL restriction, so it does not depend only on the shapes
+#    graph.
 #
 #    The plain properties above are NOT removed: an assertion of e.g.
 #    expressed_in with no known weight is still meaningful, and forcing every
@@ -636,7 +631,7 @@ sagebrain:SampleDEAssociation
         [ a owl:Restriction ; owl:onProperty biolink:subject ; owl:allValuesFrom biolink:MaterialSample ] ,
         [ a owl:Restriction ; owl:onProperty biolink:object ; owl:allValuesFrom biolink:Pathway ] ;
     rdfs:label "Sample Differential-Expression Association" ;
-    rdfs:comment "Reifies the Sample -> Pathway pairing of sagebrain:de_associated_with with its weight. subject: a Sample. object: a Pathway. weight: the differential-expression score." ;
+    rdfs:comment "Reifies sagebrain:de_associated_with with its weight. subject: a Sample. object: a Pathway. weight: the differential-expression score." ;
     owl:versionInfo "v0.3" .
 
 sagebrain:PathwayDEAssociation
@@ -645,7 +640,7 @@ sagebrain:PathwayDEAssociation
         [ a owl:Restriction ; owl:onProperty biolink:subject ; owl:allValuesFrom biolink:Pathway ] ,
         [ a owl:Restriction ; owl:onProperty biolink:object ; owl:allValuesFrom sagebrain:DiseaseStage ] ;
     rdfs:label "Pathway Differential-Expression Association" ;
-    rdfs:comment "Reifies the Pathway -> DiseaseStage pairing of sagebrain:de_associated_with with its weight. subject: a Pathway. object: a DiseaseStage. weight: the differential-expression score." ;
+    rdfs:comment "Reifies sagebrain:de_associated_with_stage with its weight. subject: a Pathway. object: a DiseaseStage. weight: the differential-expression score." ;
     owl:versionInfo "v0.3" .
 
 sagebrain:PathwayDiseaseAssociation
