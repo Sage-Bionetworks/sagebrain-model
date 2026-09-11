@@ -112,6 +112,8 @@ EXPECTED_VIOLATIONS = {
         "GeneExpressionAssociation needs exactly one xsd:double weight",
     "g: wrong target class, QCResultAssociation qc_status to a Pathway":
         "needs exactly one QCStatus",
+    "h: wrong target class, Sample derived_from_organ to a Tissue":
+        "derived_from_organ must point to an Organ or an OrganSubregion",
 }
 
 
