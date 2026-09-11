@@ -591,6 +591,27 @@ sagebrain:de_associated_with_stage
     skos:editorialNote "Optional. DE state associated with pathway activity." ;
     owl:versionInfo "v0.3" .
 
+#  sagebrain:de_associated_with_disease is a third, separately-named DE edge
+#  rather than widening de_associated_with_stage's range to a DiseaseStage/Disease
+#  union. The union itself would be OWL-safe (domain stays fixed at Pathway, only
+#  range varies -- the same safe shape as sagebrain:derived_from_organ's union, not
+#  the dangerous both-sides-vary case de_associated_with used to be). The reason to
+#  split anyway is the property name: "de_associated_with_stage" stops describing
+#  what it does the moment it can also reach a bare Disease with no stage involved.
+#  Distinct from sagebrain:associated_with (also Pathway -> Disease): that property
+#  is a generic pathway-disease association of unspecified origin, not necessarily
+#  DE-derived, and predates this one.
+sagebrain:de_associated_with_disease
+    a owl:ObjectProperty ;
+    rdfs:label "DE associated with disease" ;
+    rdfs:comment "Links a pathway to a disease via a differential-expression result: the genes participating in the pathway show differential expression associated with the disease." ;
+    rdfs:domain biolink:Pathway ;
+    rdfs:range biolink:Disease ;
+    sagebrain:weighted true ;
+    sagebrain:optional true ;
+    skos:editorialNote "Optional. DE state associated with disease, independent of any disease stage." ;
+    owl:versionInfo "v0.4" .
+
 #  Per-pair OWL restrictions for sagebrain:contains_tissue and
 #  sagebrain:derived_from_organ, same rationale as de_associated_with above --
 #  plus a second, practical payoff: OWL2VOWL resolves rdfs:domain/rdfs:range
@@ -699,12 +720,12 @@ every contributor (e.g. a comparison computed across samples).""" ;
 #################################################################
 #    Associations (reified weighted connections)
 #
-#    Four of the plain connections above are marked sagebrain:weighted true:
-#    expressed_in, de_associated_with, de_associated_with_stage, and
-#    associated_with. A weight is a property OF an edge, which a plain RDF
-#    triple cannot carry, and sagebrain-shapes.ttl's old #4 section left this
-#    unconstrained rather than choosing between reification, RDF-star, or
-#    dropping the number.
+#    Five of the plain connections above are marked sagebrain:weighted true:
+#    expressed_in, de_associated_with, de_associated_with_stage,
+#    de_associated_with_disease, and associated_with. A weight is a property OF
+#    an edge, which a plain RDF triple cannot carry, and sagebrain-shapes.ttl's
+#    old #4 section left this unconstrained rather than choosing between
+#    reification, RDF-star, or dropping the number.
 #
 #    Resolved in v0.3 by reifying via Biolink's own association pattern
 #    (biolink:Association, biolink:subject, biolink:object -- MIREOT'd
@@ -718,13 +739,13 @@ every contributor (e.g. a comparison computed across samples).""" ;
 #    biolink:treats: Biolink supplies the reification structure, SageBrain
 #    supplies the one slot Biolink does not have.
 #
-#    One class per plain property: de_associated_with and de_associated_with_stage
+#    One class per plain property: de_associated_with, de_associated_with_stage
 #    (split from one union-typed property for exactly this reason -- see the
-#    "Connections" section above) each get their own association class rather than
-#    sharing one scoped by an sh:or, which would recreate the kind of per-property
-#    overloading this model avoids elsewhere. subject/object typing is stated once
-#    per class as an OWL restriction, so it does not depend only on the shapes
-#    graph.
+#    "Connections" section above), and de_associated_with_disease each get their
+#    own association class rather than sharing one scoped by an sh:or, which
+#    would recreate the kind of per-property overloading this model avoids
+#    elsewhere. subject/object typing is stated once per class as an OWL
+#    restriction, so it does not depend only on the shapes graph.
 #
 #    The plain properties above are NOT removed: an assertion of e.g.
 #    expressed_in with no known weight is still meaningful, and forcing every
@@ -768,6 +789,22 @@ sagebrain:PathwayDEAssociation
     rdfs:label "Pathway Differential-Expression Association" ;
     rdfs:comment "Reifies sagebrain:de_associated_with_stage with its weight. subject: a Pathway. object: a DiseaseStage. weight: the differential-expression score." ;
     owl:versionInfo "v0.3" .
+
+#  PathwayDiseaseDEAssociation and PathwayDiseaseAssociation share the same
+#  subject/object typing (Pathway -> Disease) -- OWL restrictions alone cannot
+#  tell their instances apart, the same way the plain properties they reify
+#  cannot be told apart by domain/range. What distinguishes them is which class
+#  an instance actually asserts (rdf:type), same as any other association;
+#  see sagebrain:de_associated_with_disease above for why this is a separate
+#  property/class rather than folding into sagebrain:associated_with.
+sagebrain:PathwayDiseaseDEAssociation
+    a owl:Class ;
+    rdfs:subClassOf biolink:Association ,
+        [ a owl:Restriction ; owl:onProperty biolink:subject ; owl:allValuesFrom biolink:Pathway ] ,
+        [ a owl:Restriction ; owl:onProperty biolink:object ; owl:allValuesFrom biolink:Disease ] ;
+    rdfs:label "Pathway Disease Differential-Expression Association" ;
+    rdfs:comment "Reifies sagebrain:de_associated_with_disease with its weight. subject: a Pathway. object: a DiseaseLabel. weight: the differential-expression score." ;
+    owl:versionInfo "v0.4" .
 
 sagebrain:PathwayDiseaseAssociation
     a owl:Class ;
