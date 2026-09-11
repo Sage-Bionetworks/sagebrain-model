@@ -4,7 +4,7 @@
 # trial, with real identifiers throughout. Validated on every run of
 # tests/validate.py.
 #
-# It exercises 21 of the model's 22 connections, including sagebrain:belongs_to
+# It exercises 23 of the model's 24 connections, including sagebrain:belongs_to
 # now that the 19 AD biodomains are minted as a SKOS vocabulary (see
 # sagebrain:BiodomainScheme in ontology/main/sagebrain.ttl) -- previously left out
 # on exactly this ground, per the "What is missing" section below before B5 was
@@ -15,6 +15,10 @@
 # section below already avoids everywhere else in this file. v0.4 also added
 # sagebrain:derived_from_organ, exercised below on both sample:01 (-> Organ) and
 # sample:03 (-> OrganSubregion), demonstrating both members of its range union.
+# Also v0.4: sagebrain:de_associated_with_disease, exercised via
+# REACT:R-HSA-977225 -> MONDO:0004975 -- the same disease its (pre-existing,
+# not-necessarily-DE-derived) sagebrain:associated_with edge already names, here
+# via a differential-expression result specifically.
 #
 # IDENTIFIERS
 #
@@ -241,7 +245,8 @@ REACT:R-HSA-977225
     sagebrain:belongs_to sagebrain:Proteostasis ;
     sagebrain:associated_with MONDO:0004975 ;
     sagebrain:related_pathway REACT:R-HSA-9664422 ;
-    sagebrain:de_associated_with_stage adkp:BRAAKStage3 .
+    sagebrain:de_associated_with_stage adkp:BRAAKStage3 ;
+    sagebrain:de_associated_with_disease MONDO:0004975 .
 
 REACT:R-HSA-9664422
     a biolink:Pathway ;
