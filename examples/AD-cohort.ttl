@@ -4,7 +4,7 @@
 # trial, with real identifiers throughout. Validated on every run of
 # tests/validate.py.
 #
-# It exercises 20 of the model's 21 connections, including sagebrain:belongs_to
+# It exercises 21 of the model's 22 connections, including sagebrain:belongs_to
 # now that the 19 AD biodomains are minted as a SKOS vocabulary (see
 # sagebrain:BiodomainScheme in ontology/main/sagebrain.ttl) -- previously left out
 # on exactly this ground, per the "What is missing" section below before B5 was
@@ -12,7 +12,9 @@
 # sagebrain:has_qc_status is exercised below via sample:03. sagebrain:derived_from
 # is not -- there is no File class yet to point at, and inventing a placeholder
 # IRI for it would recreate exactly the ex: problem the "Where a term comes from"
-# section below already avoids everywhere else in this file.
+# section below already avoids everywhere else in this file. v0.4 also added
+# sagebrain:derived_from_organ, exercised below on both sample:01 (-> Organ) and
+# sample:03 (-> OrganSubregion), demonstrating both members of its range union.
 #
 # IDENTIFIERS
 #
@@ -94,6 +96,7 @@ sample:01
     a biolink:MaterialSample ;
     rdfs:label "participant 01 cerebral cortex" ;
     sagebrain:source_tissue UBERON:0000956 ;
+    sagebrain:derived_from_organ UBERON:0000955 ;
     sagebrain:has_pathology adkp:FrequentDefiniteC3 ;
     sagebrain:de_associated_with REACT:R-HSA-977225 .
 
@@ -107,6 +110,7 @@ sample:03
     a biolink:MaterialSample ;
     rdfs:label "participant 02 cerebral cortex" ;
     sagebrain:source_tissue UBERON:0000956 ;
+    sagebrain:derived_from_organ UBERON:0002421 ;
     sagebrain:has_qc_status sagebrain:QCFail .
 
 ###  Quality control  ###########################################
