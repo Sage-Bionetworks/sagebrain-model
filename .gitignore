@@ -17,3 +17,4 @@ tmp/
 
 # Local Claude Code session settings/plans -- machine-specific, not shared.
 .claude/
+CLAUDE.md
