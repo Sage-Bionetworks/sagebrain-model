@@ -4,12 +4,15 @@ Instance data that conforms to the model. These files are documentation first �
 this is the answer to "what does a SageBrain graph actually look like?" — and a
 test second: `tests/validate.py` validates every `*.ttl` in this directory on
 every run (check 6), so a model change that would break data a curator could
-plausibly have written fails the test run.
+plausibly have written fails the test run. One exception: `pipeline_provenance.ttl`
+targets the opt-in governance layer (see below) and is validated only under
+`WITH_GOVERNANCE=1` (check 7), not by every default run.
 
 | File | What it is |
 |---|---|
 | `minimal.ttl` | One gene in one pathway. A one-screen answer to "show me the format" |
 | `AD-cohort.ttl` | Two participants, three samples, three genes, two pathways, a drug and a trial — exercising all 24 of the model's connections |
+| `pipeline_provenance.ttl` | A raw dataset reprocessed by nf-core/rnaseq then DESeq2 into `syn:syn26999999` — the same file `AD-cohort.ttl`'s `apoe-expr-samp01` names via `derived_from`. Needs `WITH_GOVERNANCE=1` to validate; see below |
 
 ## Identifiers
 
@@ -93,6 +96,16 @@ file, just borrowing Synapse's own real id shape and namespace so a real id
 would resolve to the identical node in both graphs. The model is a work in
 progress, and a statement that cannot be written honestly is a signal about
 where to look; that is still true of what remains open, covered next.
+
+`derived_from` names *that* a file was the source; it says nothing about how it
+got there. `pipeline_provenance.ttl` is the detailed path behind the same edge:
+a `prov:Activity`/`prov:Usage` chain (`ontology/governance/pipeline_provenance.ttl`,
+see `plans/pipeline_provenance_layer.md`) tracing `syn:syn26999999` back through
+an nf-core/rnaseq run and a DESeq2 run to a raw dataset — the exact node
+`apoe-expr-samp01`'s `derived_from` already names, not a lookalike. This layer
+is optional and unstable (`ontology/governance/`, per the `Makefile`), so unlike
+every other file here it is validated only under `make WITH_GOVERNANCE=1` /
+`WITH_GOVERNANCE=1 python tests/validate.py`, not by a plain default run.
 
 ### Where a term comes from
 
