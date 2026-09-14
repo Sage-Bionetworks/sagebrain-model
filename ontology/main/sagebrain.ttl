@@ -731,11 +731,13 @@ Synapse-hosted entity. gov:SynapseEntity replaces the earlier "Sample stands
 in for a file, until a File class exists" placeholder (v0.4) -- see
 ontology/imports/governance_graph.ttl and plans/gene_expression_de_metadata.md.
 This remains the plain-property-level provenance edge; a full PROV-O
-Activity/Usage layer (mirroring mc2-center/governanceDUO's provenance.yaml,
-gated behind ontology/governance/ and `make WITH_GOVERNANCE=1`) would let a
-derivation record its inputs individually with roles and executed-vs-used
-detail, and is a separate, larger effort tracked on its own, not part of this
-property. No cardinality bound in either direction: a sample may be backed by
+Activity/Usage layer recording a derivation's inputs individually, with roles
+and executed-vs-used detail, now exists at
+ontology/governance/pipeline_provenance.ttl (gated behind
+`make WITH_GOVERNANCE=1`, mirroring mc2-center/governanceDUO's
+provenance.yaml) -- reachable from the same gov:SynapseEntity nodes this
+property points at, but a separate, optional layer, not part of this
+property's own declaration. No cardinality bound in either direction: a sample may be backed by
 more than one file (e.g. paired-end reads, multiple lanes), and an association
 may be derived from more than one sample or file where its own
 biolink:subject/biolink:object cannot represent every contributor (e.g. a
