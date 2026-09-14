@@ -7,7 +7,7 @@ Run from the repository root:
 
 Requires rdflib and pyshacl.
 
-Seven checks:
+Eight checks:
 
   1. The shapes graph is itself valid SHACL.
   2. The ontology satisfies its own model-integrity shapes -- catches
@@ -42,6 +42,16 @@ Seven checks:
      `make tools` to fetch it. This check exists because exactly this kind of
      violation (PR #3, biolink:association_slot punned via a MIREOT ROOT) shipped
      silently until a human reviewer caught it with `robot reason` by hand.
+
+  8. (opt-in, set WITH_GOVERNANCE=1) ontology/governance/ -- the pipeline
+     provenance layer (prov:Activity/prov:Usage) and its
+     ontology/shacl/governance-shapes.ttl constraints. Unset by default,
+     mirroring the Makefile's own WITH_GOVERNANCE flag: this layer is
+     optional and not part of the default build, so it is not part of the
+     default test run either. Same three-part check as 3/4/6 above (a
+     conforming fixture, a violating fixture with expected defects, and the
+     one example that exercises this layer), scoped to its own files so a
+     broken governance module cannot fail a default `python3 tests/validate.py`.
 
 Inference is deliberately OFF. The ontology is passed as ont_graph so class
 hierarchies resolve, but no entailment is computed: rdfs:range is an entailment
@@ -91,7 +101,26 @@ CONFORMING = ROOT / "tests" / "conforming.ttl"
 VIOLATING = ROOT / "tests" / "violating.ttl"
 # Demonstrations, not fixtures: see examples/README.md for the division of
 # labour. Globbed rather than listed, so a new example is covered by adding it.
-EXAMPLES = sorted((ROOT / "examples").glob("*.ttl"))
+# Excludes GOVERNANCE_EXAMPLE below, which needs the governance layer loaded
+# to conform and so is only checked under WITH_GOVERNANCE=1.
+EXAMPLES = sorted(
+    p for p in (ROOT / "examples").glob("*.ttl") if p.name != "pipeline_provenance.ttl"
+)
+
+# --- opt-in governance layer (WITH_GOVERNANCE=1) ----------------------------
+# Mirrors the Makefile's own flag: ontology/governance/ is unstable and not
+# part of the default build, so it is not part of the default test run --
+# check 7 below only runs when this is set. GOVERNANCE_MODULES globs
+# ontology/governance/*.ttl the same way the Makefile does; duo.ttl is left
+# out of GOVERNANCE_IMPORTS (unlike the Makefile's GOVERNANCE_SOURCES) because
+# nothing in ontology/governance/ references a DUO term yet.
+WITH_GOVERNANCE = bool(os.environ.get("WITH_GOVERNANCE"))
+GOVERNANCE_MODULES = sorted((ROOT / "ontology" / "governance").glob("*.ttl"))
+GOVERNANCE_IMPORTS = [ROOT / "ontology" / "imports" / "prov.ttl", *GOVERNANCE_MODULES]
+GOVERNANCE_SHAPES = ROOT / "ontology" / "shacl" / "governance-shapes.ttl"
+GOVERNANCE_CONFORMING = ROOT / "tests" / "governance_conforming.ttl"
+GOVERNANCE_VIOLATING = ROOT / "tests" / "governance_violating.ttl"
+GOVERNANCE_EXAMPLE = ROOT / "examples" / "pipeline_provenance.ttl"
 
 SH_RESULT_MESSAGE = URIRef("http://www.w3.org/ns/shacl#resultMessage")
 
@@ -126,6 +155,15 @@ EXPECTED_VIOLATIONS = {
         "expression_classifier must point to at most one ExpressionDirection",
     "n: wrong target class, Sample derived_from to a Gene":
         "derived_from must point to a MaterialSample or a SynapseEntity",
+}
+
+# One entry per planted defect in tests/governance_violating.ttl. Only
+# checked under WITH_GOVERNANCE=1 -- see check 7.
+EXPECTED_GOVERNANCE_VIOLATIONS = {
+    "m: Usage with neither prov:entity nor gov:url":
+        "must be either a gov:SynapseEntity",
+    "n: Activity generated a Gene instead of a SynapseEntity":
+        "prov:generated output, a SynapseEntity",
 }
 
 
@@ -304,6 +342,39 @@ def main():
         if not in_profile:
             failures.append("merged ontology is not in the OWL 2 DL profile")
             print(report)
+
+    # 8. (opt-in) the governance pipeline-provenance layer
+    if WITH_GOVERNANCE:
+        gov_ontology = load(ONTOLOGY, *IMPORTS, *MAPPINGS, *GOVERNANCE_IMPORTS)
+        gov_shapes = load(SHAPES, GOVERNANCE_SHAPES)
+
+        conforms, _, text = run(load(GOVERNANCE_CONFORMING), gov_shapes, gov_ontology)
+        print("[8] governance layer (WITH_GOVERNANCE=1):")
+        print(f"      {'PASS' if conforms else 'FAIL'}  "
+              f"tests/governance_conforming.ttl conforms: {conforms}")
+        if not conforms:
+            failures.append("governance conforming fixture reported violations")
+            print(text)
+
+        conforms, results, _ = run(load(GOVERNANCE_VIOLATING), gov_shapes, gov_ontology)
+        found = messages(results)
+        print(f"      tests/governance_violating.ttl conforms: {conforms} "
+              f"({len(found)} violation(s) reported)")
+        if conforms:
+            failures.append("governance violating fixture reported no violations at all")
+        for label, needle in sorted(EXPECTED_GOVERNANCE_VIOLATIONS.items()):
+            hit = any(needle in m for m in found)
+            print(f"      {'PASS' if hit else 'FAIL'}  {label}")
+            if not hit:
+                failures.append(f"governance defect not caught -- {label}")
+
+        conforms, _, text = run(load(GOVERNANCE_EXAMPLE), gov_shapes, gov_ontology)
+        print(f"      {'PASS' if conforms else 'FAIL'}  {GOVERNANCE_EXAMPLE.name}")
+        if not conforms:
+            failures.append(f"example does not conform -- {GOVERNANCE_EXAMPLE.name}")
+            print(text)
+    else:
+        print("[8] governance layer: skipped (set WITH_GOVERNANCE=1 to check)")
 
     print()
     if failures:
