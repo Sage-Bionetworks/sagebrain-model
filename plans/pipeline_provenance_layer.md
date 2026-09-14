@@ -79,3 +79,28 @@ A second `gov:Activity` individual, with `prov:qualifiedUsage`/`prov:entity` poi
 ## Process
 
 Store this plan for review, then implement in the granular commits described above. Append the Implementation Report when done.
+
+## Implementation Report
+
+Implemented as planned, in the following commits (on branch `provenance-features`, off `derived-expression-features`):
+
+1. `plans/pipeline_provenance_layer.md: draft raw-to-DE pipeline provenance plan` -- this file.
+2. `ontology/governance: add pipeline_provenance.ttl (gov:Usage extensions)`.
+3. `sagebrain.ttl: point derived_from's comment at the real provenance layer`.
+4. `ontology/shacl: add governance-shapes.ttl (Activity/Usage constraints)`.
+5. `tests/validate.py: add WITH_GOVERNANCE-gated governance layer check`.
+6. `tests: add governance_conforming.ttl / governance_violating.ttl fixtures`.
+7. `examples: add pipeline_provenance.ttl, the prompt's worked example made real`.
+8. `examples/README.md: document pipeline_provenance.ttl and its opt-in check`.
+
+**Deviations from the Approach:**
+- Step 3's `shape:UsageShape` uses `sh:xone` over two full property-shape lists (one per branch, each also asserting `sh:maxCount 0` on the other branch's path) rather than a simpler `sh:or`/`sh:not` combination -- this is the standard SHACL idiom for "exactly one of two mutually exclusive property sets" and was chosen once drafted rather than left as a placeholder in the plan's own sketch.
+- Step 4's `EXCLUDE`/glob handling for `examples/pipeline_provenance.ttl` was implemented as a name-based filter on the existing `EXAMPLES` glob (`p.name != "pipeline_provenance.ttl"`), the simpler of the two options the plan left open (name filter vs. a new `examples/governance/` subdirectory) -- no subdirectory needed since there is only the one file to exclude.
+- `GOVERNANCE_IMPORTS` in `tests/validate.py` loads only `ontology/imports/prov.ttl` plus `ontology/governance/*.ttl`, not `ontology/imports/duo.ttl` (unlike the Makefile's `GOVERNANCE_SOURCES`) -- confirmed by grep that nothing in `ontology/governance/` references a `duo:` term yet, so importing it would add parse cost with nothing to check.
+- Governance violating fixture defects are lettered (m)/(n), continuing `tests/violating.ttl`'s (a)-(l) sequence for readability, but live in their own file/dict (`tests/governance_violating.ttl` / `EXPECTED_GOVERNANCE_VIOLATIONS`) rather than being appended to the shared ones, since they require the governance layer loaded to even parse meaningfully.
+
+**Verification results:**
+- `python3 tests/validate.py` (default): unchanged from before this plan -- all 7 checks pass, check `[7]` reports "skipped (set WITH_GOVERNANCE=1 to check)".
+- `WITH_GOVERNANCE=1 python3 tests/validate.py`: all 7 checks pass, including the new governance group -- `tests/governance_conforming.ttl` conforms, both planted defects (m)/(n) in `tests/governance_violating.ttl` are caught with their expected messages, and `examples/pipeline_provenance.ttl` conforms.
+- `make WITH_GOVERNANCE=1 json`: builds cleanly (`MIN_CLASSES=100` floor passes, 335 classes / 511 properties in the merged graph). Inspected `build/sage.json`'s `classAttribute`/`propertyAttribute` arrays directly: `prov:Activity`, `prov:Usage`, `prov:Entity`, `prov:generated`, `prov:qualifiedUsage`, `prov:entity`, and the three new `gov:` properties (`wasExecuted`, `url`, `entityVersionNumber`) are all present as real (non-orphan) nodes; `gov:wasExecuted`'s domain/range resolve to concrete ids (`prov:Usage`/`xsd:boolean`), not `null`; `gov:SynapseEntity` remains a real node with a stable id.
+- Traced `examples/pipeline_provenance.ttl`'s chain by hand: `syn:syn27000001` (raw) -> `syn:activity.reprocess01` (nf-core/rnaseq v3.11.1) -> `syn:syn27000002` (intermediate) -> `syn:activity.reprocess02` (DESeq2 v1.34.0) -> `syn:syn26999999` -- the same IRI `association:apoe-expr-samp01` (`examples/AD-cohort.ttl`) already names via `sagebrain:derived_from`, confirming the two layers describe the same real-world file.
