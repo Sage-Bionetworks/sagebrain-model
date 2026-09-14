@@ -1,0 +1,27 @@
+# Instance data with two planted defects, each of which MUST be reported.
+# tests/validate.py asserts on the expected violation set (only checked under
+# WITH_GOVERNANCE=1, see check 7) -- this doubles as documentation of what
+# governance-shapes.ttl actually catches.
+
+@prefix gov:     <https://sagebionetworks.org/governance/> .
+@prefix prov:    <http://www.w3.org/ns/prov#> .
+@prefix biolink: <https://w3id.org/biolink/vocab/> .
+@prefix ex:      <https://example.org/sagebrain-test/> .
+
+# (m) a Usage with neither prov:entity nor gov:url -- fails shape:UsageShape's
+#     sh:xone (neither branch conforms).
+ex:activityM
+    a prov:Activity ;
+    prov:qualifiedUsage [ a prov:Usage ; gov:wasExecuted false ] ;
+    prov:generated ex:outputM .
+
+ex:outputM a gov:SynapseEntity .
+
+# (n) an Activity whose prov:generated points at a Gene, not a SynapseEntity.
+ex:activityN
+    a prov:Activity ;
+    prov:qualifiedUsage [ a prov:Usage ; prov:entity ex:inputN ; gov:wasExecuted false ] ;
+    prov:generated ex:someGene .
+
+ex:inputN  a gov:SynapseEntity .
+ex:someGene a biolink:Gene .

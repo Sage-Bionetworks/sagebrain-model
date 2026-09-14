@@ -1,0 +1,47 @@
+# Instance data that MUST validate cleanly against
+# ontology/shacl/governance-shapes.ttl. Only checked under WITH_GOVERNANCE=1
+# (see tests/validate.py check 7) -- see plans/pipeline_provenance_layer.md.
+#
+# A two-hop reprocessing chain: a raw dataset is processed by a named tool
+# into an intermediate output, which a second tool then processes into a
+# DE-analysis result. Each prov:Activity's prov:qualifiedUsage exercises both
+# shape:UsageShape branches -- one Usage referencing a gov:SynapseEntity
+# (the data being processed, wasExecuted false), one referencing an external
+# tool by URL (the thing doing the processing, wasExecuted true).
+
+@prefix gov:  <https://sagebionetworks.org/governance/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix ex:   <https://example.org/sagebrain-test/> .
+
+ex:rawDataset        a gov:SynapseEntity .
+ex:intermediateOutput a gov:SynapseEntity .
+ex:deResult          a gov:SynapseEntity .
+
+# raw input -(nf-core/rnaseq v3.11.1)-> intermediate output
+ex:activity1
+    a prov:Activity ;
+    prov:qualifiedUsage
+        [ a prov:Usage ;
+          prov:entity ex:rawDataset ;
+          gov:wasExecuted false ] ,
+        [ a prov:Usage ;
+          gov:url "https://nf-co.re/rnaseq/3.11.1" ;
+          rdfs:label "nf-core/rnaseq v3.11.1" ;
+          gov:wasExecuted true ] ;
+    prov:generated ex:intermediateOutput .
+
+# intermediate output -(DESeq2 v1.34.0)-> DE result
+ex:activity2
+    a prov:Activity ;
+    prov:qualifiedUsage
+        [ a prov:Usage ;
+          prov:entity ex:intermediateOutput ;
+          gov:entityVersionNumber 1 ;
+          gov:wasExecuted false ] ,
+        [ a prov:Usage ;
+          gov:url "https://bioconductor.org/packages/release/bioc/html/DESeq2.html" ;
+          rdfs:label "DESeq2 v1.34.0" ;
+          gov:wasExecuted true ] ;
+    prov:generated ex:deResult .
