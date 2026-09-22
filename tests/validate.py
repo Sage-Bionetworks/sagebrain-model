@@ -345,8 +345,10 @@ def main():
 
     # 8. (opt-in) the governance pipeline-provenance layer
     if WITH_GOVERNANCE:
-        gov_ontology = load(ONTOLOGY, *IMPORTS, *MAPPINGS, *GOVERNANCE_IMPORTS)
-        gov_shapes = load(SHAPES, GOVERNANCE_SHAPES)
+        # Extends the already-parsed ontology/shapes graphs rather than
+        # reloading ONTOLOGY/IMPORTS/MAPPINGS/SHAPES from disk a second time.
+        gov_ontology = ontology + load(*GOVERNANCE_IMPORTS)
+        gov_shapes = shapes + load(GOVERNANCE_SHAPES)
 
         conforms, _, text = run(load(GOVERNANCE_CONFORMING), gov_shapes, gov_ontology)
         print("[8] governance layer (WITH_GOVERNANCE=1):")
