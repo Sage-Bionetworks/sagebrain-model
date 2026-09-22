@@ -612,18 +612,34 @@ sagebrain:de_associated_with_disease
     skos:editorialNote "Optional. DE state associated with disease, independent of any disease stage." ;
     owl:versionInfo "v0.4" .
 
-#  Per-pair OWL restrictions for sagebrain:contains_tissue and
-#  sagebrain:derived_from_organ, same rationale as de_associated_with above --
-#  plus a second, practical payoff: OWL2VOWL resolves rdfs:domain/rdfs:range
-#  only when it names a single class, and silently drops a property's
-#  domain/range entirely when it is an owl:unionOf blank node (confirmed by
-#  inspecting build/sage.json -- contains_tissue and derived_from_organ both
-#  came back with the union-side resolved to null). Without these
-#  restrictions, sagebrain:Organ and sagebrain:OrganSubregion render as
-#  disconnected nodes in the WebVOWL graph even though the model does connect
-#  them. A per-class owl:allValuesFrom restriction gives OWL2VOWL a concrete
-#  (domain, range) pair to draw per class, exactly as it already does for
-#  de_associated_with's two restrictions above.
+#  Per-class OWL restriction for sagebrain:contains_tissue, same rationale as
+#  de_associated_with above -- plus a second, practical payoff: OWL2VOWL
+#  resolves rdfs:domain/rdfs:range only when it names a single class, and
+#  silently drops a property's domain/range entirely when it is an
+#  owl:unionOf blank node (confirmed by inspecting build/sage.json). Without
+#  this restriction, sagebrain:Organ and sagebrain:OrganSubregion would each
+#  lose their contains_tissue edge in the WebVOWL graph even though the model
+#  does connect them. A per-class owl:allValuesFrom restriction gives
+#  OWL2VOWL a concrete (domain, range) pair to draw per class, exactly as it
+#  already does for de_associated_with's two restrictions above -- safe here
+#  because Organ and OrganSubregion are two different subject classes, each
+#  getting its own single restriction on the same property.
+#
+#  sagebrain:derived_from_organ does NOT get the same treatment: its subject
+#  is the single class biolink:MaterialSample, and giving that one class two
+#  separate allValuesFrom restrictions (Organ, OrganSubregion) is not a union
+#  -- rdfs:subClassOf conjoins them, so every derived_from_organ value would
+#  have to satisfy BOTH restrictions at once. Verified with `robot reason`:
+#  that encoding entails every Organ reached this way is also an
+#  OrganSubregion and vice versa, silently corrupting the distinction the
+#  property exists to draw. Nesting the union under owl:unionOf (either as
+#  the allValuesFrom filler, or as a union of the two restrictions) fixes the
+#  entailment but OWL2VOWL still resolves the range to null either way
+#  (verified against build/sage.json), so there is no restriction shape that
+#  gets both a correct entailment and a rendered edge for this property.
+#  Correctness wins: the property's own rdfs:domain/rdfs:range (below) is
+#  the only assertion, and its range renders unresolved in WebVOWL -- a
+#  cosmetic gap in the diagram, not a modelling error.
 sagebrain:Organ
     rdfs:subClassOf [ a owl:Restriction ;
                        owl:onProperty sagebrain:contains_tissue ;
@@ -633,14 +649,6 @@ sagebrain:OrganSubregion
     rdfs:subClassOf [ a owl:Restriction ;
                        owl:onProperty sagebrain:contains_tissue ;
                        owl:allValuesFrom sagebrain:Tissue ] .
-
-biolink:MaterialSample
-    rdfs:subClassOf [ a owl:Restriction ;
-                       owl:onProperty sagebrain:derived_from_organ ;
-                       owl:allValuesFrom sagebrain:Organ ] ,
-                     [ a owl:Restriction ;
-                       owl:onProperty sagebrain:derived_from_organ ;
-                       owl:allValuesFrom sagebrain:OrganSubregion ] .
 
 sagebrain:related_pathway
     a owl:ObjectProperty ;
