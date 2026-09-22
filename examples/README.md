@@ -9,7 +9,7 @@ plausibly have written fails the test run.
 | File | What it is |
 |---|---|
 | `minimal.ttl` | One gene in one pathway. A one-screen answer to "show me the format" |
-| `AD-cohort.ttl` | Two participants, three samples, three genes, two pathways, a drug and a trial — exercising all 20 of the model's connections |
+| `AD-cohort.ttl` | Two participants, three samples, three genes, two pathways, a drug and a trial — exercising 23 of the model's 24 connections |
 
 ## Identifiers
 
@@ -58,7 +58,7 @@ off this list for a different reason: it was removed from the model outright as
 redundant with `has_diagnosis` rather than left open (see the Clinical section of
 `ontology/main/sagebrain.ttl`).
 
-**The example covers all 20 of the model's connections.** Through v0.2 it covered
+**The example covers 23 of the model's 24 connections.** Through v0.2 it covered
 17, and the two it dropped were findings rather than gaps in the example:
 `has_status` and `belongs_to` could not be written without inventing a
 vocabulary. Both are resolved now -- `has_status` by removing the property,
@@ -67,9 +67,23 @@ vocabulary. Both are resolved now -- `has_status` by removing the property,
 `de_associated_with_stage` -- see the "Connections" section of
 `ontology/main/sagebrain.ttl`), and both halves are still exercised, just under
 their own names now (`sample:01`'s Sample -> Pathway edge, and each pathway's
-Pathway -> DiseaseStage edge below). The model is a work in progress, and a
-statement that cannot be written honestly is a signal about where to look;
-that is still true of what remains open, covered next.
+Pathway -> DiseaseStage edge below). v0.4 added a QC layer
+(`plans/qc_layer_integration.md`): `sagebrain:has_qc_status` is exercised via
+`sample:03`. v0.4 also added `sagebrain:derived_from_organ`, which is
+exercised -- via `sample:01` (-> `Organ`) and `sample:03` (-> `OrganSubregion`)
+-- since both range members already have real UBERON identifiers in play.
+Separately, `sagebrain:de_associated_with_disease` (Pathway -> DiseaseLabel,
+independent of any stage) is exercised on `REACT:R-HSA-977225` against the same
+`MONDO:0004975` its pre-existing `associated_with` edge already names --
+deliberately the same disease, to show the two edges are a real distinction
+(DE-derived vs. not), not just two names for one fact.
+
+`sagebrain:derived_from` is the one connection still unexercised: through v0.4
+there is no real class to point at ("a Sample stands in for a file, until a
+File class exists"), and inventing a placeholder would recreate exactly the
+`ex:` problem this file already avoids everywhere else. The model is a work in
+progress, and a statement that cannot be written honestly is a signal about
+where to look; that is still true of what remains open, covered next.
 
 ### Where a term comes from
 
