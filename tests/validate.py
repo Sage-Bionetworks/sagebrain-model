@@ -93,7 +93,7 @@ SH_RESULT_MESSAGE = URIRef("http://www.w3.org/ns/shacl#resultMessage")
 # wording of a message can be edited without breaking the test.
 EXPECTED_VIOLATIONS = {
     "a: wrong target class, Sample de_associated_with to a DiseaseStage":
-        "Sample de_associated_with must point to a Pathway",
+        "de_associated_with may only point to a Pathway",
     "b: forward cardinality, trial tests two compounds":
         "tests at most one DrugCompound",
     "c: wrong target class, has_diagnosis to a Pathway":
@@ -110,13 +110,11 @@ EXPECTED_VIOLATIONS = {
         "GeneExpressionAssociation needs exactly one subject, a Gene",
     "i: missing weight, GeneExpressionAssociation carries no sagebrain:weight":
         "GeneExpressionAssociation needs exactly one xsd:double weight",
-    "g: wrong target class, QCResultAssociation qc_status to a Pathway":
+    "j: wrong target class, QCResultAssociation qc_status to a Pathway":
         "needs exactly one QCStatus",
-    "h: wrong target class, Sample derived_from_organ to a Tissue":
+    "k: wrong target class, Sample derived_from_organ to a Tissue":
         "derived_from_organ must point to an Organ or an OrganSubregion",
-    "i: wrong target class, Pathway de_associated_with_stage to a Drug":
-        "de_associated_with_stage must point to a DiseaseStage",
-    "j: wrong target class, Pathway de_associated_with_disease to a Drug":
+    "l: wrong target class, Pathway de_associated_with_disease to a Drug":
         "de_associated_with_disease must point to a DiseaseLabel",
 }
 
