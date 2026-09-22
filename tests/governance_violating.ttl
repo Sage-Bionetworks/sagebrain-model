@@ -1,4 +1,4 @@
-# Instance data with two planted defects, each of which MUST be reported.
+# Instance data with three planted defects, each of which MUST be reported.
 # tests/validate.py asserts on the expected violation set (only checked under
 # WITH_GOVERNANCE=1, see check 8) -- this doubles as documentation of what
 # governance-shapes.ttl actually catches.
@@ -6,6 +6,7 @@
 @prefix gov:     <https://sagebionetworks.org/governance/> .
 @prefix prov:    <http://www.w3.org/ns/prov#> .
 @prefix biolink: <https://w3id.org/biolink/vocab/> .
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix ex:      <https://example.org/sagebrain-test/> .
 
 # (m) a Usage with neither prov:entity nor gov:url -- fails shape:UsageShape's
@@ -25,3 +26,26 @@ ex:activityN
 
 ex:inputN  a gov:SynapseEntity .
 ex:someGene a biolink:Gene .
+
+# (o) a Usage carrying both prov:entity (the SynapseEntity branch) and
+#     rdfs:label (only valid on the external-tool branch) -- the entity
+#     branch must forbid rdfs:label the same way it forbids gov:url, or a
+#     Usage can leak a label through the branch that isn't supposed to
+#     carry one. NOT independently asserted in tests/validate.py's
+#     EXPECTED_GOVERNANCE_VIOLATIONS: pyshacl reports the same
+#     shape:UsageShape-level sh:xone message for every branch mismatch, so
+#     this defect's message is indistinguishable from (m)'s -- confirmed
+#     both cause a violation, and confirmed the fix is what makes this one
+#     fail (reverting shape:UsageShape's rdfs:label maxCount-0 constraint on
+#     the entity branch makes this specific Usage conform again while (m)
+#     and (n) still fail on their own).
+ex:activityO
+    a prov:Activity ;
+    prov:qualifiedUsage [ a prov:Usage ;
+                          prov:entity ex:inputO ;
+                          rdfs:label "should not be allowed here" ;
+                          gov:wasExecuted false ] ;
+    prov:generated ex:outputO .
+
+ex:inputO  a gov:SynapseEntity .
+ex:outputO a gov:SynapseEntity .

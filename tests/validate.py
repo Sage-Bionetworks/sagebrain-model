@@ -164,6 +164,10 @@ EXPECTED_GOVERNANCE_VIOLATIONS = {
         "must be either a gov:SynapseEntity",
     "n: Activity generated a Gene instead of a SynapseEntity":
         "prov:generated output, a SynapseEntity",
+    # (o) in tests/governance_violating.ttl has no entry here: pyshacl reports
+    # the same shape:UsageShape-level message for every sh:xone mismatch,
+    # regardless of which branch/property actually failed, so its message is
+    # indistinguishable from (m)'s. See the fixture's own comment.
 }
 
 
