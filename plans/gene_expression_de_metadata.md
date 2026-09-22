@@ -94,13 +94,18 @@ Store this plan for review, then implement in the granular commits described abo
 Implemented as planned, in the following commits (on branch `derived-expression-features`, off `add-qc-layer`):
 
 1. `plans: add gene expression DE metadata plan` -- this file.
-2. `Add CLAUDE.md: anchor new terms before minting, surface problems don't bury them`.
-3. `ontology/imports: add governance_graph.ttl (gov:SynapseEntity extract)`.
-4. `ontology/main/sagebrain.ttl: reuse gov:SynapseEntity, widen derived_from` -- includes the OWL2VOWL restriction fix, not deferred.
-5. `ontology/main/sagebrain.ttl: enrich GeneExpressionAssociation with DE metadata` -- `ExpressionDirection` vocabulary + the three new properties.
-6. `sagebrain-shapes.ttl: constrain derived_from's widened range, GeneExpressionAssociation's new fields`.
-7. `tests: plant violating.ttl defects for expression_classifier and derived_from` -- defects (k), (l).
-8. `examples: enrich apoe-expr-samp01, exercise derived_from for the first time`.
+2. `ontology/imports: add governance_graph.ttl (gov:SynapseEntity extract)`.
+3. `ontology/main/sagebrain.ttl: reuse gov:SynapseEntity, widen derived_from` -- includes the OWL2VOWL restriction fix, not deferred (later found unsound and removed -- see the Corrections note below).
+4. `ontology/main/sagebrain.ttl: enrich GeneExpressionAssociation with DE metadata` -- `ExpressionDirection` vocabulary + the three new properties.
+5. `sagebrain-shapes.ttl: constrain derived_from's widened range, GeneExpressionAssociation's new fields`.
+6. `tests: plant violating.ttl defects for expression_classifier and derived_from` -- originally labeled (k)/(l); see the Corrections note below.
+7. `examples: enrich apoe-expr-samp01, exercise derived_from for the first time`.
+
+Step 0.5 (`Add CLAUDE.md`) was planned but never actually committed -- no such
+commit exists and no `CLAUDE.md` file was added. This report previously
+listed it as done; that was wrong. The two standing directives it was meant
+to carry (anchor-before-minting; surface problems rather than deferring
+them) were never written down anywhere else either.
 
 Plus two commits outside this plan's own scope, done alongside it at the user's request: `.gitignore: keep .claude/ local only` and `.gitignore: keep CLAUDE.md local only too`.
 
@@ -110,6 +115,11 @@ Plus two commits outside this plan's own scope, done alongside it at the user's 
 - `Makefile`'s `MAIN_SOURCES` update and `tests/validate.py`'s `IMPORTS` update (both needed so `gov:SynapseEntity` is actually declared when the ontology is loaded/built) weren't called out as separate line items in the Approach but were folded into commit 4, since they're direct, required consequences of adding the import module.
 
 **Verification results:**
-- `python3 tests/validate.py`: all 6 checks pass at every commit that touched ontology/shapes/tests. Final state: 24/24 connections constrained (unchanged count -- the 3 new `GeneExpressionAssociation` fields aren't "connections"), all 12 `tests/violating.ttl` defects caught (a-l), `tests/conforming.ttl` and both `examples/*.ttl` conform.
+- `python3 tests/validate.py`: all 6 checks pass at every commit that touched ontology/shapes/tests. Final state: 24/24 connections constrained (unchanged count -- the 3 new `GeneExpressionAssociation` fields aren't "connections"), `tests/conforming.ttl` and both `examples/*.ttl` conform. The defect count and letters below are corrected -- see the Corrections note.
 - `make json` + inspecting `build/sage.json`'s `class`/`classAttribute`/`property`/`propertyAttribute` arrays: `gov:SynapseEntity` and `sagebrain:ExpressionDirection` both present as classes; `sagebrain:derived_from` resolves to 4 concrete (domain, range) pairs (`MaterialSample`/`Association` x `MaterialSample`/`SynapseEntity`), none `null`; `SynapseEntity` is not an orphan node.
 - Confirmed programmatically (a one-off script over the merged ontology + both example files) that all 24 connections are now exercised across `examples/*.ttl` -- `sagebrain:derived_from` was the last holdout since v0.4 and is now covered via `association:apoe-expr-samp01`'s `syn:syn26999999`.
+
+**Corrections (found by `/code-review`, applied after this report was first written):**
+- The commit list above originally listed `Add CLAUDE.md: ...` as done; it was not. Corrected -- see the note under the commit list.
+- This report originally claimed "all 12 `tests/violating.ttl` defects caught (a-l)" as this plan's final verification state. That was wrong on its own terms: this plan's commit 6 (above) adds two *new* defects on top of the twelve `add-qc-layer` already had (a-l), which should have made fourteen, not twelve. The new pair was also originally labeled (k)/(l) in both the fixture and this report -- colliding with `add-qc-layer`'s own pre-existing (k) and (l) defects, the same collision-of-letters bug this session hit and fixed twice before on other branches. Both defects are relabeled (m)/(n); `tests/violating.ttl`'s header now correctly reads "fourteen planted defects," and `python3 tests/validate.py` reports all fourteen (a-n) caught.
+- Separately, the `derived_from` OWL2VOWL restriction fix in commit 3 was itself found unsound and removed: giving `biolink:MaterialSample`/`biolink:Association` two `allValuesFrom` restrictions each (`MaterialSample`, `gov:SynapseEntity`) for the same property is an OWL intersection, not the intended union -- `robot reason` (with the `ClassAssertion` axiom generator explicitly requested) entailed a `gov:SynapseEntity`-only individual as a `biolink:MaterialSample` too. The restrictions were dropped; the property's own `rdfs:domain`/`rdfs:range` unions are the only assertion now, and OWL2VOWL renders the range unresolved as an accepted cosmetic gap.
