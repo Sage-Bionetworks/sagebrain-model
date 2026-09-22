@@ -110,7 +110,7 @@ EXAMPLES = sorted(
 # --- opt-in governance layer (WITH_GOVERNANCE=1) ----------------------------
 # Mirrors the Makefile's own flag: ontology/governance/ is unstable and not
 # part of the default build, so it is not part of the default test run --
-# check 7 below only runs when this is set. GOVERNANCE_MODULES globs
+# check 8 below only runs when this is set. GOVERNANCE_MODULES globs
 # ontology/governance/*.ttl the same way the Makefile does; duo.ttl is left
 # out of GOVERNANCE_IMPORTS (unlike the Makefile's GOVERNANCE_SOURCES) because
 # nothing in ontology/governance/ references a DUO term yet.
@@ -158,7 +158,7 @@ EXPECTED_VIOLATIONS = {
 }
 
 # One entry per planted defect in tests/governance_violating.ttl. Only
-# checked under WITH_GOVERNANCE=1 -- see check 7.
+# checked under WITH_GOVERNANCE=1 -- see check 8.
 EXPECTED_GOVERNANCE_VIOLATIONS = {
     "m: Usage with neither prov:entity nor gov:url":
         "must be either a gov:SynapseEntity",

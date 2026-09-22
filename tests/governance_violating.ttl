@@ -1,6 +1,6 @@
 # Instance data with two planted defects, each of which MUST be reported.
 # tests/validate.py asserts on the expected violation set (only checked under
-# WITH_GOVERNANCE=1, see check 7) -- this doubles as documentation of what
+# WITH_GOVERNANCE=1, see check 8) -- this doubles as documentation of what
 # governance-shapes.ttl actually catches.
 
 @prefix gov:     <https://sagebionetworks.org/governance/> .
