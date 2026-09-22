@@ -53,6 +53,24 @@ jobs:
       # change validation behaviour under us.
       - run: pip install rdflib pyshacl
 
+      # For tests/validate.py's check 7 (OWL 2 DL profile), which shells out to
+      # ROBOT. Java + the jar itself, so that check is never silently skipped
+      # here the way it would be on a plain `pip install; python
+      # tests/validate.py` without `make tools` -- see check 7's docstring for
+      # why it exists at all.
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Cache fetched jars
+        uses: actions/cache@v4
+        with:
+          path: tools/*.jar
+          key: jars-${{ runner.os }}-${{ hashFiles('Makefile') }}
+
+      - run: make tools
+
       - run: python tests/validate.py
 
   build:
