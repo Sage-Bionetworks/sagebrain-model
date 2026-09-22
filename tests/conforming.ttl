@@ -81,7 +81,7 @@ ex:apoeExpressionInSamp1
     a sagebrain:GeneExpressionAssociation ;
     biolink:subject ex:apoe ;
     biolink:object ex:samp1 ;
-    sagebrain:weight "0.83"^^xsd:decimal .
+    sagebrain:weight "0.83"^^xsd:double .
 
 ex:apoptosisPathway
     a biolink:Pathway ;

@@ -720,9 +720,9 @@ shape:GeneExpressionAssociationShape
     sh:property [
         sh:path sagebrain:weight ;
         sh:name "weight" ;
-        sh:datatype xsd:decimal ;
+        sh:datatype xsd:double ;
         sh:minCount 1 ; sh:maxCount 1 ;
-        sh:message "A GeneExpressionAssociation needs exactly one xsd:decimal weight." ;
+        sh:message "A GeneExpressionAssociation needs exactly one xsd:double weight." ;
     ] .
 
 shape:SampleDEAssociationShape
@@ -750,9 +750,9 @@ shape:SampleDEAssociationShape
     sh:property [
         sh:path sagebrain:weight ;
         sh:name "weight" ;
-        sh:datatype xsd:decimal ;
+        sh:datatype xsd:double ;
         sh:minCount 1 ; sh:maxCount 1 ;
-        sh:message "A SampleDEAssociation needs exactly one xsd:decimal weight." ;
+        sh:message "A SampleDEAssociation needs exactly one xsd:double weight." ;
     ] .
 
 shape:PathwayDEAssociationShape
@@ -780,9 +780,9 @@ shape:PathwayDEAssociationShape
     sh:property [
         sh:path sagebrain:weight ;
         sh:name "weight" ;
-        sh:datatype xsd:decimal ;
+        sh:datatype xsd:double ;
         sh:minCount 1 ; sh:maxCount 1 ;
-        sh:message "A PathwayDEAssociation needs exactly one xsd:decimal weight." ;
+        sh:message "A PathwayDEAssociation needs exactly one xsd:double weight." ;
     ] .
 
 shape:PathwayDiseaseAssociationShape
@@ -810,7 +810,7 @@ shape:PathwayDiseaseAssociationShape
     sh:property [
         sh:path sagebrain:weight ;
         sh:name "weight" ;
-        sh:datatype xsd:decimal ;
+        sh:datatype xsd:double ;
         sh:minCount 1 ; sh:maxCount 1 ;
-        sh:message "A PathwayDiseaseAssociation needs exactly one xsd:decimal weight." ;
+        sh:message "A PathwayDiseaseAssociation needs exactly one xsd:double weight." ;
     ] .

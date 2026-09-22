@@ -612,7 +612,7 @@ sagebrain:weight
     rdfs:label "weight" ;
     rdfs:comment "The numeric weight of a differential-expression or quantitative association -- an expression level, a differential-expression score, or an association strength, depending on which Association subclass it appears on." ;
     rdfs:domain biolink:Association ;
-    rdfs:range xsd:decimal ;
+    rdfs:range xsd:double ;
     owl:versionInfo "v0.3" .
 
 sagebrain:GeneExpressionAssociation

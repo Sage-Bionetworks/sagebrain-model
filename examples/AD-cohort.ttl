@@ -177,7 +177,7 @@ association:apoe-expr-samp01
     a sagebrain:GeneExpressionAssociation ;
     biolink:subject HGNC:613 ;
     biolink:object sample:01 ;
-    sagebrain:weight "1.4"^^xsd:decimal .
+    sagebrain:weight "1.4"^^xsd:double .
 
 HGNC:620
     a biolink:Gene ;
