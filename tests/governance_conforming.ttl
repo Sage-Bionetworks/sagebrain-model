@@ -1,6 +1,6 @@
 # Instance data that MUST validate cleanly against
 # ontology/shacl/governance-shapes.ttl. Only checked under WITH_GOVERNANCE=1
-# (see tests/validate.py check 7) -- see plans/pipeline_provenance_layer.md.
+# (see tests/validate.py check 8) -- see plans/pipeline_provenance_layer.md.
 #
 # A two-hop reprocessing chain: a raw dataset is processed by a named tool
 # into an intermediate output, which a second tool then processes into a

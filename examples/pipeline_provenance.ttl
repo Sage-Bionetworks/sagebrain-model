@@ -14,7 +14,7 @@
 # examples/AD-cohort.ttl -- there is no real Synapse project behind this
 # example, but a real id would resolve to the identical node in both graphs.
 #
-# Validated on its own (tests/validate.py check 7, WITH_GOVERNANCE=1 only),
+# Validated on its own (tests/validate.py check 8, WITH_GOVERNANCE=1 only),
 # not merged with AD-cohort.ttl -- the shared syn:syn26999999 IRI is what
 # connects the two, not a shared graph.
 

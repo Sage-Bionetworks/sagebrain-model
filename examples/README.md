@@ -6,7 +6,7 @@ test second: `tests/validate.py` validates every `*.ttl` in this directory on
 every run (check 6), so a model change that would break data a curator could
 plausibly have written fails the test run. One exception: `pipeline_provenance.ttl`
 targets the opt-in governance layer (see below) and is validated only under
-`WITH_GOVERNANCE=1` (check 7), not by every default run.
+`WITH_GOVERNANCE=1` (check 8), not by every default run.
 
 | File | What it is |
 |---|---|
