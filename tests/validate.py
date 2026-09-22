@@ -116,7 +116,7 @@ EXAMPLES = sorted(
 # ontology/governance/*.ttl the same way the Makefile does; duo.ttl is left
 # out of GOVERNANCE_IMPORTS (unlike the Makefile's GOVERNANCE_SOURCES) because
 # nothing in ontology/governance/ references a DUO term yet.
-WITH_GOVERNANCE = bool(os.environ.get("WITH_GOVERNANCE"))
+WITH_GOVERNANCE = os.environ.get("WITH_GOVERNANCE", "") not in ("", "0")
 GOVERNANCE_MODULES = sorted((ROOT / "ontology" / "governance").glob("*.ttl"))
 GOVERNANCE_IMPORTS = [ROOT / "ontology" / "imports" / "prov.ttl", *GOVERNANCE_MODULES]
 GOVERNANCE_SHAPES = ROOT / "ontology" / "shacl" / "governance-shapes.ttl"
