@@ -918,7 +918,6 @@ sagebrain:reference_baseline
     rdfs:comment "Free-text description of the reference/baseline condition this expression classifier was computed against (e.g. \"Control group\", \"untreated timepoint\")." ;
     rdfs:domain sagebrain:GeneExpressionAssociation ;
     rdfs:range xsd:string ;
-    rdfs:subPropertyOf biolink:association_slot ;
     owl:versionInfo "v0.4" .
 
 sagebrain:analysis_tool
@@ -927,7 +926,6 @@ sagebrain:analysis_tool
     rdfs:comment "Free-text name/version of the tool or protocol that produced this expression classifier (e.g. \"DESeq2 v1.34.0\")." ;
     rdfs:domain sagebrain:GeneExpressionAssociation ;
     rdfs:range xsd:string ;
-    rdfs:subPropertyOf biolink:association_slot ;
     owl:versionInfo "v0.4" .
 
 sagebrain:SampleDEAssociation
