@@ -89,6 +89,10 @@ EXPECTED_VIOLATIONS = {
         "participates_in must point to a Pathway",
     "g: wrong target class, Pathway de_associated_with_stage to a Drug":
         "de_associated_with_stage must point to a DiseaseStage",
+    "h: wrong subject class, GeneExpressionAssociation subject is a Drug":
+        "GeneExpressionAssociation needs exactly one subject, a Gene",
+    "i: missing weight, GeneExpressionAssociation carries no sagebrain:weight":
+        "GeneExpressionAssociation needs exactly one xsd:double weight",
 }
 
 

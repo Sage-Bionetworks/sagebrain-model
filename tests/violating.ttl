@@ -1,4 +1,4 @@
-# Instance data with seven planted defects, each of which MUST be reported.
+# Instance data with nine planted defects, each of which MUST be reported.
 # tests/validate.py asserts on the expected violation set, so this doubles as
 # documentation of what the shapes actually catch.
 #
@@ -56,6 +56,14 @@ ex:apoe
 # (g) wrong target class -- de_associated_with_stage must reach a DiseaseStage,
 #     not a Drug.
 ex:apoptosisPathway sagebrain:de_associated_with_stage ex:donanemab .
+
+# (h) association shape -- section 4 of the shapes graph is otherwise
+#     unexercised here. Subject is a Drug rather than a Gene, and the weight
+#     the reification exists to carry is missing entirely.
+ex:apoeExpressionInSamp1
+    a sagebrain:GeneExpressionAssociation ;
+    biolink:subject ex:donanemab ;
+    biolink:object ex:samp1 .
 
 ###  Supporting well-formed nodes  ##############################
 
