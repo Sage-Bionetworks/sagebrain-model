@@ -325,8 +325,8 @@ sagebrain:BiodomainScheme
         sagebrain:Epigenetic , sagebrain:ImmuneResponse , sagebrain:LipidMetabolism ,
         sagebrain:MetalBindingAndHomeostasis , sagebrain:MitochondrialMetabolism ,
         sagebrain:Myelination , sagebrain:OxidativeStress , sagebrain:Proteostasis ,
-        sagebrain:RNASpliceosome , sagebrain:StructuralStabilization , sagebrain:Synapse ,
-        sagebrain:TauHomeostasis , sagebrain:Vasculature .
+        sagebrain:RNASpliceosome , sagebrain:StructuralStabilization ,
+        sagebrain:SynapticBiodomain , sagebrain:TauHomeostasis , sagebrain:Vasculature .
 
 sagebrain:APPMetabolism a sagebrain:Biodomain ; skos:prefLabel "APP Metabolism" ; skos:inScheme sagebrain:BiodomainScheme .
 sagebrain:Apoptosis a sagebrain:Biodomain ; skos:prefLabel "Apoptosis" ; skos:inScheme sagebrain:BiodomainScheme .
@@ -344,7 +344,7 @@ sagebrain:OxidativeStress a sagebrain:Biodomain ; skos:prefLabel "Oxidative Stre
 sagebrain:Proteostasis a sagebrain:Biodomain ; skos:prefLabel "Proteostasis" ; skos:inScheme sagebrain:BiodomainScheme .
 sagebrain:RNASpliceosome a sagebrain:Biodomain ; skos:prefLabel "RNA Spliceosome" ; skos:inScheme sagebrain:BiodomainScheme .
 sagebrain:StructuralStabilization a sagebrain:Biodomain ; skos:prefLabel "Structural Stabilization" ; skos:inScheme sagebrain:BiodomainScheme .
-sagebrain:Synapse a sagebrain:Biodomain ; skos:prefLabel "Synapse" ; skos:inScheme sagebrain:BiodomainScheme .
+sagebrain:SynapticBiodomain a sagebrain:Biodomain ; skos:prefLabel "Synapse" ; skos:inScheme sagebrain:BiodomainScheme .
 sagebrain:TauHomeostasis a sagebrain:Biodomain ; skos:prefLabel "Tau Homeostasis" ; skos:inScheme sagebrain:BiodomainScheme .
 sagebrain:Vasculature a sagebrain:Biodomain ; skos:prefLabel "Vasculature" ; skos:inScheme sagebrain:BiodomainScheme .
 
