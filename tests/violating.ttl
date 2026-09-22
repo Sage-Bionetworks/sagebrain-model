@@ -65,6 +65,14 @@ ex:apoeExpressionInSamp1
     biolink:subject ex:donanemab ;
     biolink:object ex:samp1 .
 
+# (h) association shape -- section 4 of the shapes graph is otherwise
+#     unexercised here. Subject is a Drug rather than a Gene, and the weight
+#     the reification exists to carry is missing entirely.
+ex:apoeExpressionInSamp1
+    a sagebrain:GeneExpressionAssociation ;
+    biolink:subject ex:donanemab ;
+    biolink:object ex:samp1 .
+
 ###  Supporting well-formed nodes  ##############################
 
 ex:braakStage3      a sagebrain:DiseaseStage .
