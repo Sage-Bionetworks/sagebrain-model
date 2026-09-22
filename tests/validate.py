@@ -7,7 +7,7 @@ Run from the repository root:
 
 Requires rdflib and pyshacl.
 
-Six checks:
+Seven checks:
 
   1. The shapes graph is itself valid SHACL.
   2. The ontology satisfies its own model-integrity shapes -- catches
@@ -32,6 +32,17 @@ Six checks:
      means a model change that would break plausible curator data fails the test
      run rather than being discovered later.
 
+  7. The merged ontology (sagebrain.ttl + its import modules, exactly as the
+     build merges them) stays inside the OWL 2 DL profile. SHACL and pyshacl
+     have nothing to say about this: punning a property between
+     owl:ObjectProperty and owl:DatatypeProperty is an OWL-profile violation,
+     not a shape violation, and entailment is off for every check above (see
+     below) precisely so it does NOT get computed. Shells out to ROBOT, so it
+     is skipped -- not failed -- when tools/robot.jar is absent; run
+     `make tools` to fetch it. This check exists because exactly this kind of
+     violation (PR #3, biolink:association_slot punned via a MIREOT ROOT) shipped
+     silently until a human reviewer caught it with `robot reason` by hand.
+
 Inference is deliberately OFF. The ontology is passed as ont_graph so class
 hierarchies resolve, but no entailment is computed: rdfs:range is an entailment
 rule, so an inferencer would derive the very types the sh:class constraints test
@@ -39,7 +50,11 @@ for and silently pass every range violation. See the VALIDATION CONFIGURATION
 section of sagebrain-shapes.ttl.
 """
 
+import os
+import shutil
+import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 from rdflib import Graph, Namespace, URIRef
@@ -50,6 +65,8 @@ SAGEBRAIN = Namespace("https://w3id.org/synapse/sagebrain#")
 SH = Namespace("http://www.w3.org/ns/shacl#")
 
 ROOT = Path(__file__).resolve().parent.parent
+# Same default and override as scripts/import.sh; `make tools` fetches it.
+ROBOT_JAR = Path(os.environ.get("ROBOT_JAR", ROOT / "tools" / "robot.jar"))
 ONTOLOGY = ROOT / "ontology" / "main" / "sagebrain.ttl"
 # Merged into the ontology graph, exactly as the build merges them. sagebrain
 # reuses six Biolink classes by IRI and declares none of them, so without this the
@@ -148,6 +165,56 @@ def check_connection_coverage(ontology, shapes):
     return sorted(local_name(c) for c in connections - constrained_paths(shapes))
 
 
+def check_dl_profile():
+    """Merge the ontology (as the build does) and check it is OWL 2 DL.
+
+    Returns (available, in_profile, report): available is False when
+    ROBOT_JAR or the `java` binary is missing (report then explains how to
+    fetch/install it), otherwise True; in_profile mirrors
+    `robot validate-profile`'s verdict and report is its output. Shells out
+    rather than reimplementing OWL profile checking in Python --
+    ObjectProperty/DatatypeProperty punning is exactly what an OWL reasoner is
+    for.
+
+    A crashed or errored ROBOT invocation must never read back as "in
+    profile" -- that would silently defeat the one thing this check exists to
+    catch (see the module docstring) -- so in_profile is only ever True when
+    `validate-profile` both exits 0 and its report agrees; anything else
+    (missing report, non-zero exit, unparseable output) is treated as a
+    failure, not a pass.
+    """
+    if not ROBOT_JAR.exists():
+        return False, None, f"ROBOT_JAR not found at '{ROBOT_JAR}' -- run 'make tools' to enable this check"
+    if shutil.which("java") is None:
+        return False, None, "'java' not found on PATH -- required to run ROBOT for this check"
+
+    with tempfile.TemporaryDirectory() as tmp:
+        merged = Path(tmp) / "merged.ttl"
+        merge = subprocess.run(
+            ["java", "-jar", str(ROBOT_JAR), "merge",
+             "-i", str(ONTOLOGY), *(a for p in IMPORTS for a in ("-i", str(p))),
+             "-o", str(merged)],
+            capture_output=True, text=True,
+        )
+        if merge.returncode != 0:
+            return True, False, f"robot merge failed:\n{merge.stdout}\n{merge.stderr}"
+
+        report = Path(tmp) / "profile.txt"
+        validate = subprocess.run(
+            ["java", "-jar", str(ROBOT_JAR), "validate-profile",
+             "--profile", "DL", "-i", str(merged), "-o", str(report)],
+            capture_output=True, text=True,
+        )
+        if not report.exists():
+            return True, False, (
+                f"robot validate-profile produced no report (exit {validate.returncode}):\n"
+                f"{validate.stdout}\n{validate.stderr}"
+            )
+        text = report.read_text()
+        in_profile = validate.returncode == 0 and "NOT in profile" not in text
+        return True, in_profile, text
+
+
 def main():
     failures = []
 
@@ -211,6 +278,16 @@ def main():
         if not conforms:
             failures.append(f"example does not conform -- {example.name}")
             print(text)
+
+    # 7. the merged ontology stays inside the OWL 2 DL profile
+    available, in_profile, report = check_dl_profile()
+    if not available:
+        print(f"[7] OWL 2 DL profile: SKIPPED -- {report}")
+    else:
+        print(f"[7] merged ontology + imports in OWL 2 DL profile: {in_profile}")
+        if not in_profile:
+            failures.append("merged ontology is not in the OWL 2 DL profile")
+            print(report)
 
     print()
     if failures:
