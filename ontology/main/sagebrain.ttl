@@ -757,29 +757,22 @@ comparison computed across samples).""" ;
     sagebrain:weighted false ;
     owl:versionInfo "v0.4" .
 
-#  Per-pair OWL restrictions for sagebrain:derived_from, needed for the same
-#  practical reason as contains_tissue/derived_from_organ above: OWL2VOWL
-#  drops a unionOf domain/range to null, so without these, neither this
-#  property nor gov:SynapseEntity render in the WebVOWL graph. derived_from's
-#  domain has been a union since v0.4 (never fixed until now); its range
-#  became one in this same change. Every (domain, range) combination is
-#  genuinely valid here (unlike the old de_associated_with union), so all
-#  four combinations get a restriction rather than a narrower subset.
-biolink:MaterialSample
-    rdfs:subClassOf [ a owl:Restriction ;
-                       owl:onProperty sagebrain:derived_from ;
-                       owl:allValuesFrom biolink:MaterialSample ] ,
-                     [ a owl:Restriction ;
-                       owl:onProperty sagebrain:derived_from ;
-                       owl:allValuesFrom gov:SynapseEntity ] .
-
-biolink:Association
-    rdfs:subClassOf [ a owl:Restriction ;
-                       owl:onProperty sagebrain:derived_from ;
-                       owl:allValuesFrom biolink:MaterialSample ] ,
-                     [ a owl:Restriction ;
-                       owl:onProperty sagebrain:derived_from ;
-                       owl:allValuesFrom gov:SynapseEntity ] .
+#  derived_from does NOT get the contains_tissue/derived_from_organ per-class
+#  restriction treatment above, despite the identical OWL2VOWL null-range
+#  motivation applying here too. Both biolink:MaterialSample and
+#  biolink:Association would need TWO allValuesFrom restrictions each
+#  (MaterialSample, gov:SynapseEntity) for the same property -- exactly the
+#  shape the derived_from_organ comment above documents as unsound:
+#  rdfs:subClassOf conjoins its list, so every derived_from value would have
+#  to satisfy both restrictions at once. Verified with `robot reason`
+#  (explicit `-A ClassAssertion` axiom generator, since default generators
+#  did not surface it): a value asserted only gov:SynapseEntity was entailed
+#  biolink:MaterialSample too. Nesting the union (either as the
+#  allValuesFrom filler, or as a union of the restrictions) avoids the bad
+#  entailment but -- as already found for derived_from_organ -- OWL2VOWL
+#  still resolves the range to null either way. Correctness wins: no
+#  restriction here, relying solely on the rdfs:domain/rdfs:range unions
+#  above and accepting the WebVOWL rendering gap as cosmetic.
 
 #################################################################
 #    Associations (reified weighted connections)
