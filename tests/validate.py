@@ -73,6 +73,8 @@ import pyshacl
 
 SAGEBRAIN = Namespace("https://w3id.org/synapse/sagebrain#")
 SH = Namespace("http://www.w3.org/ns/shacl#")
+PROV = Namespace("http://www.w3.org/ns/prov#")
+GOVERNANCE_TEST = Namespace("https://example.org/sagebrain-test/")
 
 ROOT = Path(__file__).resolve().parent.parent
 # Same default and override as scripts/import.sh; `make tools` fetches it.
@@ -167,7 +169,9 @@ EXPECTED_GOVERNANCE_VIOLATIONS = {
     # (o) in tests/governance_violating.ttl has no entry here: pyshacl reports
     # the same shape:UsageShape-level message for every sh:xone mismatch,
     # regardless of which branch/property actually failed, so its message is
-    # indistinguishable from (m)'s. See the fixture's own comment.
+    # indistinguishable from (m)'s. Verified instead by check_usage_label_leak()
+    # below, which checks the SHACL report's focus nodes directly rather than
+    # message text.
 }
 
 
@@ -273,6 +277,29 @@ def check_dl_profile():
         return True, in_profile, text
 
 
+def check_usage_label_leak(gov_ontology, gov_shapes):
+    """Defect (o) in tests/governance_violating.ttl: a Usage carrying both
+    prov:entity and rdfs:label (no gov:url) must be rejected by
+    shape:UsageShape's entity branch.
+
+    Can't be verified via EXPECTED_GOVERNANCE_VIOLATIONS' message-substring
+    matching: pyshacl reports the same shape:UsageShape-level sh:xone message
+    for every branch mismatch, so this defect's message is indistinguishable
+    from (m)'s -- confirmed a custom sh:message on the rdfs:label property
+    constraint never surfaces in pyshacl's xone reporting either. Checks the
+    validation report's sh:focusNode values directly instead: the specific
+    blank node holding ex:activityO's Usage must appear among them. Blank
+    node identity survives into the results graph because `data` (loaded
+    once here) is the same graph object passed into `run()`.
+    """
+    data = load(GOVERNANCE_VIOLATING)
+    leaky_usage = next(data.objects(GOVERNANCE_TEST.activityO, PROV.qualifiedUsage), None)
+    if leaky_usage is None:
+        return False
+    _, results, _ = run(data, gov_shapes, gov_ontology)
+    return leaky_usage in set(results.objects(None, SH.focusNode))
+
+
 def main():
     failures = []
 
@@ -373,6 +400,12 @@ def main():
             print(f"      {'PASS' if hit else 'FAIL'}  {label}")
             if not hit:
                 failures.append(f"governance defect not caught -- {label}")
+
+        hit = check_usage_label_leak(gov_ontology, gov_shapes)
+        print(f"      {'PASS' if hit else 'FAIL'}  "
+              f"o: Usage with both prov:entity and rdfs:label")
+        if not hit:
+            failures.append("governance defect not caught -- o: Usage with both prov:entity and rdfs:label")
 
         conforms, _, text = run(load(GOVERNANCE_EXAMPLE), gov_shapes, gov_ontology)
         print(f"      {'PASS' if conforms else 'FAIL'}  {GOVERNANCE_EXAMPLE.name}")
