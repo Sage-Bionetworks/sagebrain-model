@@ -67,7 +67,7 @@ MODULES=(biolink)
 # subPropertyOf chain but not its domain/range, so the wart does not travel down
 # into ours.
 #
-# Association, subject, object: reused so the six weighted connections (see
+# Association, subject, object: reused so the four weighted connections (see
 # sagebrain:weight in ontology/main/sagebrain.ttl) can be reified as Biolink-style
 # association instances instead of needing a bespoke reification class or an
 # unconstrainable plain-triple weight. biolink:Association carries dozens of
