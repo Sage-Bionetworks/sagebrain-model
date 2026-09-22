@@ -126,6 +126,17 @@ extract_module() {
   # <https://w3id.org/biolink/vocab/.owl.ttl>, an artefact of how the LinkML
   # generator names its output -- which would make our extract indistinguishable
   # from the real thing to anything that resolves it.
+  # `query --update` is chained on the end to fix a punning artifact specific to
+  # this extract: biolink:association_slot is a ROOT here (see the comment above),
+  # and MIREOT declares it both owl:ObjectProperty (inferred from subject/object,
+  # which are object properties under it) and owl:DatatypeProperty (upstream's own
+  # declaration, since Biolink itself types association_slot as a DatatypeProperty
+  # while treating subject/object as ObjectProperties under it -- upstream is
+  # itself DL-invalid here). OWL 2 DL forbids punning a property this way, so the
+  # update deletes the single spurious DatatypeProperty triple; it is a no-op for
+  # modules or terms it does not match. Expect this to resurface on every biolink
+  # version bump -- re-check with `robot validate-profile --profile DL` after
+  # bumping.
   java -jar "$ROBOT_JAR" extract \
       --input "$source_ttl" \
       --method MIREOT \
@@ -136,6 +147,8 @@ extract_module() {
       --annotation "$DCTERMS_TITLE" "$title" \
       --annotation "$DCTERMS_DESCRIPTION" "$description" \
       --link-annotation "$DCTERMS_SOURCE" "$url" \
+    query \
+      --update "$ROOT/scripts/drop-association-slot-punning.ru" \
       --output "$module.tmp.ttl"
   mv "$module.tmp.ttl" "$module"
 
