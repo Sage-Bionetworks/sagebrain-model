@@ -1,4 +1,4 @@
-# Instance data with twelve planted defects, each of which MUST be reported.
+# Instance data with fourteen planted defects, each of which MUST be reported.
 # tests/validate.py asserts on the expected violation set, so this doubles as
 # documentation of what the shapes actually catch.
 #
@@ -83,16 +83,16 @@ ex:synapticPathway
     a biolink:Pathway ;
     sagebrain:de_associated_with_disease ex:lecanemab .
 
-# (k) wrong target class -- expression_classifier must reach an
+# (m) wrong target class -- expression_classifier must reach an
 #     ExpressionDirection, not a Drug.
 ex:geneExprAssoc1
     a sagebrain:GeneExpressionAssociation ;
     biolink:subject ex:apoe ;
     biolink:object ex:samp1 ;
-    sagebrain:weight "1.0"^^xsd:decimal ;
+    sagebrain:weight "1.0"^^xsd:double ;
     sagebrain:expression_classifier ex:donanemab .
 
-# (l) wrong target class -- derived_from must reach a MaterialSample or a
+# (n) wrong target class -- derived_from must reach a MaterialSample or a
 #     SynapseEntity, not a Gene.
 ex:samp1 sagebrain:derived_from ex:apoe .
 
