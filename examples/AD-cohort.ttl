@@ -4,7 +4,7 @@
 # trial, with real identifiers throughout. Validated on every run of
 # tests/validate.py.
 #
-# It exercises all 19 of the model's connections, including sagebrain:belongs_to
+# It exercises all 20 of the model's connections, including sagebrain:belongs_to
 # now that the 19 AD biodomains are minted as a SKOS vocabulary (see
 # sagebrain:BiodomainScheme in ontology/main/sagebrain.ttl) -- previously left out
 # on exactly this ground, per the "What is missing" section below before B5 was
