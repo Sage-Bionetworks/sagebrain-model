@@ -53,6 +53,12 @@ Eight checks:
      conforming fixture, a violating fixture with expected defects, and the
      one example that exercises this layer), scoped to its own files so a
      broken governance module cannot fail a default `python3 tests/validate.py`.
+     Plus four contract checks against governanceDUO, which owns the layer:
+     governanceDUO's own provenance example ABox conforms to the imported
+     shapes; the governance-layer union stays OWL 2 DL; every prov: term the
+     layer declares has the type W3C PROV-O (ontology/imports/prov.ttl) gives
+     it; and the derived_from bridge carries derivation ancestry from an
+     Association through the pipeline to its raw input.
 
 Inference is deliberately OFF. The ontology is passed as ont_graph so class
 hierarchies resolve, but no entailment is computed: rdfs:range is an entailment
@@ -69,7 +75,7 @@ import tempfile
 from pathlib import Path
 
 from rdflib import Graph, Namespace, URIRef
-from rdflib.namespace import RDF
+from rdflib.namespace import OWL, RDF, RDFS
 import pyshacl
 
 SAGEBRAIN = Namespace("https://w3id.org/synapse/sagebrain#")
@@ -130,6 +136,20 @@ GOVERNANCE_SHAPES = ROOT / "ontology" / "shacl" / "governance_layer.shacl.ttl"
 GOVERNANCE_CONFORMING = ROOT / "tests" / "governance_conforming.ttl"
 GOVERNANCE_VIOLATING = ROOT / "tests" / "governance_violating.ttl"
 GOVERNANCE_EXAMPLE = ROOT / "examples" / "pipeline_provenance.ttl"
+PROV_O = ROOT / "ontology" / "imports" / "prov.ttl"
+# Vendored by scripts/import.sh at the same governanceDUO pin as the shapes.
+GOVERNANCEDUO_PROVENANCE_EXAMPLES = ROOT / "tests" / "governanceduo_provenance_examples.ttl"
+# The DL-checked set (check 7) plus the governance layer. Leaves out prov.ttl
+# and duo.ttl, which carry OWL 2 DL violations of their own (prov.ttl puns
+# prov:specializationOf and prov:wasRevisionOf); a pun between the layer and
+# prov.ttl is caught by check_prov_types() instead.
+GOVERNANCE_DL_SOURCES = [ONTOLOGY, *IMPORTS, GOVERNANCE_LAYER, *GOVERNANCE_MODULES]
+# check_derivation_ancestry(): AD-cohort.ttl's association names
+# syn:syn26999999 via sagebrain:derived_from; pipeline_provenance.ttl traces
+# that file back to syn:syn27000001.
+ANCESTRY_EXAMPLE = ROOT / "examples" / "AD-cohort.ttl"
+ANCESTRY_FROM = URIRef("https://w3id.org/synapse/ad/association/apoe-expr-samp01")
+ANCESTRY_TO = URIRef("https://www.synapse.org/Synapse:syn27000001")
 
 SH_RESULT_MESSAGE = URIRef("http://www.w3.org/ns/shacl#resultMessage")
 
@@ -170,13 +190,13 @@ EXPECTED_VIOLATIONS = {
 # checked under WITH_GOVERNANCE=1 -- see check 8.
 EXPECTED_GOVERNANCE_VIOLATIONS = {
     "m: Usage with neither prov:entity nor gov:url":
-        "must be either a gov:SynapseEntity",
+        "must be either a Synapse entity reference",
     "n: Activity generated a Gene instead of a SynapseEntity":
-        "prov:generated output, a SynapseEntity",
+        "at least one prov:generated output, an absolute Synapse IRI",
     # (o) in tests/governance_violating.ttl has no entry here: pyshacl reports
     # the same shape:UsageShape-level message for every sh:xone mismatch,
     # regardless of which branch/property actually failed, so its message is
-    # indistinguishable from (m)'s. Verified instead by check_usage_label_leak()
+    # indistinguishable from (m)'s. Verified instead by check_usage_name_leak()
     # below, which checks the SHACL report's focus nodes directly rather than
     # message text.
 }
@@ -234,8 +254,13 @@ def check_connection_coverage(ontology, shapes):
     return sorted(local_name(c) for c in connections - constrained_paths(shapes))
 
 
-def check_dl_profile():
+def check_dl_profile(sources=None):
     """Merge the ontology (as the build does) and check it is OWL 2 DL.
+
+    sources defaults to ONTOLOGY plus IMPORTS (check 7); check 8 passes
+    GOVERNANCE_DL_SOURCES. Always merge-to-file then validate: chaining
+    `robot merge ... validate-profile` in one call reports spurious
+    violations.
 
     Returns (available, in_profile, report): available is False when
     ROBOT_JAR or the `java` binary is missing (report then explains how to
@@ -257,11 +282,14 @@ def check_dl_profile():
     if shutil.which("java") is None:
         return False, None, "'java' not found on PATH -- required to run ROBOT for this check"
 
+    if sources is None:
+        sources = [ONTOLOGY, *IMPORTS]
+
     with tempfile.TemporaryDirectory() as tmp:
         merged = Path(tmp) / "merged.ttl"
         merge = subprocess.run(
             ["java", "-jar", str(ROBOT_JAR), "merge",
-             "-i", str(ONTOLOGY), *(a for p in IMPORTS for a in ("-i", str(p))),
+             *(a for p in sources for a in ("-i", str(p))),
              "-o", str(merged)],
             capture_output=True, text=True,
         )
@@ -284,15 +312,15 @@ def check_dl_profile():
         return True, in_profile, text
 
 
-def check_usage_label_leak(gov_ontology, gov_shapes):
+def check_usage_name_leak(gov_ontology, gov_shapes):
     """Defect (o) in tests/governance_violating.ttl: a Usage carrying both
-    prov:entity and rdfs:label (no gov:url) must be rejected by
-    shape:UsageShape's entity branch.
+    prov:entity and gov:name (no gov:url) must be rejected by
+    gov:UsageShape's entity branch.
 
     Can't be verified via EXPECTED_GOVERNANCE_VIOLATIONS' message-substring
-    matching: pyshacl reports the same shape:UsageShape-level sh:xone message
+    matching: pyshacl reports the same gov:UsageShape-level sh:xone message
     for every branch mismatch, so this defect's message is indistinguishable
-    from (m)'s -- confirmed a custom sh:message on the rdfs:label property
+    from (m)'s -- confirmed a custom sh:message on a branch's property
     constraint never surfaces in pyshacl's xone reporting either. Checks the
     validation report's sh:focusNode values directly instead: the specific
     blank node holding ex:activityO's Usage must appear among them. Blank
@@ -305,6 +333,94 @@ def check_usage_label_leak(gov_ontology, gov_shapes):
         return False
     _, results, _ = run(data, gov_shapes, gov_ontology)
     return leaky_usage in set(results.objects(None, SH.focusNode))
+
+
+OWL_DECLARATION_TYPES = (OWL.Class, OWL.ObjectProperty, OWL.DatatypeProperty, OWL.AnnotationProperty)
+
+
+def check_prov_types():
+    """Every prov: term the governance layer declares must carry an OWL type
+    W3C PROV-O (PROV_O) gives it, and must exist in PROV-O at all.
+
+    This repo is where governanceDUO's LinkML-generated prov: declarations
+    (governance_layer.ttl) and W3C PROV-O are loaded together, so this is
+    where a disagreement becomes a pun. It happened at governanceDUO 9e398af:
+    prov:generated/prov:entity came out owl:DatatypeProperty, PROV-O says
+    owl:ObjectProperty. Compares declarations directly rather than running DL
+    over a union with prov.ttl, which has puns of its own. Returns a list of
+    human-readable mismatches, empty when every term agrees.
+    """
+    layer = load(GOVERNANCE_LAYER, *GOVERNANCE_MODULES)
+    prov_o = load(PROV_O)
+    mismatches = []
+    for kind in OWL_DECLARATION_TYPES:
+        for term in sorted(set(layer.subjects(RDF.type, kind))):
+            if not str(term).startswith(str(PROV)):
+                continue
+            prov_kinds = {k for k in OWL_DECLARATION_TYPES if (term, RDF.type, k) in prov_o}
+            if not prov_kinds:
+                mismatches.append(f"prov:{local_name(term)} is not declared in PROV-O")
+            elif kind not in prov_kinds:
+                mismatches.append(
+                    f"prov:{local_name(term)} is owl:{local_name(kind)}, PROV-O declares it "
+                    + ", ".join(f"owl:{local_name(k)}" for k in sorted(prov_kinds))
+                )
+    return mismatches
+
+
+def derivation_ancestors(graph, start):
+    """Every node reachable from start by derivation, as governanceDUO's
+    derivation-policy builder computes it (scripts/build_derivation_policy.py
+    at the pinned commit):
+
+      - for each Activity, `?out prov:wasDerivedFrom ?in` for every output and
+        every Usage with prov:entity ?in and gov:wasExecuted false (a data
+        input, not the executed tool) -- its add_was_derived_from();
+      - then prov:wasDerivedFrom plus every property declared
+        rdfs:subPropertyOf it, transitively -- its derivation_properties().
+
+    Works on a copy; graph is left untouched.
+    """
+    g = Graph() + graph
+    for row in g.query("""
+        PREFIX prov: <http://www.w3.org/ns/prov#>
+        PREFIX gov: <https://sagebionetworks.org/governance/>
+        SELECT ?out ?in WHERE {
+            ?activity prov:generated ?out ; prov:qualifiedUsage ?usage .
+            ?usage prov:entity ?in ; gov:wasExecuted false .
+        }"""):
+        g.add((row.out, PROV.wasDerivedFrom, row["in"]))
+
+    properties = {PROV.wasDerivedFrom}
+    frontier = [PROV.wasDerivedFrom]
+    while frontier:
+        parent = frontier.pop()
+        for child in g.subjects(RDFS.subPropertyOf, parent):
+            if child not in properties:
+                properties.add(child)
+                frontier.append(child)
+
+    seen, frontier = set(), [start]
+    while frontier:
+        node = frontier.pop()
+        for prop in properties:
+            for parent in g.objects(node, prop):
+                if parent not in seen:
+                    seen.add(parent)
+                    frontier.append(parent)
+    return seen
+
+
+def check_derivation_ancestry():
+    """With the derived_from bridge loaded, ANCESTRY_FROM (an Association in
+    AD-cohort.ttl) must reach ANCESTRY_TO (the pipeline's raw input in
+    pipeline_provenance.ttl); without it, it must not -- so the bridge axiom,
+    not some other edge, is what connects this repo's graph to governanceDUO's
+    derivation policy. Returns (with_bridge, without_bridge)."""
+    data = load(ANCESTRY_EXAMPLE, GOVERNANCE_EXAMPLE)
+    with_bridge = ANCESTRY_TO in derivation_ancestors(data + load(*GOVERNANCE_MODULES), ANCESTRY_FROM)
+    without_bridge = ANCESTRY_TO in derivation_ancestors(data, ANCESTRY_FROM)
+    return with_bridge, without_bridge
 
 
 def main():
@@ -408,17 +524,47 @@ def main():
             if not hit:
                 failures.append(f"governance defect not caught -- {label}")
 
-        hit = check_usage_label_leak(gov_ontology, gov_shapes)
+        hit = check_usage_name_leak(gov_ontology, gov_shapes)
         print(f"      {'PASS' if hit else 'FAIL'}  "
-              f"o: Usage with both prov:entity and rdfs:label")
+              f"o: Usage with both prov:entity and gov:name")
         if not hit:
-            failures.append("governance defect not caught -- o: Usage with both prov:entity and rdfs:label")
+            failures.append("governance defect not caught -- o: Usage with both prov:entity and gov:name")
 
         conforms, _, text = run(load(GOVERNANCE_EXAMPLE), gov_shapes, gov_ontology)
         print(f"      {'PASS' if conforms else 'FAIL'}  {GOVERNANCE_EXAMPLE.name}")
         if not conforms:
             failures.append(f"example does not conform -- {GOVERNANCE_EXAMPLE.name}")
             print(text)
+
+        # governanceDUO's own data against governanceDUO's shapes, as imported
+        conforms, _, text = run(load(GOVERNANCEDUO_PROVENANCE_EXAMPLES), gov_shapes, gov_ontology)
+        print(f"      {'PASS' if conforms else 'FAIL'}  {GOVERNANCEDUO_PROVENANCE_EXAMPLES.name}")
+        if not conforms:
+            failures.append(f"governanceDUO example does not conform -- {GOVERNANCEDUO_PROVENANCE_EXAMPLES.name}")
+            print(text)
+
+        available, in_profile, report = check_dl_profile(GOVERNANCE_DL_SOURCES)
+        if not available:
+            print(f"      SKIP  governance-layer union in OWL 2 DL profile -- {report}")
+        else:
+            print(f"      {'PASS' if in_profile else 'FAIL'}  governance-layer union in OWL 2 DL profile")
+            if not in_profile:
+                failures.append("governance-layer union is not in the OWL 2 DL profile")
+                print(report)
+
+        mismatches = check_prov_types()
+        print(f"      {'PASS' if not mismatches else 'FAIL'}  prov: declarations agree with W3C PROV-O")
+        for mismatch in mismatches:
+            print(f"            {mismatch}")
+            failures.append(f"prov: type disagreement -- {mismatch}")
+
+        with_bridge, without_bridge = check_derivation_ancestry()
+        ok = with_bridge and not without_bridge
+        print(f"      {'PASS' if ok else 'FAIL'}  {local_name(ANCESTRY_FROM)} reaches "
+              f"{local_name(ANCESTRY_TO)} via prov:wasDerivedFrom* "
+              f"(with bridge: {with_bridge}, without: {without_bridge})")
+        if not ok:
+            failures.append("derivation ancestry does not depend on the derived_from bridge as expected")
     else:
         print("[8] governance layer: skipped (set WITH_GOVERNANCE=1 to check)")
 
