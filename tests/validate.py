@@ -43,9 +43,10 @@ Eight checks:
      violation (PR #3, biolink:association_slot punned via a MIREOT ROOT) shipped
      silently until a human reviewer caught it with `robot reason` by hand.
 
-  8. (opt-in, set WITH_GOVERNANCE=1) ontology/governance/ -- the pipeline
-     provenance layer (prov:Activity/prov:Usage) and its
-     ontology/shacl/governance-shapes.ttl constraints. Unset by default,
+  8. (opt-in, set WITH_GOVERNANCE=1) the pipeline provenance layer
+     (prov:Activity/prov:Usage, imported from governanceDUO as
+     ontology/imports/governance_layer.ttl, bridged by ontology/governance/)
+     and its ontology/shacl/governance_layer.shacl.ttl constraints. Unset by default,
      mirroring the Makefile's own WITH_GOVERNANCE flag: this layer is
      optional and not part of the default build, so it is not part of the
      default test run either. Same three-part check as 3/4/6 above (a
@@ -123,7 +124,9 @@ WITH_GOVERNANCE = os.environ.get("WITH_GOVERNANCE", "") not in ("", "0")
 GOVERNANCE_MODULES = sorted((ROOT / "ontology" / "governance").glob("*.ttl"))
 GOVERNANCE_LAYER = ROOT / "ontology" / "imports" / "governance_layer.ttl"
 GOVERNANCE_IMPORTS = [ROOT / "ontology" / "imports" / "prov.ttl", GOVERNANCE_LAYER, *GOVERNANCE_MODULES]
-GOVERNANCE_SHAPES = ROOT / "ontology" / "shacl" / "governance-shapes.ttl"
+# Imported verbatim from governanceDUO (scripts/import.sh), which owns these
+# shapes: gov:UsageShape / gov:ActivityShape.
+GOVERNANCE_SHAPES = ROOT / "ontology" / "shacl" / "governance_layer.shacl.ttl"
 GOVERNANCE_CONFORMING = ROOT / "tests" / "governance_conforming.ttl"
 GOVERNANCE_VIOLATING = ROOT / "tests" / "governance_violating.ttl"
 GOVERNANCE_EXAMPLE = ROOT / "examples" / "pipeline_provenance.ttl"
