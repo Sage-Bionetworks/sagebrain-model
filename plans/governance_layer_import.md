@@ -194,3 +194,83 @@ branch leaves the machine.
 Store this plan for review, then implement in granular commits: import.sh module,
 regenerated imports, bridge module, shapes swap, examples, fixtures, tests, docs.
 Append an Implementation Report to this file when done.
+
+## Implementation Report (2026-09-23)
+
+Implemented at governanceDUO `240a162` (see the revision under Context), on
+branch `governance-layer-import`.
+
+**Commits** (after the plan, `6cae715`):
+
+| step | commit | change |
+|---|---|---|
+| 1 | `984b3ef` | `scripts/import.sh`: `governance_graph`, `governance_layer`, `governance_layer_shapes` modules; full-IRI terms in `extract_module()` |
+| 1 | `17e0d14` | `ontology/imports/governance_graph.ttl` regenerated (replaces the hand extract) |
+| 1 | `580379e` | `ontology/imports/governance_layer.ttl` added |
+| — | `b095ac6` | This plan: re-pin at `240a162`, step 1 as built, step 7 additions |
+| 2 | `cbcdbf6` | `pipeline_provenance.ttl` → `provenance_bridge.ttl`; `governance_layer.ttl` wired into `GOVERNANCE_SOURCES`/`GOVERNANCE_IMPORTS` |
+| 1 | `d8fe1a6` | `copy_shapes_module()` → `copy_module()`: per-module output path, generated source/pin header |
+| 3 | `8454abe` | `governance-shapes.ttl` → `governance_layer.shacl.ttl`; `GOVERNANCE_SHAPES` repointed |
+| 4 | `518bf04` | `sagebrain.ttl`: `derived_from` comment names the imported layer and the bridge |
+| 5 | `28a88c1` | `examples/pipeline_provenance.ttl` + README: `gov:name`, `gov:activity-*` |
+| 6 | `ae0af7a` | Governance fixtures on the imported shapes' contract |
+| 7 | `20c1fd5` | `governance_provenance_examples` import module + vendored ABox |
+| 7 | `54c7fdc`, `aec5ebb` | `tests/validate.py`: new messages, `check_usage_name_leak()`, four contract checks |
+| 8 | `959635e` | `plans/pipeline_provenance_layer.md`: superseded note |
+| docs | `486c863` | README: the governanceDUO import and the governance checks |
+
+**Deviations from the Approach:**
+- **Pin.** `240a162`, not `9e398af`: the earlier pin punned `prov:generated`/
+  `prov:entity` against W3C PROV-O. Fixed upstream (governanceDUO
+  `plans/iri_valued_slots_as_object_properties.md`) rather than dropping
+  `prov.ttl` (user decision).
+- **Four import modules, not one `governance` module.** Each has its own
+  source and output. The fourth, `governance_provenance_examples`, sources the
+  vendored ABox (step 7) so a pin bump refreshes it.
+- **Copied files get a generated header** (source URL and pin, "do not edit").
+  A verbatim copy can't carry its own provenance, and step 1 asked for one.
+- **Fixtures needed more than renames.** The imported shapes check entity
+  references against the absolute-Synapse-IRI pattern, so both governance
+  fixtures moved from `ex:` entities to fictional `syn:syn9000xxxx` IRIs. In
+  the violating fixture, every node that isn't the planted defect is valid, so
+  each Activity fails for exactly one reason.
+- **Two parts of the ancestry check.** It mirrors governanceDUO's builder:
+  Activity → `prov:wasDerivedFrom` for data inputs (`gov:wasExecuted false`),
+  then `prov:wasDerivedFrom` plus sub-properties. It asserts reachability
+  with the bridge **and** non-reachability without it, so the bridge is shown
+  to be what connects the two graphs.
+- **Added: a PROV type-agreement check**, in the step 7 revision.
+
+**Verification results:**
+- `python3 tests/validate.py`: all checks pass; check 7 (DL) passes with the
+  regenerated `governance_graph.ttl`.
+- `WITH_GOVERNANCE=1 python3 tests/validate.py`: all checks pass:
+  - conforming fixture (including the two-output Activity);
+  - (m)/(n) by message and (o) by focus node;
+  - `pipeline_provenance.ttl`;
+  - `governanceduo_provenance_examples.ttl`;
+  - governance-layer union DL;
+  - PROV type agreement;
+  - ancestry (with bridge: reachable; without: not).
+- The type check bites: with `prov:entity`/`prov:generated` set back to
+  `owl:DatatypeProperty` in `governance_layer.ttl` (the `9e398af` shape), it
+  fails naming exactly those two.
+- Violating-fixture isolation: (m) and (o) produce only `gov:UsageShape`'s xone
+  message (plus `gov:ActivityShape`'s `sh:node` echo of it); (n) produces only
+  the `prov:generated` IRI-pattern message.
+- `make WITH_GOVERNANCE=1 json` builds (`MIN_CLASSES` holds). `build/sage.json`
+  contains `prov:Activity`, `prov:Usage`, `gov:wasExecuted`, `prov:generated`
+  and `prov:entity`.
+- `scripts/import.sh governance_graph governance_layer governance_layer_shapes
+  governance_provenance_examples` re-run at the same pin: no diff.
+- From governanceDUO (`240a162`):
+  `make sagebrain-contract-check SAGEBRAIN_MODEL=<this checkout>` passes all
+  four parts: union OWL 2 DL, `prov:` types vs `prov.ttl`, joined-example SHACL,
+  and the ControlLabel reaching `association:apoe-expr-samp01`.
+
+**Open before this branch leaves the machine:**
+- governanceDUO `kg-conversion` (through `240a162`) must be pushed. Until then
+  the pinned raw URLs 404, and `make imports` on a clean checkout fails at the
+  fetch. The modules here were generated from a cache seeded with `git show
+  240a162:<path>`, which is byte-identical to what the URLs will serve.
+- The independent SME-framed review (OWL/RDF/SHACL) before `gh pr create`.
