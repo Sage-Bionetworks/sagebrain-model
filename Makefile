@@ -79,6 +79,7 @@ MAIN_SOURCES = ontology/main/sagebrain.ttl \
 GOVERNANCE_MODULES = $(wildcard ontology/governance/*.ttl)
 
 GOVERNANCE_SOURCES = $(GOVERNANCE_MODULES) \
+                     ontology/imports/governance_layer.ttl \
                      ontology/imports/duo.ttl \
                      ontology/imports/prov.ttl
 
