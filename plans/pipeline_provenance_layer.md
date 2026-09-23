@@ -104,3 +104,23 @@ Implemented as planned, in the following commits (on branch `provenance-features
 - `WITH_GOVERNANCE=1 python3 tests/validate.py`: all 7 checks pass, including the new governance group -- `tests/governance_conforming.ttl` conforms, both planted defects (m)/(n) in `tests/governance_violating.ttl` are caught with their expected messages, and `examples/pipeline_provenance.ttl` conforms.
 - `make WITH_GOVERNANCE=1 json`: builds cleanly (`MIN_CLASSES=100` floor passes, 335 classes / 511 properties in the merged graph). Inspected `build/sage.json`'s `classAttribute`/`propertyAttribute` arrays directly: `prov:Activity`, `prov:Usage`, `prov:Entity`, `prov:generated`, `prov:qualifiedUsage`, `prov:entity`, and the three new `gov:` properties (`wasExecuted`, `url`, `entityVersionNumber`) are all present as real (non-orphan) nodes; `gov:wasExecuted`'s domain/range resolve to concrete ids (`prov:Usage`/`xsd:boolean`), not `null`; `gov:SynapseEntity` remains a real node with a stable id.
 - Traced `examples/pipeline_provenance.ttl`'s chain by hand: `syn:syn27000001` (raw) -> `syn:activity.reprocess01` (nf-core/rnaseq v3.11.1) -> `syn:syn27000002` (intermediate) -> `syn:activity.reprocess02` (DESeq2 v1.34.0) -> `syn:syn26999999` -- the same IRI `association:apoe-expr-samp01` (`examples/AD-cohort.ttl`) already names via `sagebrain:derived_from`, confirming the two layers describe the same real-world file.
+
+## Superseded (2026-09-23)
+
+`plans/governance_layer_import.md` replaces this layer's hand-kept copies with an
+import from mc2-center/governanceDUO, which now owns the provenance terms and
+shapes. What changed from this plan:
+
+- `ontology/governance/pipeline_provenance.ttl` is gone. `gov:wasExecuted`/`gov:url`/
+  `gov:entityVersionNumber` come from `ontology/imports/governance_layer.ttl` (a
+  MIREOT extract of governanceDUO's OWL), and `ontology/governance/` holds only
+  `provenance_bridge.ttl` (`sagebrain:derived_from rdfs:subPropertyOf prov:wasDerivedFrom`).
+- `ontology/shacl/governance-shapes.ttl` is replaced by
+  `ontology/shacl/governance_layer.shacl.ttl`, copied verbatim from governanceDUO.
+  This plan's "mirrors governanceDUO" claims no longer hold:
+  - a URL Usage is named with `gov:name`, not `rdfs:label`;
+  - an Activity may have several `prov:generated` outputs, not exactly one
+    (Synapse allows it);
+  - entity references are checked as absolute Synapse IRIs, not with
+    `sh:class gov:SynapseEntity`.
+- Activities are minted `gov:activity-<id>`, not `syn:activity.<id>`.
