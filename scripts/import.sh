@@ -162,11 +162,11 @@ governance_layer_DESCRIPTION="MIREOT extract of the governanceDUO provenance-lay
 # moved there from this repo per plans/governance_layer_import.md, decision
 # D9: one owner per governance-layer term and shape). Shapes are constraints,
 # not a class/property hierarchy, so there is nothing for MIREOT to extract --
-# this is a verbatim copy, handled by copy_shapes_module() below, not
+# this is a verbatim copy, handled by copy_module() below, not
 # extract_module().
 governance_layer_shapes_VERSION="$GOVERNANCEDUO_COMMIT"
 governance_layer_shapes_URL="${GOVERNANCEDUO_RAW}/shapes/provenance_layer.shacl.ttl"
-governance_layer_shapes_OUTPUT="governance_layer.shacl.ttl"
+governance_layer_shapes_OUTPUT="$SHACL_DIR/governance_layer.shacl.ttl"
 
 extract_module() {
   local name="$1"
@@ -245,14 +245,17 @@ extract_module() {
     "$(grep -c 'rdf:type owl:ObjectProperty' "$module" || true)"
 }
 
-copy_shapes_module() {
+# Verbatim copy of a file MIREOT can't extract from (shapes, example ABoxes),
+# behind a generated header recording where it came from -- the copy's
+# counterpart to the dcterms:source/owl:versionIRI extract_module() stamps.
+copy_module() {
   local name="$1"
   local -n version="${name}_VERSION"
   local -n url="${name}_URL"
   local -n output="${name}_OUTPUT"
 
   local source_ttl="$CACHE_DIR/${name}-${version}.source.ttl"
-  local module="$SHACL_DIR/${output}"
+  local module="$output"
 
   if [ -f "$source_ttl" ]; then
     echo "--- $name $version: using cached source"
@@ -263,9 +266,15 @@ copy_shapes_module() {
     mv "$source_ttl.tmp" "$source_ttl"
   fi
 
-  echo "--- $name: copying verbatim to ontology/shacl/${output}"
-  cp "$source_ttl" "$module.tmp.ttl"
-  mv "$module.tmp.ttl" "$module"
+  echo "--- $name: copying verbatim to ${output#"$ROOT"/}"
+  {
+    echo "# Copied verbatim by scripts/import.sh (module '$name') from"
+    echo "# $url"
+    echo "# Do not edit by hand: bump the pin in scripts/import.sh and re-run it."
+    echo "#"
+    cat "$source_ttl"
+  } > "$module.tmp"
+  mv "$module.tmp" "$module"
 }
 
 main() {
@@ -281,7 +290,7 @@ main() {
     case " ${MODULES[*]} " in
       *" $name "*)
         case "$name" in
-          *_shapes) copy_shapes_module "$name" ;;
+          *_shapes|*_examples) copy_module "$name" ;;
           *) extract_module "$name" ;;
         esac
         ;;
