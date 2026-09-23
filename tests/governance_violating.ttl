@@ -1,51 +1,53 @@
 # Instance data with three planted defects, each of which MUST be reported.
 # tests/validate.py asserts on the expected violation set (only checked under
 # WITH_GOVERNANCE=1, see check 8) -- this doubles as documentation of what
-# governance-shapes.ttl actually catches.
+# governance_layer.shacl.ttl (imported from governanceDUO) actually catches.
+# Every node that isn't the defect itself is a valid absolute Synapse IRI, so
+# each Activity fails for exactly its planted reason.
 
 @prefix gov:     <https://sagebionetworks.org/governance/> .
 @prefix prov:    <http://www.w3.org/ns/prov#> .
 @prefix biolink: <https://w3id.org/biolink/vocab/> .
-@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix ex:      <https://example.org/sagebrain-test/> .
+@prefix syn:     <https://www.synapse.org/Synapse:> .
 
-# (m) a Usage with neither prov:entity nor gov:url -- fails shape:UsageShape's
+# (m) a Usage with neither prov:entity nor gov:url -- fails gov:UsageShape's
 #     sh:xone (neither branch conforms).
 ex:activityM
     a prov:Activity ;
     prov:qualifiedUsage [ a prov:Usage ; gov:wasExecuted false ] ;
-    prov:generated ex:outputM .
+    prov:generated syn:syn90000101 .
 
-ex:outputM a gov:SynapseEntity .
+syn:syn90000101 a gov:SynapseEntity .
 
-# (n) an Activity whose prov:generated points at a Gene, not a SynapseEntity.
+# (n) an Activity whose prov:generated points at a Gene, not a SynapseEntity --
+#     fails gov:ActivityShape's absolute-Synapse-IRI pattern (the imported
+#     shapes check the IRI, not sh:class, so they work on a provenance ABox
+#     without the governance graph merged in).
 ex:activityN
     a prov:Activity ;
-    prov:qualifiedUsage [ a prov:Usage ; prov:entity ex:inputN ; gov:wasExecuted false ] ;
+    prov:qualifiedUsage [ a prov:Usage ; prov:entity syn:syn90000102 ; gov:wasExecuted false ] ;
     prov:generated ex:someGene .
 
-ex:inputN  a gov:SynapseEntity .
+syn:syn90000102 a gov:SynapseEntity .
 ex:someGene a biolink:Gene .
 
 # (o) a Usage carrying both prov:entity (the SynapseEntity branch) and
-#     rdfs:label (only valid on the external-tool branch) -- the entity
-#     branch must forbid rdfs:label the same way it forbids gov:url, or a
-#     Usage can leak a label through the branch that isn't supposed to
+#     gov:name (only valid on the external-tool branch) -- the entity
+#     branch must forbid gov:name the same way it forbids gov:url, or a
+#     Usage can leak a name through the branch that isn't supposed to
 #     carry one. NOT independently asserted in tests/validate.py's
 #     EXPECTED_GOVERNANCE_VIOLATIONS: pyshacl reports the same
-#     shape:UsageShape-level sh:xone message for every branch mismatch, so
-#     this defect's message is indistinguishable from (m)'s -- confirmed
-#     both cause a violation, and confirmed the fix is what makes this one
-#     fail (reverting shape:UsageShape's rdfs:label maxCount-0 constraint on
-#     the entity branch makes this specific Usage conform again while (m)
-#     and (n) still fail on their own).
+#     gov:UsageShape-level sh:xone message for every branch mismatch, so
+#     this defect's message is indistinguishable from (m)'s. Checked by
+#     focus node instead (check_usage_name_leak()).
 ex:activityO
     a prov:Activity ;
     prov:qualifiedUsage [ a prov:Usage ;
-                          prov:entity ex:inputO ;
-                          rdfs:label "should not be allowed here" ;
+                          prov:entity syn:syn90000103 ;
+                          gov:name "should not be allowed here" ;
                           gov:wasExecuted false ] ;
-    prov:generated ex:outputO .
+    prov:generated syn:syn90000104 .
 
-ex:inputO  a gov:SynapseEntity .
-ex:outputO a gov:SynapseEntity .
+syn:syn90000103 a gov:SynapseEntity .
+syn:syn90000104 a gov:SynapseEntity .

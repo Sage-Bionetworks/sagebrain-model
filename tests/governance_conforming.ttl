@@ -1,47 +1,70 @@
 # Instance data that MUST validate cleanly against
-# ontology/shacl/governance-shapes.ttl. Only checked under WITH_GOVERNANCE=1
-# (see tests/validate.py check 8) -- see plans/pipeline_provenance_layer.md.
+# ontology/shacl/governance_layer.shacl.ttl (imported from governanceDUO). Only
+# checked under WITH_GOVERNANCE=1 (see tests/validate.py check 8) -- see
+# plans/governance_layer_import.md.
 #
 # A two-hop reprocessing chain: a raw dataset is processed by a named tool
 # into an intermediate output, which a second tool then processes into a
 # DE-analysis result. Each prov:Activity's prov:qualifiedUsage exercises both
-# shape:UsageShape branches -- one Usage referencing a gov:SynapseEntity
+# gov:UsageShape branches -- one Usage referencing a gov:SynapseEntity
 # (the data being processed, wasExecuted false), one referencing an external
-# tool by URL (the thing doing the processing, wasExecuted true).
+# tool by URL and gov:name (the thing doing the processing, wasExecuted true).
+# A third Activity generates two outputs at once, which Synapse allows
+# (GET /activity/{id}/generated returns a list) and gov:ActivityShape permits.
+#
+# Entity references are absolute Synapse IRIs (the shapes check the pattern);
+# the ids are fictional. Activities stay in ex:, which no shape constrains.
 
 @prefix gov:  <https://sagebionetworks.org/governance/> .
 @prefix prov: <http://www.w3.org/ns/prov#> .
-@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
 @prefix ex:   <https://example.org/sagebrain-test/> .
+@prefix syn:  <https://www.synapse.org/Synapse:> .
 
-ex:rawDataset        a gov:SynapseEntity .
-ex:intermediateOutput a gov:SynapseEntity .
-ex:deResult          a gov:SynapseEntity .
+syn:syn90000001 a gov:SynapseEntity .   # raw dataset
+syn:syn90000002 a gov:SynapseEntity .   # intermediate output
+syn:syn90000003 a gov:SynapseEntity .   # DE result
+syn:syn90000004 a gov:SynapseEntity .   # QC report (second output of activity3)
 
 # raw input -(nf-core/rnaseq v3.11.1)-> intermediate output
 ex:activity1
     a prov:Activity ;
     prov:qualifiedUsage
         [ a prov:Usage ;
-          prov:entity ex:rawDataset ;
+          prov:entity syn:syn90000001 ;
           gov:wasExecuted false ] ,
         [ a prov:Usage ;
           gov:url "https://nf-co.re/rnaseq/3.11.1" ;
-          rdfs:label "nf-core/rnaseq v3.11.1" ;
+          gov:name "nf-core/rnaseq v3.11.1" ;
           gov:wasExecuted true ] ;
-    prov:generated ex:intermediateOutput .
+    prov:generated syn:syn90000002 .
 
 # intermediate output -(DESeq2 v1.34.0)-> DE result
 ex:activity2
     a prov:Activity ;
     prov:qualifiedUsage
         [ a prov:Usage ;
-          prov:entity ex:intermediateOutput ;
+          prov:entity syn:syn90000002 ;
           gov:entityVersionNumber 1 ;
           gov:wasExecuted false ] ,
         [ a prov:Usage ;
           gov:url "https://bioconductor.org/packages/release/bioc/html/DESeq2.html" ;
-          rdfs:label "DESeq2 v1.34.0" ;
+          gov:name "DESeq2 v1.34.0" ;
           gov:wasExecuted true ] ;
-    prov:generated ex:deResult .
+    prov:generated syn:syn90000003 .
+
+# DE result -(MultiQC v1.21)-> QC report + an annotated copy of the result:
+# one Activity, two prov:generated outputs.
+ex:activity3
+    a prov:Activity ;
+    prov:qualifiedUsage
+        [ a prov:Usage ;
+          prov:entity syn:syn90000003 ;
+          gov:wasExecuted false ] ,
+        [ a prov:Usage ;
+          gov:url "https://github.com/MultiQC/MultiQC/releases/tag/v1.21" ;
+          gov:name "MultiQC v1.21" ;
+          gov:wasExecuted true ] ;
+    prov:generated syn:syn90000004 , syn:syn90000005 .
+
+syn:syn90000005 a gov:SynapseEntity .   # annotated DE result (second output of activity3)
