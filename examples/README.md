@@ -99,10 +99,15 @@ where to look; that is still true of what remains open, covered next.
 
 `derived_from` names *that* a file was the source; it says nothing about how it
 got there. `pipeline_provenance.ttl` is the detailed path behind the same edge:
-a `prov:Activity`/`prov:Usage` chain (`ontology/governance/pipeline_provenance.ttl`,
-see `plans/pipeline_provenance_layer.md`) tracing `syn:syn26999999` back through
+a `prov:Activity`/`prov:Usage` chain, in the provenance vocabulary and shapes
+imported from mc2-center/governanceDUO (`ontology/imports/governance_layer.ttl`,
+`ontology/shacl/governance_layer.shacl.ttl`; see
+`plans/governance_layer_import.md`), tracing `syn:syn26999999` back through
 an nf-core/rnaseq run and a DESeq2 run to a raw dataset — the exact node
-`apoe-expr-samp01`'s `derived_from` already names, not a lookalike. This layer
+`apoe-expr-samp01`'s `derived_from` already names, not a lookalike.
+`ontology/governance/provenance_bridge.ttl` makes `derived_from` a sub-property
+of `prov:wasDerivedFrom`, so governanceDUO's access-label builder follows the
+chain from the raw dataset through to the association itself. This layer
 is optional and unstable (`ontology/governance/`, per the `Makefile`), so unlike
 every other file here it is validated only under `make WITH_GOVERNANCE=1` /
 `WITH_GOVERNANCE=1 python tests/validate.py`, not by a plain default run.
