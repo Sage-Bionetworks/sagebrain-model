@@ -129,14 +129,14 @@ EXAMPLES = sorted(
 WITH_GOVERNANCE = os.environ.get("WITH_GOVERNANCE", "") not in ("", "0")
 GOVERNANCE_MODULES = sorted((ROOT / "ontology" / "governance").glob("*.ttl"))
 GOVERNANCE_LAYER = ROOT / "ontology" / "imports" / "governance_layer.ttl"
-GOVERNANCE_IMPORTS = [ROOT / "ontology" / "imports" / "prov.ttl", GOVERNANCE_LAYER, *GOVERNANCE_MODULES]
+PROV_O = ROOT / "ontology" / "imports" / "prov.ttl"
+GOVERNANCE_IMPORTS = [PROV_O, GOVERNANCE_LAYER, *GOVERNANCE_MODULES]
 # Imported verbatim from governanceDUO (scripts/import.sh), which owns these
 # shapes: gov:UsageShape / gov:ActivityShape.
 GOVERNANCE_SHAPES = ROOT / "ontology" / "shacl" / "governance_layer.shacl.ttl"
 GOVERNANCE_CONFORMING = ROOT / "tests" / "governance_conforming.ttl"
 GOVERNANCE_VIOLATING = ROOT / "tests" / "governance_violating.ttl"
 GOVERNANCE_EXAMPLE = ROOT / "examples" / "pipeline_provenance.ttl"
-PROV_O = ROOT / "ontology" / "imports" / "prov.ttl"
 # Vendored by scripts/import.sh at the same governanceDUO pin as the shapes.
 GOVERNANCEDUO_PROVENANCE_EXAMPLES = ROOT / "tests" / "governanceduo_provenance_examples.ttl"
 # The DL-checked set (check 7) plus the governance layer. Leaves out prov.ttl
@@ -194,7 +194,7 @@ EXPECTED_GOVERNANCE_VIOLATIONS = {
     "n: Activity generated a Gene instead of a SynapseEntity":
         "at least one prov:generated output, an absolute Synapse IRI",
     # (o) in tests/governance_violating.ttl has no entry here: pyshacl reports
-    # the same shape:UsageShape-level message for every sh:xone mismatch,
+    # the same gov:UsageShape-level message for every sh:xone mismatch,
     # regardless of which branch/property actually failed, so its message is
     # indistinguishable from (m)'s. Verified instead by check_usage_name_leak()
     # below, which checks the SHACL report's focus nodes directly rather than
