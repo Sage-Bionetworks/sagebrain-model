@@ -49,7 +49,7 @@ DCTERMS_SOURCE="http://purl.org/dc/terms/source"
 GOVERNANCEDUO_COMMIT="240a1628a14f6f08d6e86444030ab20beddc5b4d"
 GOVERNANCEDUO_RAW="https://raw.githubusercontent.com/mc2-center/governanceDUO/${GOVERNANCEDUO_COMMIT}"
 
-MODULES=(biolink governance_graph governance_layer governance_layer_shapes)
+MODULES=(biolink governance_graph governance_layer governance_layer_shapes governance_provenance_examples)
 
 # --- biolink ----------------------------------------------------------------
 #
@@ -167,6 +167,18 @@ governance_layer_DESCRIPTION="MIREOT extract of the governanceDUO provenance-lay
 governance_layer_shapes_VERSION="$GOVERNANCEDUO_COMMIT"
 governance_layer_shapes_URL="${GOVERNANCEDUO_RAW}/shapes/provenance_layer.shacl.ttl"
 governance_layer_shapes_OUTPUT="$SHACL_DIR/governance_layer.shacl.ttl"
+
+# --- governance_provenance_examples -------------------------------------------
+#
+# governanceDUO's own provenance example ABox, at the same pin as the shapes
+# above. Not part of the ontology: a test fixture, checked by tests/validate.py
+# (WITH_GOVERNANCE=1) against governance_layer.shacl.ttl, so data written by
+# the shapes' owner conforms to them as imported here -- contract drift fails
+# in this repo's own test run, not only in governanceDUO's opt-in
+# sagebrain-contract-check. Verbatim copy, same as the shapes.
+governance_provenance_examples_VERSION="$GOVERNANCEDUO_COMMIT"
+governance_provenance_examples_URL="${GOVERNANCEDUO_RAW}/linkml/examples/provenance/rdf/all_examples.ttl"
+governance_provenance_examples_OUTPUT="$ROOT/tests/governanceduo_provenance_examples.ttl"
 
 extract_module() {
   local name="$1"
