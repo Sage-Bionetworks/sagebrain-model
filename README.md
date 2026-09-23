@@ -4,7 +4,7 @@ The Sage Brain ontologies.
 
 ```
 ontology/main/        the ontologies under active development -- built by default
-ontology/governance/  the governance model (placeholder)
+ontology/governance/  bridges from this model into the governance layer (opt-in)
 ontology/imports/     third-party vocabularies, as extracted modules
 ontology/mappings/    claims we assert about external vocabularies (placeholder)
 ontology/shacl/       constraints over the above
@@ -43,6 +43,26 @@ $EDITOR scripts/import.sh    # biolink_VERSION=..., biolink_LOWER=(...)
 make imports                 # re-extract; read the diff before committing
 python tests/validate.py
 ```
+
+### The governance layer (mc2-center/governanceDUO)
+
+The governance graph (access requirements, ACLs, Synapse provenance) is owned
+by [governanceDUO](https://github.com/mc2-center/governanceDUO) and is a layer of
+this graph: same store, same IRIs. This repo imports it rather than keeping
+copies. `scripts/import.sh` pins one governanceDUO commit (`GOVERNANCEDUO_COMMIT`)
+for all four of its modules:
+
+| module | output | what |
+|---|---|---|
+| `governance_graph` | `ontology/imports/governance_graph.ttl` | `gov:SynapseEntity`, the range of `sagebrain:derived_from`; default build |
+| `governance_layer` | `ontology/imports/governance_layer.ttl` | `prov:Activity`/`prov:Usage` and the `prov:`/`gov:` properties the pipeline-provenance layer uses; `WITH_GOVERNANCE=1` only |
+| `governance_layer_shapes` | `ontology/shacl/governance_layer.shacl.ttl` | `gov:UsageShape`/`gov:ActivityShape`, copied verbatim |
+| `governance_provenance_examples` | `tests/governanceduo_provenance_examples.ttl` | governanceDUO's provenance ABox, a contract fixture |
+
+The one thing this repo owns there is `ontology/governance/provenance_bridge.ttl`:
+`sagebrain:derived_from rdfs:subPropertyOf prov:wasDerivedFrom`, so governanceDUO's
+access labels carry from a Synapse file onto the Samples and Associations derived
+from it. See `plans/governance_layer_import.md`.
 
 ## Visualization
 
@@ -115,9 +135,14 @@ Overridable variables: `ROBOT_JAR`, `OWL2VOWL_JAR`, `WEBVOWL_DIR`,
 python tests/validate.py
 ```
 
-Six checks: the shapes graph is valid SHACL; the ontology satisfies its own
-model-integrity shapes; the conforming and violating fixtures behave as expected;
-every connection is constrained by at least one active property shape, so a
-connection cannot be added without a constraint; and every file in `examples/`
-still validates.
+Seven checks by default: the shapes graph is valid SHACL; the ontology satisfies
+its own model-integrity shapes; the conforming and violating fixtures behave as
+expected; every connection is constrained by at least one active property shape,
+so a connection cannot be added without a constraint; every file in `examples/`
+still validates; and the merged ontology stays OWL 2 DL (needs `make tools`).
+
+`WITH_GOVERNANCE=1 python tests/validate.py` adds the governance layer: its own
+fixtures and example, plus contract checks against governanceDUO (its example
+ABox conforms to the imported shapes, the union stays OWL 2 DL, `prov:` types
+agree with W3C PROV-O, and the `derived_from` bridge carries derivation ancestry).
 
