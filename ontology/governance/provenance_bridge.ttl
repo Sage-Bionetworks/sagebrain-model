@@ -1,0 +1,32 @@
+@prefix sagebrain: <https://w3id.org/synapse/sagebrain#> .
+@prefix prov:      <http://www.w3.org/ns/prov#> .
+@prefix owl:       <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs:      <http://www.w3.org/2000/01/rdf-schema#> .
+@base <https://w3id.org/synapse/sagebrain/governance/provenance_bridge> .
+
+# Bridges sagebrain:derived_from into governanceDUO's provenance layer
+# (ontology/imports/governance_layer.ttl, gated behind `make WITH_GOVERNANCE=1`
+# same as this module): governanceDUO's derivation-policy builder walks
+# prov:wasDerivedFrom* ancestry to compute access control labels, and without
+# this sub-property assertion it stops at the Synapse file a sagebrain
+# Association/Sample points at, never reaching the Association itself. See
+# sagebrain:derived_from's own comment in ontology/main/sagebrain.ttl and
+# plans/governance_layer_import.md.
+#
+# This repo owns this one axiom -- everything else about the provenance layer
+# (prov:Activity/prov:Usage and their properties, gov:UsageShape/
+# gov:ActivityShape) is imported from governanceDUO, decision D9 of
+# plans/governance_layer_import.md: one owner per governance-layer term and
+# shape. It lives here, in ontology/governance/, not ontology/main/: the
+# default build's DL-checked set does not import prov.ttl, so a bare
+# subPropertyOf assertion there would add an undeclared property.
+#
+# prov:wasDerivedFrom must be declared here too, not left to resolve from
+# context: sagebrain's DL-checked set does not import prov.ttl (see above),
+# so without this declaration OWLAPI reads the sagebrain:derived_from axiom
+# below as an annotation sub-property rather than an object one, and the
+# combined OWL 2 DL check fails -- confirmed during governanceDUO's own
+# contract-check simulation (plans/governance_layer_import.md).
+prov:wasDerivedFrom a owl:ObjectProperty .
+
+sagebrain:derived_from rdfs:subPropertyOf prov:wasDerivedFrom .

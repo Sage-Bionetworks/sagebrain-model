@@ -116,9 +116,13 @@ EXAMPLES = sorted(
 # ontology/governance/*.ttl the same way the Makefile does; duo.ttl is left
 # out of GOVERNANCE_IMPORTS (unlike the Makefile's GOVERNANCE_SOURCES) because
 # nothing in ontology/governance/ references a DUO term yet.
+# governance_layer.ttl is the prov:/gov: provenance vocabulary imported from
+# governanceDUO (scripts/import.sh); ontology/governance/ holds only the
+# bridge this repo owns on top of it.
 WITH_GOVERNANCE = os.environ.get("WITH_GOVERNANCE", "") not in ("", "0")
 GOVERNANCE_MODULES = sorted((ROOT / "ontology" / "governance").glob("*.ttl"))
-GOVERNANCE_IMPORTS = [ROOT / "ontology" / "imports" / "prov.ttl", *GOVERNANCE_MODULES]
+GOVERNANCE_LAYER = ROOT / "ontology" / "imports" / "governance_layer.ttl"
+GOVERNANCE_IMPORTS = [ROOT / "ontology" / "imports" / "prov.ttl", GOVERNANCE_LAYER, *GOVERNANCE_MODULES]
 GOVERNANCE_SHAPES = ROOT / "ontology" / "shacl" / "governance-shapes.ttl"
 GOVERNANCE_CONFORMING = ROOT / "tests" / "governance_conforming.ttl"
 GOVERNANCE_VIOLATING = ROOT / "tests" / "governance_violating.ttl"
