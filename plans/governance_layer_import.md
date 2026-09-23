@@ -49,9 +49,47 @@ union OWL 2 DL, SHACL on a joined worked example, and a ControlLabel reaching
 (`kg-conversion` pushed, or merged to `main` and tagged `v0.1.0`). Until then the
 pinned URLs below don't resolve.
 
+### Revision (2026-09-23): pin `240a162`, not `9e398af`
+
+Step 1 was first built against `9e398af`. Its `governance_duo.owl.ttl` typed
+`prov:generated` and `prov:entity` as `owl:DatatypeProperty`, because LinkML
+emits `range: uriorcurie` slots that way. W3C PROV-O (`ontology/imports/prov.ttl`,
+already in `GOVERNANCE_SOURCES`) types them as `owl:ObjectProperty`. Loading
+both punned them: 21 OWL 2 DL violations, on top of the 13 that `prov.ttl`
+gives on its own (`prov:specializationOf`, `prov:wasRevisionOf`).
+
+Keeping two owners in agreement beats dropping one, so `prov.ttl` stays and
+the fix went upstream: governanceDUO
+`plans/iri_valued_slots_as_object_properties.md` and its report, implemented
+through `240a162`. That commit's OWL types all six IRI-valued slots as object
+properties. It adds a PROV-O type-agreement check to its own `owl-profile`
+and to `sagebrain-contract-check`. Measured against `240a162`:
+
+- **Union with `prov.ttl`.** Only `prov.ttl`'s own violations remain (13 by
+  this repo's count; governanceDUO's report counts 14 on the same union).
+  None comes from the governance layer.
+- **governanceDUO's contract check against this branch's step-1 state.** PROV
+  type agreement and ControlLabel ancestry pass. The DL union failed only
+  because the import was still the `9e398af` extract; regenerating at
+  `240a162` fixes that. Joined-example SHACL fails on
+  `examples/pipeline_provenance.ttl`'s `rdfs:label` Usages, and
+  `gov:ActivityShape`'s `sh:node gov:UsageShape` carries the same failure up to
+  both Activities. Step 5 fixes both.
+
+**`240a162` is not pushed yet** (as of this revision, `kg-conversion` is 11
+commits ahead of `origin`). The modules were regenerated from `CACHE_DIR`,
+seeded with `git show 240a162:<path>` from a local checkout. Those are the
+same bytes the raw URL will serve once pushed. The push must land before this
+branch leaves the machine.
+
 ## Approach
 
-1. **`scripts/import.sh`: add a `governance` module.**
+1. **`scripts/import.sh`: add three governanceDUO modules** (done: `984b3ef`,
+   `17e0d14`, `580379e`). As built: `governance_graph`, `governance_layer`, and
+   `governance_layer_shapes` (copied verbatim, since shapes can't be
+   MIREOT-extracted). `GOVERNANCEDUO_COMMIT` is shared by all three. It's three
+   modules rather than the single `governance` module first planned, because
+   each has its own source file and output path.
    - Fetch the governanceDUO artifacts by pinned URL
      (`https://raw.githubusercontent.com/mc2-center/governanceDUO/<commit-or-tag>/shapes/...`)
      into `CACHE_DIR`, same pinning discipline as Biolink.
@@ -79,6 +117,10 @@ pinned URLs below don't resolve.
 
    It lives in `ontology/governance/`, not `ontology/main/`, so the default build
    doesn't gain an undeclared PROV property.
+
+   Also wire in the imported module: add `ontology/imports/governance_layer.ttl`
+   to `GOVERNANCE_SOURCES` in the `Makefile` and `GOVERNANCE_IMPORTS` in
+   `tests/validate.py`. `prov.ttl` stays in both (see the 2026-09-23 revision).
 3. **Shapes.** Delete `ontology/shacl/governance-shapes.ttl` (superseded by
    `governance_layer.shacl.ttl`). Point `GOVERNANCE_SHAPES` in `tests/validate.py`
    at the new file.
@@ -106,9 +148,19 @@ pinned URLs below don't resolve.
        merge-to-file then validate. Chaining `robot merge ... validate-profile`
        in one call reports spurious violations.
      - a SHACL check of a vendored copy of governanceDUO's provenance example
-       ABox (`tests/governanceduo_provenance_examples.ttl`, pinned alongside
-       the import) against `governance_layer.shacl.ttl`, so contract drift fails
-       here too.
+       ABox (`linkml/examples/provenance/rdf/all_examples.ttl` at the pin,
+       copied verbatim to `tests/governanceduo_provenance_examples.ttl` by a
+       fourth import.sh module, `governance_provenance_examples`, so a pin bump
+       refreshes it) against `governance_layer.shacl.ttl`, so contract drift
+       fails here too. `copy_shapes_module()` generalizes to a `copy_module()`
+       with a per-module output path.
+     - a PROV type-agreement check: every `prov:` term declared in
+       `ontology/imports/governance_layer.ttl` or `ontology/governance/` must
+       have the same OWL property/class type as in `ontology/imports/prov.ttl`.
+       This repo is where the two files are loaded together, so a future pin
+       bump that brings the pun back fails here, not only in governanceDUO's
+       opt-in contract check. It compares declarations directly, not with a DL
+       run over a union with `prov.ttl`, since `prov.ttl` has puns of its own.
      - an assertion that `association:apoe-expr-samp01` reaches
        `syn:syn27000001` through `prov:wasDerivedFrom*`, with the bridge axiom
        loaded (SPARQL property path over the merged graph).
@@ -124,14 +176,18 @@ pinned URLs below don't resolve.
   - the conforming fixture conforms;
   - (m)/(n)/(o) are caught with their new messages or focus nodes;
   - `examples/pipeline_provenance.ttl` conforms;
-  - the new union DL, vendored-ABox and ancestry checks pass.
+  - the new union DL, vendored-ABox, PROV type-agreement and ancestry checks
+    pass;
+  - pointing the type-agreement check at the `9e398af` extract makes it fail
+    on `prov:entity`/`prov:generated`.
 - `make WITH_GOVERNANCE=1 json` builds (`MIN_CLASSES` floor holds); `build/sage.json`
   still shows `prov:Activity`/`prov:Usage`/`gov:wasExecuted` as real nodes.
 - From governanceDUO: `make sagebrain-contract-check SAGEBRAIN_MODEL=<this checkout>`
   passes all three parts: union OWL 2 DL, joined-example SHACL, and the
   ControlLabel reaching `association:apoe-expr-samp01`.
-- `scripts/import.sh governance` is reproducible: a re-run with the same pin gives
-  no diff.
+- `scripts/import.sh governance_graph governance_layer governance_layer_shapes
+  governance_provenance_examples` is reproducible: a re-run with the same pin
+  gives no diff.
 
 ## Process
 
