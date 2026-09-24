@@ -55,8 +55,11 @@ Four groups of shapes:
      carry exactly one subject, one object, and one weight. QCResultAssociation is the
      same reification pattern for a categorical (FAIL/WARN/PASS) outcome instead of a
      numeric one -- see shape:QCResultAssociationShape -- and shape:AssociationShape
-     targets biolink:Association directly, covering sagebrain:derived_from generically
-     across every association subtype at once rather than repeating it per shape.""" ;
+     targets biolink:Association directly as a named hook for any future
+     Association-wide constraint. sagebrain:derived_from itself is covered
+     generically, across every Association subtype and plain Sample instances
+     alike, by shape:DerivedFromShape in section 2 (sh:targetSubjectsOf, not
+     sh:targetClass).""" ;
     rdfs:seeAlso "See the VALIDATION CONFIGURATION section below before running these shapes." ;
     owl:imports <https://w3id.org/synapse/sagebrain> ;
     owl:versionIRI <https://w3id.org/synapse/sagebrain/shapes/0.3.0> ;
@@ -238,6 +241,30 @@ an unconfirmed assumption about the class they target.""" ;
 #################################################################
 #################################################################
 
+###  Cross-cutting  #############################################
+#
+# sagebrain:derived_from is asserted on graph data of more than one element
+# class -- plain Sample instances (shape:SampleShape below) and reified
+# Association instances (section 4 below) -- so, like shape:ConnectionShape
+# in section 1, this shape targets subjects of the property directly instead
+# of being repeated once per sh:targetClass shape. Previously duplicated,
+# word-for-word but for the message, inline in both shape:SampleShape and
+# shape:AssociationShape.
+
+shape:DerivedFromShape
+    a sh:NodeShape ;
+    sh:targetSubjectsOf sagebrain:derived_from ;
+    rdfs:label "Derived from shape" ;
+    rdfs:comment "Constrains every subject of sagebrain:derived_from at once -- both plain Sample instances and reified Association instances -- rather than repeating the same property block per targetClass shape." ;
+
+    sh:property [
+        sh:path sagebrain:derived_from ;
+        sh:name "derived from" ;
+        sh:nodeKind sh:IRI ;
+        sh:or ( [ sh:class biolink:MaterialSample ] [ sh:class gov:SynapseEntity ] ) ;
+        sh:message "derived_from must point to a MaterialSample or a SynapseEntity." ;
+    ] .
+
 ###  Biological  ###############################################
 
 shape:GeneShape
@@ -367,14 +394,10 @@ shape:SampleShape
         sh:nodeKind sh:IRI ;
         sh:maxCount 1 ;
         sh:message "Sample has_qc_status must point to at most one QCStatus." ;
-    ] ;
-    sh:property [
-        sh:path sagebrain:derived_from ;
-        sh:name "derived from" ;
-        sh:nodeKind sh:IRI ;
-        sh:or ( [ sh:class biolink:MaterialSample ] [ sh:class gov:SynapseEntity ] ) ;
-        sh:message "Sample derived_from must point to a MaterialSample or a SynapseEntity." ;
     ] .
+    # derived_from is constrained by shape:DerivedFromShape (sh:targetSubjectsOf),
+    # not repeated here -- see the "Cross-cutting" shape above section 2's
+    # "Biological" subsection.
 
 ###  Clinical  #################################################
 
@@ -741,15 +764,12 @@ rdfs:subClassOf*, the same mechanism shape:IndividualShape already relies on
 for Case/Control). Added in v0.4 alongside sagebrain:derived_from -- see
 plans/qc_layer_integration.md -- to cover "this association was derived from
 these sample(s)/file(s)" generically rather than repeating the same property
-block across every individual association shape below.""" ;
-
-    sh:property [
-        sh:path sagebrain:derived_from ;
-        sh:name "derived from" ;
-        sh:nodeKind sh:IRI ;
-        sh:or ( [ sh:class biolink:MaterialSample ] [ sh:class gov:SynapseEntity ] ) ;
-        sh:message "An Association's derived_from must point to a MaterialSample or a SynapseEntity." ;
-    ] .
+block across every individual association shape below. That property block
+has since moved to shape:DerivedFromShape (sh:targetSubjectsOf
+sagebrain:derived_from, section 2 above), which reaches every Association
+subtype the same way plus plain Sample instances in one place, so this shape
+currently carries no sh:property of its own; kept as the named hook for any
+future constraint that belongs on every Association subtype.""" .
 
 shape:GeneExpressionAssociationShape
     a sh:NodeShape ;
