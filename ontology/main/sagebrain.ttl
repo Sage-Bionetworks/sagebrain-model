@@ -1,6 +1,6 @@
 @prefix sagebrain: <https://w3id.org/synapse/sagebrain#> .
 @prefix biolink:   <https://w3id.org/biolink/vocab/> .
-@prefix gov:       <https://sagebionetworks.org/governance/> .
+@prefix gov:       <https://w3id.org/synapse/governance#> .
 @prefix prov:      <http://www.w3.org/ns/prov#> .
 @prefix pato:      <http://purl.obolibrary.org/obo/PATO_> .
 @prefix ncit:      <http://purl.obolibrary.org/obo/NCIT_> .

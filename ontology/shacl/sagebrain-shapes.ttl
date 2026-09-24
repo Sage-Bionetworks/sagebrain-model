@@ -1,6 +1,6 @@
 @prefix sagebrain: <https://w3id.org/synapse/sagebrain#> .
 @prefix biolink:   <https://w3id.org/biolink/vocab/> .
-@prefix gov:       <https://sagebionetworks.org/governance/> .
+@prefix gov:       <https://w3id.org/synapse/governance#> .
 @prefix shape:     <https://w3id.org/synapse/sagebrain/shapes#> .
 @prefix sh:        <http://www.w3.org/ns/shacl#> .
 @prefix owl:       <http://www.w3.org/2002/07/owl#> .
