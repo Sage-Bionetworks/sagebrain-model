@@ -209,16 +209,8 @@ EXPECTED_GOVERNANCE_VIOLATIONS = {
         (URIRef("https://example.org/sagebrain-test/activityM/usage/1"), None, SH.XoneConstraintComponent),
     "n: Activity generated a Gene instead of a SynapseEntity":
         (GOVERNANCE_TEST.activityN, PROV.generated, SH.PatternConstraintComponent),
-    # (o) in tests/governance_violating.ttl has no entry here -- and, unlike
-    # the superseded plans/governance_layer_import.md version of this fixture,
-    # is not otherwise asserted below either. The shape restored upstream for
-    # Q2(A) (governanceDUO 04825a2e..., a LinkML exactly_one_of translated by
-    # gen-shacl) has no branch-exclusion: its entity branch conforms whenever
-    # prov:entity is present, so a Usage carrying prov:entity *and* gov:name
-    # produces zero violations under shapes/governance.shacl.ttl -- confirmed
-    # directly with pyshacl. See tests/governance_violating.ttl's own comment
-    # on (o) for detail; this is a real gap in the upstream restoration, not a
-    # bug in this repo's fixtures or checks.
+    "o: Usage with both prov:entity and gov:name":
+        (URIRef("https://example.org/sagebrain-test/activityO/usage/1"), None, SH.XoneConstraintComponent),
 }
 
 
@@ -545,15 +537,6 @@ def main():
             print(f"      {'PASS' if hit else 'FAIL'}  {label}")
             if not hit:
                 failures.append(f"governance defect not caught -- {label}")
-
-        # (o) in tests/governance_violating.ttl is deliberately not asserted:
-        # the shape restored for Q2(A) (governanceDUO 04825a2e...) has no
-        # exclusion in its entity branch, so a Usage carrying both
-        # prov:entity and gov:name produces no violation at all -- see
-        # EXPECTED_GOVERNANCE_VIOLATIONS' comment and the fixture's own. Not
-        # counted as a failure; documented here so the gap stays visible.
-        print("      NOTE  o: Usage with both prov:entity and gov:name -- "
-              "not caught by the restored shape:UsageShape (known upstream gap, not asserted)")
 
         conforms, _, text = run(load(GOVERNANCE_EXAMPLE), gov_shapes, gov_ontology)
         print(f"      {'PASS' if conforms else 'FAIL'}  {GOVERNANCE_EXAMPLE.name}")
