@@ -219,6 +219,11 @@ governance_graph_example_URL="${GOVERNANCEDUO_RAW}/linkml/examples/graph/rdf/gov
 governance_graph_example_OUTPUT="$ROOT/tests/governanceduo_graph_example.ttl"
 
 extract_module() {
+  [ -f "$ROBOT_JAR" ] || {
+    echo "ERROR: ROBOT not found at '$ROBOT_JAR'. Run 'make tools' first." >&2
+    exit 1
+  }
+
   local name="$1"
   local -n version="${name}_VERSION"
   local -n url="${name}_URL"
@@ -328,11 +333,6 @@ copy_module() {
 }
 
 main() {
-  [ -f "$ROBOT_JAR" ] || {
-    echo "ERROR: ROBOT not found at '$ROBOT_JAR'. Run 'make tools' first." >&2
-    exit 1
-  }
-
   local requested=("$@")
   [ ${#requested[@]} -eq 0 ] && requested=("${MODULES[@]}")
 
