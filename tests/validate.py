@@ -122,7 +122,7 @@ EXAMPLES = sorted(
 # part of the default build, so it is not part of the default test run --
 # check 8 below only runs when this is set. GOVERNANCE_MODULES globs
 # ontology/governance/*.ttl the same way the Makefile does; duo.ttl is left
-# out of GOVERNANCE_IMPORTS (unlike the Makefile's GOVERNANCE_SOURCES) because
+# out of the governance layer's sources (unlike the Makefile's GOVERNANCE_SOURCES) because
 # nothing in ontology/governance/ references a DUO term yet.
 # governance_layer.ttl is the prov:/gov: provenance vocabulary imported from
 # governanceDUO (scripts/import.sh); ontology/governance/ holds only the
@@ -131,7 +131,6 @@ WITH_GOVERNANCE = os.environ.get("WITH_GOVERNANCE", "") not in ("", "0")
 GOVERNANCE_MODULES = sorted((ROOT / "ontology" / "governance").glob("*.ttl"))
 GOVERNANCE_LAYER = ROOT / "ontology" / "imports" / "governance_layer.ttl"
 PROV_O = ROOT / "ontology" / "imports" / "prov.ttl"
-GOVERNANCE_IMPORTS = [PROV_O, GOVERNANCE_LAYER, *GOVERNANCE_MODULES]
 # Imported verbatim from governanceDUO (scripts/import.sh), which owns these
 # shapes: the whole generated graph shape set (shape: =
 # https://w3id.org/synapse/governance/shapes#), shape:UsageShape /
@@ -351,11 +350,14 @@ def check_dl_profile(sources=None):
 OWL_DECLARATION_TYPES = (OWL.Class, OWL.ObjectProperty, OWL.DatatypeProperty, OWL.AnnotationProperty)
 
 
-def check_prov_types():
+def check_prov_types(governance_layer, prov_o):
     """Every prov: term the governance layer declares must carry an OWL type
     W3C PROV-O (PROV_O) gives it, and must exist in PROV-O at all.
 
-    This repo is where governanceDUO's LinkML-generated prov: declarations
+    governance_layer (GOVERNANCE_LAYER + GOVERNANCE_MODULES) and prov_o
+    (PROV_O) are graphs main()'s WITH_GOVERNANCE block already parsed --
+    passed in rather than reloaded from disk here. This repo is where
+    governanceDUO's LinkML-generated prov: declarations
     (governance_layer.ttl) and W3C PROV-O are loaded together, so this is
     where a disagreement becomes a pun. It happened at governanceDUO 9e398af:
     prov:generated/prov:entity came out owl:DatatypeProperty, PROV-O says
@@ -363,11 +365,9 @@ def check_prov_types():
     over a union with prov.ttl, which has puns of its own. Returns a list of
     human-readable mismatches, empty when every term agrees.
     """
-    layer = load(GOVERNANCE_LAYER, *GOVERNANCE_MODULES)
-    prov_o = load(PROV_O)
     mismatches = []
     for kind in OWL_DECLARATION_TYPES:
-        for term in sorted(set(layer.subjects(RDF.type, kind))):
+        for term in sorted(set(governance_layer.subjects(RDF.type, kind))):
             if not str(term).startswith(str(PROV)):
                 continue
             prov_kinds = {k for k in OWL_DECLARATION_TYPES if (term, RDF.type, k) in prov_o}
@@ -432,14 +432,20 @@ def derivation_ancestors(graph, start):
     )
 
 
-def check_derivation_ancestry():
+def check_derivation_ancestry(governance_example, governance_modules):
     """With the derived_from bridge loaded, ANCESTRY_FROM (an Association in
     AD-cohort.ttl) must reach ANCESTRY_TO (the pipeline's raw input in
     pipeline_provenance.ttl); without it, it must not -- so the bridge axiom,
     not some other edge, is what connects this repo's graph to governanceDUO's
-    derivation policy. Returns (with_bridge, without_bridge)."""
-    data = load(ANCESTRY_EXAMPLE, GOVERNANCE_EXAMPLE)
-    with_bridge = ANCESTRY_TO in derivation_ancestors(data + load(*GOVERNANCE_MODULES), ANCESTRY_FROM)
+    derivation policy. governance_example (GOVERNANCE_EXAMPLE) and
+    governance_modules (GOVERNANCE_MODULES) are graphs main()'s
+    WITH_GOVERNANCE block already parsed, passed in rather than reloaded
+    here; ANCESTRY_EXAMPLE (AD-cohort.ttl) is fixture-specific to this check
+    and nothing else in that block needs it loaded separately from check 6's
+    own copy, so it is still parsed fresh. Returns (with_bridge,
+    without_bridge)."""
+    data = load(ANCESTRY_EXAMPLE) + governance_example
+    with_bridge = ANCESTRY_TO in derivation_ancestors(data + governance_modules, ANCESTRY_FROM)
     without_bridge = ANCESTRY_TO in derivation_ancestors(data, ANCESTRY_FROM)
     return with_bridge, without_bridge
 
@@ -522,7 +528,13 @@ def main():
     if WITH_GOVERNANCE:
         # Extends the already-parsed ontology/shapes graphs rather than
         # reloading ONTOLOGY/IMPORTS/MAPPINGS/SHAPES from disk a second time.
-        gov_ontology = ontology + load(*GOVERNANCE_IMPORTS)
+        # PROV_O and the governance layer/modules are each parsed once here
+        # and reused below by check_prov_types() and check_derivation_ancestry()
+        # instead of being re-read from disk a second (or third) time.
+        prov_o = load(PROV_O)
+        governance_modules = load(*GOVERNANCE_MODULES)
+        governance_layer = load(GOVERNANCE_LAYER) + governance_modules
+        gov_ontology = ontology + prov_o + governance_layer
         gov_shapes = shapes + load(GOVERNANCE_SHAPES)
 
         conforms, _, text = run(load(GOVERNANCE_CONFORMING), gov_shapes, gov_ontology)
@@ -545,7 +557,8 @@ def main():
             if not hit:
                 failures.append(f"governance defect not caught -- {label}")
 
-        conforms, _, text = run(load(GOVERNANCE_EXAMPLE), gov_shapes, gov_ontology)
+        governance_example = load(GOVERNANCE_EXAMPLE)
+        conforms, _, text = run(governance_example, gov_shapes, gov_ontology)
         print(f"      {'PASS' if conforms else 'FAIL'}  {GOVERNANCE_EXAMPLE.name}")
         if not conforms:
             failures.append(f"example does not conform -- {GOVERNANCE_EXAMPLE.name}")
@@ -567,13 +580,13 @@ def main():
                 failures.append("governance-layer union is not in the OWL 2 DL profile")
                 print(report)
 
-        mismatches = check_prov_types()
+        mismatches = check_prov_types(governance_layer, prov_o)
         print(f"      {'PASS' if not mismatches else 'FAIL'}  prov: declarations agree with W3C PROV-O")
         for mismatch in mismatches:
             print(f"            {mismatch}")
             failures.append(f"prov: type disagreement -- {mismatch}")
 
-        with_bridge, without_bridge = check_derivation_ancestry()
+        with_bridge, without_bridge = check_derivation_ancestry(governance_example, governance_modules)
         ok = with_bridge and not without_bridge
         print(f"      {'PASS' if ok else 'FAIL'}  {local_name(ANCESTRY_FROM)} reaches "
               f"{local_name(ANCESTRY_TO)} via prov:wasDerivedFrom* "
