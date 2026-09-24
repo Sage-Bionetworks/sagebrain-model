@@ -540,3 +540,58 @@ from step 5 through step 8 and green from step 9 on, as specified.
 **Not yet done:** the pre-PR SME-framed review (OWL 2 DL / RDF / SHACL,
 PROV-O usage, and the governanceDUO contract), which should specifically weigh
 in on the (o) deviation above before `gh pr create`.
+
+## Follow-up (2026-09-24): the (o) gap is closed upstream
+
+The deviation above -- defect (o) not caught because the restored `Usage`
+`exactly_one_of` had no branch exclusion -- was fixed upstream, in
+governanceDUO commit `41c17e13581aeb969895df1249a665921052e501` on
+`kg-conversion` ("graph schema: mutual exclusion for exactly_one_of's sh:xone
+branches"), the immediate child of the `04825a2e...` pin this plan landed on.
+`add_exactly_one_of()` now also emits `sh:maxCount 0` on each `sh:xone`
+branch's *other* alternatives' slots, so `shape:UsageShape`'s entity branch
+forbids `gov:name`/`gov:url` and vice versa -- the same exclusion the old
+hand-written `provenance_layer.shacl.ttl` had before this realignment.
+
+Handled in two follow-up commits on `governance-layer-import`:
+
+| commit | message |
+|---|---|
+| `afccbf3` | import.sh: re-pin governanceDUO to close the Usage xone mutual-exclusion gap |
+| `adc5d90` | tests: restore defect (o) as an asserted governance violation |
+
+`GOVERNANCEDUO_COMMIT` moved to `41c17e13581aeb969895df1249a665921052e501`.
+Regenerating the four affected modules (`governance_graph`, `governance_layer`,
+`governance_layer_shapes`, `governance_graph_example`) changed only the
+expected header lines (versionIRI/dcterms:source/description embedding the
+commit hash) plus the new `sh:maxCount 0` triples on `shape:UsageShape` and
+`shape:AuthorizationShape` in `governance_layer.shacl.ttl` -- confirmed with
+`git diff`, no other content moved.
+
+(o) -- a Usage carrying both `prov:entity` and `gov:name` -- is now caught:
+`sh:XoneConstraintComponent` on focus node
+`<https://example.org/sagebrain-test/activityO/usage/1>`, no `sh:resultPath`,
+same shape as (m). Verified directly with pyshacl against the pinned
+`shapes/governance.shacl.ttl`, and now a real entry in
+`EXPECTED_GOVERNANCE_VIOLATIONS`, not a `NOTE`. `python3 tests/validate.py`
+and `WITH_GOVERNANCE=1 python3 tests/validate.py` both report "All checks
+passed", with (o) printing `PASS` under check 8.
+
+governanceDUO's contract check, re-run read-only:
+
+```
+pass  OWL 2 DL (union)
+pass  prov: types match sagebrain's prov.ttl
+pass  SHACL (joined worked example)
+pass  ControlLabel reaches sagebrain Association
+sagebrain contract check passed against /Users/obanks/sagebrain-model.
+```
+
+`git -C /Users/obanks/mc2-center/governanceDUO status --short` showed only
+the pre-existing `plans/model_refactor_report.md` edit -- nothing else
+touched there, per this task's constraint.
+
+No remaining known gaps in the governance-layer import: Q1 and both halves of
+Q2 are now resolved upstream and reflected here. The pre-PR SME-framed review
+noted above as "not yet done" still needs to run before `gh pr create`, but it
+no longer has an open (o) deviation to weigh in on.
