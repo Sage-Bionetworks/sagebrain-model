@@ -58,9 +58,13 @@ ex:apoe
 #     not a Drug.
 ex:apoptosisPathway sagebrain:de_associated_with_stage ex:donanemab .
 
-# (h) association shape -- section 4 of the shapes graph is otherwise
-#     unexercised here. Subject is a Drug rather than a Gene, and the weight
-#     the reification exists to carry is missing entirely.
+# (h) and (i) -- association shape, section 4 of the shapes graph is
+#     otherwise unexercised here. This one instance plants BOTH defects, each
+#     tracked as its own entry in tests/validate.py's EXPECTED_VIOLATIONS:
+#     (h) subject is a Drug rather than a Gene, and (i) the weight the
+#     reification exists to carry is missing entirely. Fixing one without the
+#     other will still leave the remaining defect's EXPECTED_VIOLATIONS entry
+#     unsatisfied.
 ex:apoeExpressionInSamp1
     a sagebrain:GeneExpressionAssociation ;
     biolink:subject ex:donanemab ;
