@@ -137,8 +137,13 @@ GOVERNANCE_SHAPES = ROOT / "ontology" / "shacl" / "governance_layer.shacl.ttl"
 GOVERNANCE_CONFORMING = ROOT / "tests" / "governance_conforming.ttl"
 GOVERNANCE_VIOLATING = ROOT / "tests" / "governance_violating.ttl"
 GOVERNANCE_EXAMPLE = ROOT / "examples" / "pipeline_provenance.ttl"
-# Vendored by scripts/import.sh at the same governanceDUO pin as the shapes.
-GOVERNANCEDUO_PROVENANCE_EXAMPLES = ROOT / "tests" / "governanceduo_provenance_examples.ttl"
+# Vendored by scripts/import.sh at the same governanceDUO pin as the shapes --
+# governanceDUO's own canonical graph example (renamed from
+# governanceduo_provenance_examples.ttl / GOVERNANCEDUO_PROVENANCE_EXAMPLES:
+# its old source, linkml/examples/provenance/rdf/all_examples.ttl, is deleted
+# upstream, folded into this one graph example, which also carries ACLs, ARs
+# and Approvals alongside the prov:Activity/prov:Usage data this repo reuses).
+GOVERNANCEDUO_GRAPH_EXAMPLE = ROOT / "tests" / "governanceduo_graph_example.ttl"
 # The DL-checked set (check 7) plus the governance layer. Leaves out prov.ttl
 # and duo.ttl, which carry OWL 2 DL violations of their own (prov.ttl puns
 # prov:specializationOf and prov:wasRevisionOf); a pun between the layer and
@@ -537,10 +542,10 @@ def main():
             print(text)
 
         # governanceDUO's own data against governanceDUO's shapes, as imported
-        conforms, _, text = run(load(GOVERNANCEDUO_PROVENANCE_EXAMPLES), gov_shapes, gov_ontology)
-        print(f"      {'PASS' if conforms else 'FAIL'}  {GOVERNANCEDUO_PROVENANCE_EXAMPLES.name}")
+        conforms, _, text = run(load(GOVERNANCEDUO_GRAPH_EXAMPLE), gov_shapes, gov_ontology)
+        print(f"      {'PASS' if conforms else 'FAIL'}  {GOVERNANCEDUO_GRAPH_EXAMPLE.name}")
         if not conforms:
-            failures.append(f"governanceDUO example does not conform -- {GOVERNANCEDUO_PROVENANCE_EXAMPLES.name}")
+            failures.append(f"governanceDUO example does not conform -- {GOVERNANCEDUO_GRAPH_EXAMPLE.name}")
             print(text)
 
         available, in_profile, report = check_dl_profile(GOVERNANCE_DL_SOURCES)
