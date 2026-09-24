@@ -17,7 +17,7 @@
 #
 # Overridable: ROBOT_JAR, OWL2VOWL_JAR, WEBVOWL_DIR, WATCH_INTERVAL.
 
-ROBOT_JAR      ?= tools/robot.jar
+ROBOT_JAR      ?= tools/robot.jar  # same default as scripts/import.sh's ROBOT_JAR and tests/validate.py's ROBOT_JAR -- keep all three in sync by hand
 OWL2VOWL_JAR   ?= tools/owl2vowl.jar
 STRIP_EXTERNAL ?= tools/strip_external_flags.py
 IMPORT_SCRIPT  ?= scripts/import.sh
