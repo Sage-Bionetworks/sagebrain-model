@@ -217,8 +217,7 @@ biolink:ClinicalTrial
 
 gov:SynapseEntity
     skos:scopeNote "A concrete Synapse entity (project, folder, file, etc.)." ;
-    skos:editorialNote "Reused from mc2-center/governanceDUO's governance graph (governance_graph.yaml/shapes/governance_graph.owl.ttl), which records it as a close match for prov:Entity." ;
-    skos:closeMatch prov:Entity ;
+    skos:editorialNote "Reused from mc2-center/governanceDUO's governance graph (governance_graph.yaml/shapes/governance.owl.ttl, the graph layer's generated TBox), which records its own skos:closeMatch prov:Entity -- not restated here, to avoid asserting on governanceDUO's behalf a claim it now makes itself." ;
     owl:versionInfo "v0.4" .
 
 #################################################################
