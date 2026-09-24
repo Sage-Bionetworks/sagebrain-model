@@ -14,8 +14,8 @@
 # plans/governance_layer_import.md.
 #
 # This repo owns this one axiom -- everything else about the provenance layer
-# (prov:Activity/prov:Usage and their properties, gov:UsageShape/
-# gov:ActivityShape) is imported from governanceDUO, decision D9 of
+# (prov:Activity/prov:Usage and their properties, shape:UsageShape/
+# shape:ActivityShape) is imported from governanceDUO, decision D9 of
 # plans/governance_layer_import.md: one owner per governance-layer term and
 # shape. It lives here, in ontology/governance/, not ontology/main/: the
 # default build's DL-checked set does not import prov.ttl, so a bare
