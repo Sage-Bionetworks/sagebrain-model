@@ -1,7 +1,7 @@
 # The reprocessing-pipeline provenance layer (imported from governanceDUO as
 # ontology/imports/governance_layer.ttl, only built/checked under
-# `make WITH_GOVERNANCE=1` -- see plans/governance_layer_import.md), made
-# concrete: a two-step run
+# `make WITH_GOVERNANCE=1` -- see plans/governance_layer_import.md and
+# plans/governance_layer_realignment.md), made concrete: a two-step run
 # producing the exact file `association:apoe-expr-samp01` (examples/AD-cohort.ttl)
 # already names via `sagebrain:derived_from` -- `syn:syn26999999` below is the
 # same node, not a lookalike, so this is the detailed path behind that
@@ -15,44 +15,75 @@
 # examples/AD-cohort.ttl -- there is no real Synapse project behind this
 # example, but a real id would resolve to the identical node in both graphs.
 #
-# Activities are minted as gov:activity-<id>, governanceDUO's instance-IRI
-# policy for graph nodes (gov:AR-42, gov:principal-<n>, ...); a URL Usage is
-# named with gov:name, the governance graph's name predicate.
+# Activities and Usages are minted under https://w3id.org/synapse/governance/,
+# governanceDUO's own instance-IRI policy since its kg-conversion model
+# refactor (scripts/graph_iris.py there; R2 in
+# plans/governance_layer_realignment.md): activities as
+# .../governance/activity/<n>, usages as <activity>/usage/<n> -- both must be
+# IRIs, not blank nodes, since shape:ActivityShape/shape:UsageShape now carry
+# sh:nodeKind sh:IRI. This supersedes the earlier `gov:activity-<id>` policy
+# (plans/governance_layer_import.md step 5), which minted an instance IRI
+# inside the gov: term namespace itself -- exactly what R2 exists to prevent.
+# A URL Usage is still named with gov:name, the governance graph's name
+# predicate; gov:url is now an owl:ObjectProperty, so its value is an IRI too.
+#
+# The three syn: entities are not typed `a gov:SynapseEntity` here, unlike
+# examples/AD-cohort.ttl: the provenance shapes check entity references by
+# IRI pattern, not sh:class, so the typing buys nothing here, and
+# shape:SynapseEntityShape (closed, gov:benefactor sh:minCount 1) would give
+# each of them an ACL obligation this pipeline example has no business
+# stating. AD-cohort.ttl keeps its typing because sagebrain-shapes.ttl's
+# derived_from constraint needs it (sh:class gov:SynapseEntity).
 #
 # Validated on its own (tests/validate.py check 8, WITH_GOVERNANCE=1 only),
 # not merged with AD-cohort.ttl -- the shared syn:syn26999999 IRI is what
 # connects the two, not a shared graph.
 
-@prefix gov:  <https://sagebionetworks.org/governance/> .
+@prefix gov:  <https://w3id.org/synapse/governance#> .
 @prefix prov: <http://www.w3.org/ns/prov#> .
 @prefix syn:  <https://www.synapse.org/Synapse:> .
 
-syn:syn27000001 a gov:SynapseEntity .   # raw FASTQ dataset
-syn:syn27000002 a gov:SynapseEntity .   # gene-count matrix (intermediate output)
-syn:syn26999999 a gov:SynapseEntity .   # DE result -- same node apoe-expr-samp01.derived_from names
+# syn:syn27000001 -- raw FASTQ dataset
+# syn:syn27000002 -- gene-count matrix (intermediate output)
+# syn:syn26999999 -- DE result, the same node apoe-expr-samp01.derived_from names
+# None are typed `a gov:SynapseEntity` here -- see the header comment above.
 
 # raw FASTQ dataset -(nf-core/rnaseq v3.11.1)-> gene-count matrix
-gov:activity-reprocess01
+<https://w3id.org/synapse/governance/activity/5000001>
     a prov:Activity ;
+    gov:name "nf-core/rnaseq reprocessing run" ;
     prov:qualifiedUsage
-        [ a prov:Usage ;
-          prov:entity syn:syn27000001 ;
-          gov:wasExecuted false ] ,
-        [ a prov:Usage ;
-          gov:url "https://nf-co.re/rnaseq/3.11.1" ;
-          gov:name "nf-core/rnaseq v3.11.1" ;
-          gov:wasExecuted true ] ;
+        <https://w3id.org/synapse/governance/activity/5000001/usage/1> ,
+        <https://w3id.org/synapse/governance/activity/5000001/usage/2> ;
     prov:generated syn:syn27000002 .
 
+<https://w3id.org/synapse/governance/activity/5000001/usage/1>
+    a prov:Usage ;
+    prov:entity syn:syn27000001 ;
+    gov:wasExecuted false .
+
+<https://w3id.org/synapse/governance/activity/5000001/usage/2>
+    a prov:Usage ;
+    gov:url <https://nf-co.re/rnaseq/3.11.1> ;
+    gov:name "nf-core/rnaseq v3.11.1" ;
+    gov:wasExecuted true .
+
 # gene-count matrix -(DESeq2 v1.34.0)-> DE result
-gov:activity-reprocess02
+<https://w3id.org/synapse/governance/activity/5000002>
     a prov:Activity ;
+    gov:name "DESeq2 differential-expression run" ;
     prov:qualifiedUsage
-        [ a prov:Usage ;
-          prov:entity syn:syn27000002 ;
-          gov:wasExecuted false ] ,
-        [ a prov:Usage ;
-          gov:url "https://bioconductor.org/packages/release/bioc/html/DESeq2.html" ;
-          gov:name "DESeq2 v1.34.0" ;
-          gov:wasExecuted true ] ;
+        <https://w3id.org/synapse/governance/activity/5000002/usage/1> ,
+        <https://w3id.org/synapse/governance/activity/5000002/usage/2> ;
     prov:generated syn:syn26999999 .
+
+<https://w3id.org/synapse/governance/activity/5000002/usage/1>
+    a prov:Usage ;
+    prov:entity syn:syn27000002 ;
+    gov:wasExecuted false .
+
+<https://w3id.org/synapse/governance/activity/5000002/usage/2>
+    a prov:Usage ;
+    gov:url <https://bioconductor.org/packages/release/bioc/html/DESeq2.html> ;
+    gov:name "DESeq2 v1.34.0" ;
+    gov:wasExecuted true .
