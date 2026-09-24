@@ -32,6 +32,8 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# Same default as the Makefile's ROBOT_JAR and tests/validate.py's ROBOT_JAR --
+# keep all three in sync by hand.
 ROBOT_JAR="${ROBOT_JAR:-$ROOT/tools/robot.jar}"
 CACHE_DIR="${CACHE_DIR:-$ROOT/build}"
 IMPORTS_DIR="$ROOT/ontology/imports"
