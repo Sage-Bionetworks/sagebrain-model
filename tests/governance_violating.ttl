@@ -12,7 +12,8 @@
 # See plans/governance_layer_realignment.md, Q2, for why the constraint these
 # defects test was temporarily weaker upstream, and what landed to restore it
 # (governanceDUO commit 04825a2e..., restoring an exactly_one_of on Usage and
-# minCount 1 on Activity.generated/qualifiedUsage).
+# minCount 1 on Activity.generated/qualifiedUsage; commit 41c17e1, closing
+# that restoration's mutual-exclusion gap -- see (o) below).
 
 @prefix gov:     <https://w3id.org/synapse/governance#> .
 @prefix prov:    <http://www.w3.org/ns/prov#> .
@@ -60,20 +61,15 @@ ex:someGene a biolink:Gene .
 #     import) forbade it via an explicit `gov:name sh:maxCount 0` inside that
 #     branch.
 #
-#     NOT CAUGHT by the restored shape:UsageShape (governanceDUO
-#     04825a2e..., Q2(A) in plans/governance_layer_realignment.md), and NOT
-#     asserted in tests/validate.py's EXPECTED_GOVERNANCE_VIOLATIONS as a
-#     result -- confirmed by running pyshacl directly against
-#     shapes/governance.shacl.ttl at the pinned commit. The restored shape
-#     came from a LinkML `exactly_one_of` with only presence conditions
-#     (entity required; OR name+url both required) and no exclusions, so its
-#     first branch conforms whenever prov:entity is present, regardless of
-#     what else the Usage carries -- unlike the old hand-written xone, which
-#     explicitly zeroed out gov:url/gov:name inside the entity branch. This
-#     fixture is kept as documentation of the intended constraint and as a
-#     regression trap for the day the branch exclusion is restored upstream
-#     (at which point this comment, and the missing assertion, should be
-#     revisited); it is not currently something a validator run here proves.
+#     Caught by shape:UsageShape as of governanceDUO commit 41c17e1: each
+#     xone branch now also carries sh:maxCount 0 on the other branch's slots
+#     (gov:name/gov:url zeroed inside the entity branch, prov:entity zeroed
+#     inside the name+url branch), closing the gap the restoration in
+#     04825a2e... left open. Reported as sh:XoneConstraintComponent, focus
+#     node the Usage IRI itself, no sh:resultPath -- same shape as (m).
+#     Verified directly with pyshacl against shapes/governance.shacl.ttl at
+#     the pinned commit, and asserted in tests/validate.py's
+#     EXPECTED_GOVERNANCE_VIOLATIONS.
 ex:activityO
     a prov:Activity ;
     prov:qualifiedUsage <https://example.org/sagebrain-test/activityO/usage/1> ;
