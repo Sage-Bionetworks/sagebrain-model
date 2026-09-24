@@ -1,70 +1,88 @@
 # Instance data that MUST validate cleanly against
 # ontology/shacl/governance_layer.shacl.ttl (imported from governanceDUO). Only
 # checked under WITH_GOVERNANCE=1 (see tests/validate.py check 8) -- see
-# plans/governance_layer_import.md.
+# plans/governance_layer_import.md and plans/governance_layer_realignment.md.
 #
 # A two-hop reprocessing chain: a raw dataset is processed by a named tool
 # into an intermediate output, which a second tool then processes into a
 # DE-analysis result. Each prov:Activity's prov:qualifiedUsage exercises both
-# gov:UsageShape branches -- one Usage referencing a gov:SynapseEntity
+# shape:UsageShape branches -- one Usage referencing a Synapse entity
 # (the data being processed, wasExecuted false), one referencing an external
 # tool by URL and gov:name (the thing doing the processing, wasExecuted true).
 # A third Activity generates two outputs at once, which Synapse allows
-# (GET /activity/{id}/generated returns a list) and gov:ActivityShape permits.
+# (GET /activity/{id}/generated returns a list) and shape:ActivityShape permits.
 #
 # Entity references are absolute Synapse IRIs (the shapes check the pattern);
 # the ids are fictional. Activities stay in ex:, which no shape constrains.
+# Usages are IRIs, not blank nodes (shape:UsageShape now carries sh:nodeKind
+# sh:IRI), minted under their Activity: <activity>/usage/<n>, the same R2
+# convention pipeline_provenance.ttl follows. The syn: entities are not typed
+# `a gov:SynapseEntity`: shape:SynapseEntityShape is closed and requires a
+# gov:benefactor, an ACL fact this fixture has no business stating, and the
+# provenance shapes check entity references by IRI pattern, not sh:class,
+# so nothing here needs the typing.
 
-@prefix gov:  <https://sagebionetworks.org/governance/> .
+@prefix gov:  <https://w3id.org/synapse/governance#> .
 @prefix prov: <http://www.w3.org/ns/prov#> .
 @prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
 @prefix ex:   <https://example.org/sagebrain-test/> .
 @prefix syn:  <https://www.synapse.org/Synapse:> .
 
-syn:syn90000001 a gov:SynapseEntity .   # raw dataset
-syn:syn90000002 a gov:SynapseEntity .   # intermediate output
-syn:syn90000003 a gov:SynapseEntity .   # DE result
-syn:syn90000004 a gov:SynapseEntity .   # QC report (second output of activity3)
-
 # raw input -(nf-core/rnaseq v3.11.1)-> intermediate output
 ex:activity1
     a prov:Activity ;
     prov:qualifiedUsage
-        [ a prov:Usage ;
-          prov:entity syn:syn90000001 ;
-          gov:wasExecuted false ] ,
-        [ a prov:Usage ;
-          gov:url "https://nf-co.re/rnaseq/3.11.1" ;
-          gov:name "nf-core/rnaseq v3.11.1" ;
-          gov:wasExecuted true ] ;
+        <https://example.org/sagebrain-test/activity1/usage/1> ,
+        <https://example.org/sagebrain-test/activity1/usage/2> ;
     prov:generated syn:syn90000002 .
+
+<https://example.org/sagebrain-test/activity1/usage/1>
+    a prov:Usage ;
+    prov:entity syn:syn90000001 ;
+    gov:wasExecuted false .
+
+<https://example.org/sagebrain-test/activity1/usage/2>
+    a prov:Usage ;
+    gov:url <https://nf-co.re/rnaseq/3.11.1> ;
+    gov:name "nf-core/rnaseq v3.11.1" ;
+    gov:wasExecuted true .
 
 # intermediate output -(DESeq2 v1.34.0)-> DE result
 ex:activity2
     a prov:Activity ;
     prov:qualifiedUsage
-        [ a prov:Usage ;
-          prov:entity syn:syn90000002 ;
-          gov:entityVersionNumber 1 ;
-          gov:wasExecuted false ] ,
-        [ a prov:Usage ;
-          gov:url "https://bioconductor.org/packages/release/bioc/html/DESeq2.html" ;
-          gov:name "DESeq2 v1.34.0" ;
-          gov:wasExecuted true ] ;
+        <https://example.org/sagebrain-test/activity2/usage/1> ,
+        <https://example.org/sagebrain-test/activity2/usage/2> ;
     prov:generated syn:syn90000003 .
+
+<https://example.org/sagebrain-test/activity2/usage/1>
+    a prov:Usage ;
+    prov:entity syn:syn90000002 ;
+    gov:entityVersionNumber 1 ;
+    gov:wasExecuted false .
+
+<https://example.org/sagebrain-test/activity2/usage/2>
+    a prov:Usage ;
+    gov:url <https://bioconductor.org/packages/release/bioc/html/DESeq2.html> ;
+    gov:name "DESeq2 v1.34.0" ;
+    gov:wasExecuted true .
 
 # DE result -(MultiQC v1.21)-> QC report + an annotated copy of the result:
 # one Activity, two prov:generated outputs.
 ex:activity3
     a prov:Activity ;
     prov:qualifiedUsage
-        [ a prov:Usage ;
-          prov:entity syn:syn90000003 ;
-          gov:wasExecuted false ] ,
-        [ a prov:Usage ;
-          gov:url "https://github.com/MultiQC/MultiQC/releases/tag/v1.21" ;
-          gov:name "MultiQC v1.21" ;
-          gov:wasExecuted true ] ;
+        <https://example.org/sagebrain-test/activity3/usage/1> ,
+        <https://example.org/sagebrain-test/activity3/usage/2> ;
     prov:generated syn:syn90000004 , syn:syn90000005 .
 
-syn:syn90000005 a gov:SynapseEntity .   # annotated DE result (second output of activity3)
+<https://example.org/sagebrain-test/activity3/usage/1>
+    a prov:Usage ;
+    prov:entity syn:syn90000003 ;
+    gov:wasExecuted false .
+
+<https://example.org/sagebrain-test/activity3/usage/2>
+    a prov:Usage ;
+    gov:url <https://github.com/MultiQC/MultiQC/releases/tag/v1.21> ;
+    gov:name "MultiQC v1.21" ;
+    gov:wasExecuted true .
