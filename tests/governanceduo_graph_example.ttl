@@ -1,5 +1,5 @@
 # Copied verbatim by scripts/import.sh (module 'governance_graph_example') from
-# https://raw.githubusercontent.com/mc2-center/governanceDUO/04825a2ed2341e6b10c5ad6d118d3e6e48a3fe71/linkml/examples/graph/rdf/governance_graph.ttl
+# https://raw.githubusercontent.com/mc2-center/governanceDUO/41c17e13581aeb969895df1249a665921052e501/linkml/examples/graph/rdf/governance_graph.ttl
 # Do not edit by hand: bump the pin in scripts/import.sh and re-run it.
 #
 @prefix DUO: <http://purl.obolibrary.org/obo/DUO_> .

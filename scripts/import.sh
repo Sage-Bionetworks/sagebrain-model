@@ -52,8 +52,16 @@ DCTERMS_SOURCE="http://purl.org/dc/terms/source"
 # namespace (gov: is now https://w3id.org/synapse/governance#), instance IRIs
 # minted under it (activity/<n>, activity/<n>/usage/<n>), and a restored
 # exactly_one_of on Usage / minCount 1 on Activity.generated/qualifiedUsage.
-# This pin is the commit those two restorations land in.
-GOVERNANCEDUO_COMMIT="04825a2ed2341e6b10c5ad6d118d3e6e48a3fe71"
+#
+# That restored exactly_one_of still had a gap: its generated sh:xone branches
+# only asserted presence (entity required, OR name+url both required), with no
+# exclusion, so a Usage carrying prov:entity *and* gov:name (fixture defect (o)
+# in tests/governance_violating.ttl) conformed anyway -- see the Implementation
+# Report follow-up note in plans/governance_layer_realignment.md. Commit
+# 41c17e1 fixes it: add_exactly_one_of() now also emits sh:maxCount 0 on each
+# xone branch's other alternatives' slots, so the entity branch forbids
+# gov:name/gov:url and vice versa. This pin is that commit.
+GOVERNANCEDUO_COMMIT="41c17e13581aeb969895df1249a665921052e501"
 GOVERNANCEDUO_RAW="https://raw.githubusercontent.com/mc2-center/governanceDUO/${GOVERNANCEDUO_COMMIT}"
 
 MODULES=(biolink governance_graph governance_layer governance_layer_shapes governance_graph_example)
