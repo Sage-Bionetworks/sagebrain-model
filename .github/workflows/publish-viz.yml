@@ -71,7 +71,11 @@ jobs:
 
       - run: make tools
 
+      # WITH_GOVERNANCE=1 so check 8 -- the governanceDUO contract checks --
+      # actually runs here instead of silently skipping.
       - run: python tests/validate.py
+        env:
+          WITH_GOVERNANCE: '1'
 
   build:
     needs: validate
