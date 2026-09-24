@@ -1,53 +1,86 @@
-# Instance data with three planted defects, each of which MUST be reported.
-# tests/validate.py asserts on the expected violation set (only checked under
-# WITH_GOVERNANCE=1, see check 8) -- this doubles as documentation of what
-# governance_layer.shacl.ttl (imported from governanceDUO) actually catches.
-# Every node that isn't the defect itself is a valid absolute Synapse IRI, so
-# each Activity fails for exactly its planted reason.
+# Instance data with three planted defects. tests/validate.py asserts on the
+# expected violation set (only checked under WITH_GOVERNANCE=1, see check 8)
+# -- this doubles as documentation of what governance_layer.shacl.ttl
+# (imported from governanceDUO) actually catches. Every node that isn't the
+# defect itself is a valid absolute Synapse IRI, so each Activity fails for
+# exactly its planted reason. Usages are IRIs, not blank nodes
+# (shape:UsageShape carries sh:nodeKind sh:IRI), and the syn: entities are not
+# typed `a gov:SynapseEntity` -- see tests/governance_conforming.ttl's header
+# for why (shape:SynapseEntityShape's closed gov:benefactor obligation would
+# otherwise add a spurious violation unrelated to any planted defect here).
+#
+# See plans/governance_layer_realignment.md, Q2, for why the constraint these
+# defects test was temporarily weaker upstream, and what landed to restore it
+# (governanceDUO commit 04825a2e..., restoring an exactly_one_of on Usage and
+# minCount 1 on Activity.generated/qualifiedUsage).
 
-@prefix gov:     <https://sagebionetworks.org/governance/> .
+@prefix gov:     <https://w3id.org/synapse/governance#> .
 @prefix prov:    <http://www.w3.org/ns/prov#> .
 @prefix biolink: <https://w3id.org/biolink/vocab/> .
 @prefix ex:      <https://example.org/sagebrain-test/> .
 @prefix syn:     <https://www.synapse.org/Synapse:> .
 
-# (m) a Usage with neither prov:entity nor gov:url -- fails gov:UsageShape's
-#     sh:xone (neither branch conforms).
+# (m) a Usage with neither prov:entity nor gov:url/gov:name -- fails
+#     shape:UsageShape's sh:xone: zero of its two branches conform (branch 1
+#     needs prov:entity, branch 2 needs gov:name AND gov:url; neither is
+#     present). Reported as sh:XoneConstraintComponent, focus node the Usage
+#     IRI itself, no sh:resultPath -- sh:xone is a node-level constraint on
+#     shape:UsageShape, not a property shape. Verified directly with pyshacl
+#     against shapes/governance.shacl.ttl at the pinned commit.
 ex:activityM
     a prov:Activity ;
-    prov:qualifiedUsage [ a prov:Usage ; gov:wasExecuted false ] ;
+    prov:qualifiedUsage <https://example.org/sagebrain-test/activityM/usage/1> ;
     prov:generated syn:syn90000101 .
 
-syn:syn90000101 a gov:SynapseEntity .
+<https://example.org/sagebrain-test/activityM/usage/1>
+    a prov:Usage ;
+    gov:wasExecuted false .
 
 # (n) an Activity whose prov:generated points at a Gene, not a SynapseEntity --
-#     fails gov:ActivityShape's absolute-Synapse-IRI pattern (the imported
+#     fails shape:ActivityShape's absolute-Synapse-IRI pattern (the imported
 #     shapes check the IRI, not sh:class, so they work on a provenance ABox
-#     without the governance graph merged in).
+#     without the governance graph merged in). Reported as
+#     sh:PatternConstraintComponent on prov:generated, focus node ex:activityN.
 ex:activityN
     a prov:Activity ;
-    prov:qualifiedUsage [ a prov:Usage ; prov:entity syn:syn90000102 ; gov:wasExecuted false ] ;
+    prov:qualifiedUsage <https://example.org/sagebrain-test/activityN/usage/1> ;
     prov:generated ex:someGene .
 
-syn:syn90000102 a gov:SynapseEntity .
+<https://example.org/sagebrain-test/activityN/usage/1>
+    a prov:Usage ;
+    prov:entity syn:syn90000102 ;
+    gov:wasExecuted false .
+
 ex:someGene a biolink:Gene .
 
 # (o) a Usage carrying both prov:entity (the SynapseEntity branch) and
-#     gov:name (only valid on the external-tool branch) -- the entity
-#     branch must forbid gov:name the same way it forbids gov:url, or a
-#     Usage can leak a name through the branch that isn't supposed to
-#     carry one. NOT independently asserted in tests/validate.py's
-#     EXPECTED_GOVERNANCE_VIOLATIONS: pyshacl reports the same
-#     gov:UsageShape-level sh:xone message for every branch mismatch, so
-#     this defect's message is indistinguishable from (m)'s. Checked by
-#     focus node instead (check_usage_name_leak()).
+#     gov:name (only valid on the external-tool branch) -- planted to test
+#     that the entity branch forbids gov:name the same way the old
+#     hand-written sh:xone (provenance_layer.shacl.ttl, superseded by this
+#     import) forbade it via an explicit `gov:name sh:maxCount 0` inside that
+#     branch.
+#
+#     NOT CAUGHT by the restored shape:UsageShape (governanceDUO
+#     04825a2e..., Q2(A) in plans/governance_layer_realignment.md), and NOT
+#     asserted in tests/validate.py's EXPECTED_GOVERNANCE_VIOLATIONS as a
+#     result -- confirmed by running pyshacl directly against
+#     shapes/governance.shacl.ttl at the pinned commit. The restored shape
+#     came from a LinkML `exactly_one_of` with only presence conditions
+#     (entity required; OR name+url both required) and no exclusions, so its
+#     first branch conforms whenever prov:entity is present, regardless of
+#     what else the Usage carries -- unlike the old hand-written xone, which
+#     explicitly zeroed out gov:url/gov:name inside the entity branch. This
+#     fixture is kept as documentation of the intended constraint and as a
+#     regression trap for the day the branch exclusion is restored upstream
+#     (at which point this comment, and the missing assertion, should be
+#     revisited); it is not currently something a validator run here proves.
 ex:activityO
     a prov:Activity ;
-    prov:qualifiedUsage [ a prov:Usage ;
-                          prov:entity syn:syn90000103 ;
-                          gov:name "should not be allowed here" ;
-                          gov:wasExecuted false ] ;
+    prov:qualifiedUsage <https://example.org/sagebrain-test/activityO/usage/1> ;
     prov:generated syn:syn90000104 .
 
-syn:syn90000103 a gov:SynapseEntity .
-syn:syn90000104 a gov:SynapseEntity .
+<https://example.org/sagebrain-test/activityO/usage/1>
+    a prov:Usage ;
+    prov:entity syn:syn90000103 ;
+    gov:name "should not be allowed here" ;
+    gov:wasExecuted false .
