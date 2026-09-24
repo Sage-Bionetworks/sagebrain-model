@@ -102,7 +102,8 @@ got there. `pipeline_provenance.ttl` is the detailed path behind the same edge:
 a `prov:Activity`/`prov:Usage` chain, in the provenance vocabulary and shapes
 imported from mc2-center/governanceDUO (`ontology/imports/governance_layer.ttl`,
 `ontology/shacl/governance_layer.shacl.ttl`; see
-`plans/governance_layer_import.md`), tracing `syn:syn26999999` back through
+`plans/governance_layer_import.md` and `plans/governance_layer_realignment.md`),
+tracing `syn:syn26999999` back through
 an nf-core/rnaseq run and a DESeq2 run to a raw dataset — the exact node
 `apoe-expr-samp01`'s `derived_from` already names, not a lookalike.
 `ontology/governance/provenance_bridge.ttl` makes `derived_from` a sub-property
