@@ -69,7 +69,10 @@ jobs:
           path: tools/*.jar
           key: jars-${{ runner.os }}-${{ hashFiles('Makefile') }}
 
-      - run: make tools
+      # Only ROBOT is needed here (tests/validate.py's check 7); OWL2VOWL is
+      # only used by `make viz` in the build job below, so `make tools` (which
+      # always builds both) would download an unused 10 MB jar in this job.
+      - run: make tools/robot.jar
 
       # WITH_GOVERNANCE=1 so check 8 -- the governanceDUO contract checks --
       # actually runs here instead of silently skipping.
