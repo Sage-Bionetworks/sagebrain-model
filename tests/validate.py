@@ -85,7 +85,10 @@ PROV = Namespace("http://www.w3.org/ns/prov#")
 GOVERNANCE_TEST = Namespace("https://example.org/sagebrain-test/")
 
 ROOT = Path(__file__).resolve().parent.parent
-# Same default and override as scripts/import.sh; `make tools` fetches it.
+# Same default and override as scripts/import.sh's ROBOT_JAR and the
+# Makefile's ROBOT_JAR ?= tools/robot.jar; `make tools` fetches it. All three
+# are independently hardcoded -- keep the default path in sync by hand
+# across all three if it ever changes.
 ROBOT_JAR = Path(os.environ.get("ROBOT_JAR", ROOT / "tools" / "robot.jar"))
 ONTOLOGY = ROOT / "ontology" / "main" / "sagebrain.ttl"
 # Merged into the ontology graph, exactly as the build merges them. sagebrain
