@@ -233,11 +233,19 @@ extract_module() {
   local -n title="${name}_TITLE"
   local -n description="${name}_DESCRIPTION"
 
-  local source_ttl="$CACHE_DIR/${name}-${version}.source.ttl"
+  # Keyed by URL, not module name: governance_graph and governance_layer both
+  # extract from the same upstream file (shapes/governance.owl.ttl), so keying
+  # by name would fetch and cache that one file twice under two names. The
+  # URL already encodes the version (biolink's path includes its VERSION,
+  # governanceDUO's includes the pinned commit), so a version bump still
+  # busts the cache; the hash just keeps the filename short and collision-free.
+  local url_hash
+  url_hash="$(printf '%s' "$url" | cksum | cut -d' ' -f1)"
+  local source_ttl="$CACHE_DIR/$(basename "$url")-${url_hash}.source.ttl"
   local module="$IMPORTS_DIR/${name}.ttl"
   local iri="https://w3id.org/synapse/sagebrain/imports/${name}"
 
-  # Cached by version, so re-running after a failed extract does not re-download.
+  # Cached by URL, so re-running after a failed extract does not re-download.
   if [ -f "$source_ttl" ]; then
     echo "--- $name $version: using cached source"
   else
