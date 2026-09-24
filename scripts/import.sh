@@ -46,10 +46,17 @@ DCTERMS_SOURCE="http://purl.org/dc/terms/source"
 # artifacts under shapes/ -- but has not yet tagged a release. Pinned at a
 # commit hash instead, same as any pre-tag consumer; bump to a v0.1.0 tag once
 # one exists (governanceDUO's own release process, not this repo's).
-GOVERNANCEDUO_COMMIT="240a1628a14f6f08d6e86444030ab20beddc5b4d"
+#
+# governanceDUO's `kg-conversion` did a large model refactor since the last pin
+# (plans/governance_layer_realignment.md): one graph TBox/shape set under a new
+# namespace (gov: is now https://w3id.org/synapse/governance#), instance IRIs
+# minted under it (activity/<n>, activity/<n>/usage/<n>), and a restored
+# exactly_one_of on Usage / minCount 1 on Activity.generated/qualifiedUsage.
+# This pin is the commit those two restorations land in.
+GOVERNANCEDUO_COMMIT="04825a2ed2341e6b10c5ad6d118d3e6e48a3fe71"
 GOVERNANCEDUO_RAW="https://raw.githubusercontent.com/mc2-center/governanceDUO/${GOVERNANCEDUO_COMMIT}"
 
-MODULES=(biolink governance_graph governance_layer governance_layer_shapes governance_provenance_examples)
+MODULES=(biolink governance_graph governance_layer governance_layer_shapes governance_graph_example)
 
 # --- biolink ----------------------------------------------------------------
 #
@@ -106,11 +113,20 @@ biolink_DESCRIPTION="MIREOT extract of the Biolink Model terms SageBrain reuses 
 # same rdfs:comment) that predates governanceDUO publishing this file as a
 # versioned artifact -- see plans/governance_layer_import.md.
 #
+# governanceDUO's kg-conversion refactor (plans/governance_layer_realignment.md)
+# merged its hand-written gov: TBox and its LinkML-generated OWL into one file,
+# shapes/governance.owl.ttl, under one namespace, gov: =
+# https://w3id.org/synapse/governance# -- so this module and governance_layer
+# below now share both a source file and a namespace. They stay separate
+# modules/outputs regardless: the split mirrors this repo's own build gating
+# (this one is in MAIN_SOURCES, governance_layer is WITH_GOVERNANCE=1 only),
+# not upstream's file layout.
+#
 # No ROOTS: gov:SynapseEntity has no rdfs:subClassOf parent in the source
 # file, so MIREOT's ancestor walk has nowhere to climb.
 governance_graph_VERSION="$GOVERNANCEDUO_COMMIT"
-governance_graph_URL="${GOVERNANCEDUO_RAW}/shapes/governance_graph.owl.ttl"
-governance_graph_NS="https://sagebionetworks.org/governance/"
+governance_graph_URL="${GOVERNANCEDUO_RAW}/shapes/governance.owl.ttl"
+governance_graph_NS="https://w3id.org/synapse/governance#"
 governance_graph_LOWER=(SynapseEntity)
 governance_graph_ROOTS=()
 governance_graph_TITLE="Sage governance graph -- SageBrain import module"
@@ -121,25 +137,26 @@ governance_graph_DESCRIPTION="MIREOT extract of the governanceDUO governance-gra
 # The provenance-graph terms SageBrain's opt-in governance layer
 # (ontology/governance/, WITH_GOVERNANCE=1) reuses to describe a pipeline run:
 # prov:Activity/prov:Usage and their properties, plus gov:wasExecuted/url/
-# entityVersionNumber/name, all declared by governanceDUO's LinkML-generated
-# OWL (shapes/governance_duo.owl.ttl) rather than its hand-written gov: TBox --
-# these are schema-derived classes/properties, not the hand-curated graph
-# vocabulary governance_graph.owl.ttl covers.
+# entityVersionNumber/name. Both this module and governance_graph above now
+# extract from the same source file, shapes/governance.owl.ttl -- upstream's
+# kg-conversion refactor folded its LinkML-generated OWL (previously
+# governance_duo.owl.ttl) and its hand-written gov: TBox (previously
+# governance_graph.owl.ttl) into one graph TBox. See governance_graph's own
+# comment above for why the split into two modules/outputs stays anyway.
 #
 # Two namespaces in one module (prov: and gov:), unlike biolink's single-NS
 # LOWER/ROOTS: a bare name is resolved against governance_layer_NS as usual,
 # but a term already written as a full IRI (starts with "http") is used as-is
 # -- see extract_module()'s term-building loop.
 #
-# ROOTS: prov:Activity is rdfs:subClassOf governanceduo:BaseEntity, a named
-# class MIREOT would otherwise climb into. BaseEntity's own only other axiom
-# is a giant owl:unionOf covering every governanceDUO class (a LinkML
-# "abstract root" artifact) -- rooting the walk here keeps that out, the same
-# reason biolink.ttl roots at biolink:Entity. Nothing else here (Usage, or any
-# of the *_LOWER properties) has a named ancestor to stop.
+# ROOTS=(): prov:Activity no longer has any rdfs:subClassOf in the source file
+# -- governanceduo:BaseEntity, the LinkML "abstract root" artifact MIREOT used
+# to be rooted at to avoid climbing into, doesn't exist any more (Q1/Q2 context
+# in plans/governance_layer_realignment.md). Nothing else here (Usage, or any
+# of the *_LOWER properties) has a named ancestor to stop at either.
 governance_layer_VERSION="$GOVERNANCEDUO_COMMIT"
-governance_layer_URL="${GOVERNANCEDUO_RAW}/shapes/governance_duo.owl.ttl"
-governance_layer_NS="https://sagebionetworks.org/governance/"
+governance_layer_URL="${GOVERNANCEDUO_RAW}/shapes/governance.owl.ttl"
+governance_layer_NS="https://w3id.org/synapse/governance#"
 governance_layer_LOWER=(
   "http://www.w3.org/ns/prov#Activity"
   "http://www.w3.org/ns/prov#Usage"
@@ -151,34 +168,47 @@ governance_layer_LOWER=(
   entityVersionNumber
   name
 )
-governance_layer_ROOTS=("https://w3id.org/sage-bionetworks/governance-duo/BaseEntity")
+governance_layer_ROOTS=()
 governance_layer_TITLE="Sage governance layer (provenance) -- SageBrain import module"
 governance_layer_DESCRIPTION="MIREOT extract of the governanceDUO provenance-layer terms SageBrain's opt-in governance layer reuses (prov:Activity, prov:Usage, prov:generated, prov:qualifiedUsage, prov:entity, gov:wasExecuted, gov:url, gov:entityVersionNumber, gov:name) and their ancestors. Generated by scripts/import.sh from governanceDUO commit ${GOVERNANCEDUO_COMMIT}; do not edit by hand."
 
 # --- governance_layer_shapes --------------------------------------------------
 #
 # governanceDUO owns and publishes the SHACL shapes for the provenance layer
-# above (shapes/provenance_layer.shacl.ttl -- gov:UsageShape/gov:ActivityShape,
-# moved there from this repo per plans/governance_layer_import.md, decision
-# D9: one owner per governance-layer term and shape). Shapes are constraints,
+# above. Previously a hand-authored supplement scoped to just
+# shape:UsageShape/shape:ActivityShape (provenance_layer.shacl.ttl, moved there
+# from this repo per plans/governance_layer_import.md, decision D9: one owner
+# per governance-layer term and shape); upstream's kg-conversion refactor
+# replaced it with gen-shacl output for its whole graph model,
+# shapes/governance.shacl.ttl, shape: = https://w3id.org/synapse/governance/shapes# --
+# UsageShape/ActivityShape live on in it, alongside every other graph shape
+# (SynapseEntityShape, AccessRequirementShape, ...). Shapes are constraints,
 # not a class/property hierarchy, so there is nothing for MIREOT to extract --
 # this is a verbatim copy, handled by copy_module() below, not
 # extract_module().
 governance_layer_shapes_VERSION="$GOVERNANCEDUO_COMMIT"
-governance_layer_shapes_URL="${GOVERNANCEDUO_RAW}/shapes/provenance_layer.shacl.ttl"
+governance_layer_shapes_URL="${GOVERNANCEDUO_RAW}/shapes/governance.shacl.ttl"
 governance_layer_shapes_OUTPUT="$SHACL_DIR/governance_layer.shacl.ttl"
 
-# --- governance_provenance_examples -------------------------------------------
+# --- governance_graph_example --------------------------------------------------
 #
-# governanceDUO's own provenance example ABox, at the same pin as the shapes
+# governanceDUO's own canonical graph example, at the same pin as the shapes
 # above. Not part of the ontology: a test fixture, checked by tests/validate.py
 # (WITH_GOVERNANCE=1) against governance_layer.shacl.ttl, so data written by
 # the shapes' owner conforms to them as imported here -- contract drift fails
 # in this repo's own test run, not only in governanceDUO's opt-in
 # sagebrain-contract-check. Verbatim copy, same as the shapes.
-governance_provenance_examples_VERSION="$GOVERNANCEDUO_COMMIT"
-governance_provenance_examples_URL="${GOVERNANCEDUO_RAW}/linkml/examples/provenance/rdf/all_examples.ttl"
-governance_provenance_examples_OUTPUT="$ROOT/tests/governanceduo_provenance_examples.ttl"
+#
+# Renamed from governance_provenance_examples: its old source,
+# linkml/examples/provenance/rdf/all_examples.ttl, is deleted upstream (folded
+# into the one graph model, same as governance_graph/governance_layer above).
+# The new source, linkml/examples/graph/rdf/governance_graph.ttl, also carries
+# ACLs, Access Requirements and Approvals alongside the prov: Activities/Usages
+# this repo's governance layer reuses, so "provenance_examples" would no longer
+# describe what it vendors.
+governance_graph_example_VERSION="$GOVERNANCEDUO_COMMIT"
+governance_graph_example_URL="${GOVERNANCEDUO_RAW}/linkml/examples/graph/rdf/governance_graph.ttl"
+governance_graph_example_OUTPUT="$ROOT/tests/governanceduo_graph_example.ttl"
 
 extract_module() {
   local name="$1"
@@ -302,7 +332,7 @@ main() {
     case " ${MODULES[*]} " in
       *" $name "*)
         case "$name" in
-          *_shapes|*_examples) copy_module "$name" ;;
+          *_shapes|*_example|*_examples) copy_module "$name" ;;
           *) extract_module "$name" ;;
         esac
         ;;
