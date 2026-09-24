@@ -893,8 +893,9 @@ see sagebrain:ExpressionDirection), reference_baseline and analysis_tool
 (free-text -- what the comparison was made against, and what tool/protocol
 produced the classifier), and derived_from (the source Synapse file(s) the
 calculation came from -- see sagebrain:derived_from; no new property needed,
-GeneExpressionAssociation reaches it via shape:AssociationShape like every
-other Association subtype). Together, this is what lets a reader trace which
+GeneExpressionAssociation reaches its constraint via shape:DerivedFromShape
+(sh:targetSubjectsOf sagebrain:derived_from) like every other Association
+subtype). Together, this is what lets a reader trace which
 gene(s) plausibly drove a Sample de_associated_with Pathway call: join this
 association's Gene (via participates_in) against the pathway, and its
 classifier against the DE result.""" ;
