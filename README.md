@@ -56,8 +56,14 @@ for all four of its modules:
 |---|---|---|
 | `governance_graph` | `ontology/imports/governance_graph.ttl` | `gov:SynapseEntity`, the range of `sagebrain:derived_from`; default build |
 | `governance_layer` | `ontology/imports/governance_layer.ttl` | `prov:Activity`/`prov:Usage` and the `prov:`/`gov:` properties the pipeline-provenance layer uses; `WITH_GOVERNANCE=1` only |
-| `governance_layer_shapes` | `ontology/shacl/governance_layer.shacl.ttl` | `gov:UsageShape`/`gov:ActivityShape`, copied verbatim |
-| `governance_provenance_examples` | `tests/governanceduo_provenance_examples.ttl` | governanceDUO's provenance ABox, a contract fixture |
+| `governance_layer_shapes` | `ontology/shacl/governance_layer.shacl.ttl` | governanceDUO's whole generated graph shape set (`shape:UsageShape`/`shape:ActivityShape` among them), copied verbatim from `shapes/governance.shacl.ttl` |
+| `governance_graph_example` | `tests/governanceduo_graph_example.ttl` | governanceDUO's canonical graph example, a contract fixture |
+
+`governance_graph` and `governance_layer` both extract from the same source file,
+`shapes/governance.owl.ttl` -- governanceDUO's kg-conversion refactor merged its
+hand-written `gov:` TBox and its LinkML-generated OWL into one graph TBox. The
+split into two modules/outputs stays anyway, mirroring this repo's own build
+gating rather than upstream's file layout.
 
 The one thing this repo owns there is `ontology/governance/provenance_bridge.ttl`:
 `sagebrain:derived_from rdfs:subPropertyOf prov:wasDerivedFrom`, so governanceDUO's
@@ -142,7 +148,8 @@ so a connection cannot be added without a constraint; every file in `examples/`
 still validates; and the merged ontology stays OWL 2 DL (needs `make tools`).
 
 `WITH_GOVERNANCE=1 python tests/validate.py` adds the governance layer: its own
-fixtures and example, plus contract checks against governanceDUO (its example
-ABox conforms to the imported shapes, the union stays OWL 2 DL, `prov:` types
-agree with W3C PROV-O, and the `derived_from` bridge carries derivation ancestry).
+fixtures and example, plus contract checks against governanceDUO (its canonical
+graph example conforms to the imported shapes, the union stays OWL 2 DL, `prov:`
+types agree with W3C PROV-O, and the `derived_from` bridge carries derivation
+ancestry).
 
