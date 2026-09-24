@@ -381,6 +381,23 @@ def check_prov_types():
     return mismatches
 
 
+def _bfs(seeds, neighbors_of):
+    """Nodes reachable from seeds by repeatedly calling neighbors_of(node) on
+    each newly-reached node. seeds themselves are not included in the
+    returned set unless also reachable as someone's neighbor -- a caller that
+    wants its seeds in the result unions them in itself (see
+    derivation_ancestors()'s two callers below, which want that both ways)."""
+    seen = set()
+    frontier = list(seeds)
+    while frontier:
+        node = frontier.pop()
+        for neighbor in neighbors_of(node):
+            if neighbor not in seen:
+                seen.add(neighbor)
+                frontier.append(neighbor)
+    return seen
+
+
 def derivation_ancestors(graph, start):
     """Every node reachable from start by derivation, as governanceDUO's
     canonical projection computes it (projections/provenance.rq at the
@@ -405,24 +422,14 @@ def derivation_ancestors(graph, start):
         }"""):
         g.add((row.out, PROV.wasDerivedFrom, row["in"]))
 
-    properties = {PROV.wasDerivedFrom}
-    frontier = [PROV.wasDerivedFrom]
-    while frontier:
-        parent = frontier.pop()
-        for child in g.subjects(RDFS.subPropertyOf, parent):
-            if child not in properties:
-                properties.add(child)
-                frontier.append(child)
+    properties = {PROV.wasDerivedFrom} | _bfs(
+        [PROV.wasDerivedFrom], lambda parent: g.subjects(RDFS.subPropertyOf, parent)
+    )
 
-    seen, frontier = set(), [start]
-    while frontier:
-        node = frontier.pop()
-        for prop in properties:
-            for parent in g.objects(node, prop):
-                if parent not in seen:
-                    seen.add(parent)
-                    frontier.append(parent)
-    return seen
+    return _bfs(
+        [start],
+        lambda node: (parent for prop in properties for parent in g.objects(node, prop)),
+    )
 
 
 def check_derivation_ancestry():
