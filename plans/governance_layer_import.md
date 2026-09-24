@@ -274,3 +274,44 @@ branch `governance-layer-import`.
   fetch. The modules here were generated from a cache seeded with `git show
   240a162:<path>`, which is byte-identical to what the URLs will serve.
 - The independent SME-framed review (OWL/RDF/SHACL) before `gh pr create`.
+
+## Superseded (2026-09-23)
+
+`plans/governance_layer_realignment.md` replaces this plan's pin and source
+files with governanceDUO's `kg-conversion` model refactor, which deleted or
+replaced everything this plan imported from. What changed:
+
+- **Pin.** `240a1628a14f6f08d6e86444030ab20beddc5b4d` becomes
+  `04825a2ed2341e6b10c5ad6d118d3e6e48a3fe71`.
+- **Namespace.** `gov:` moves from `https://sagebionetworks.org/governance/`
+  to `https://w3id.org/synapse/governance#`. Shapes move into their own
+  namespace, `shape:` = `https://w3id.org/synapse/governance/shapes#` --
+  `gov:UsageShape`/`gov:ActivityShape` throughout this plan are
+  `shape:UsageShape`/`shape:ActivityShape` now.
+- **Source files, all deleted at the new pin.**
+  `shapes/governance_graph.owl.ttl` and `shapes/governance_duo.owl.ttl` merge
+  into one graph TBox, `shapes/governance.owl.ttl`.
+  `shapes/provenance_layer.shacl.ttl` is superseded by governanceDUO's whole
+  generated graph shape set, `shapes/governance.shacl.ttl` (`shape:UsageShape`/
+  `shape:ActivityShape` live on in it, alongside every other graph shape).
+  `linkml/examples/provenance/rdf/all_examples.ttl` is superseded by
+  `linkml/examples/graph/rdf/governance_graph.ttl`, the canonical graph
+  example -- vendored under a new module name,
+  `governance_graph_example`/`tests/governanceduo_graph_example.ttl`
+  (`governance_provenance_examples` is gone).
+- **Step 5's `gov:activity-<id>` instance IRIs** (this plan's D4) are
+  superseded by governanceDUO's R2: Activities and Usages are minted under
+  `https://w3id.org/synapse/governance/activity/<n>` and
+  `<activity>/usage/<n>`, never inside the `gov:` term namespace itself.
+- **The `BaseEntity` MIREOT root** (`governance_layer_ROOTS` in
+  `scripts/import.sh`) is dropped: `prov:Activity` no longer has an
+  `rdfs:subClassOf` for MIREOT to climb into.
+- **(m) and (o) are *not* retired** -- the realignment plan's Q2 was resolved
+  option A (the constraint restored upstream), not option B. Both stay in
+  `tests/governance_violating.ttl`. One nuance this plan's own verification
+  notes get wrong at the new pin: "(m) and (o) produce only `gov:UsageShape`'s
+  xone message" no longer holds for (o) -- the upstream restoration has no
+  branch-exclusion, so a Usage carrying both `prov:entity` and `gov:name`
+  produces no violation at all under the regenerated shapes. (o) is kept as a
+  documented, un-asserted fixture; see
+  `plans/governance_layer_realignment.md`'s Implementation Report.
