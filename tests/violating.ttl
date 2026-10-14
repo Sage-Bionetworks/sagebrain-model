@@ -1,19 +1,22 @@
-# Instance data with seven planted defects, each of which MUST be reported.
+# Instance data with nine planted defects, each of which MUST be reported.
 # tests/validate.py asserts on the expected violation set, so this doubles as
 # documentation of what the shapes actually catch.
 #
-# Defect (a) is the headline: it is only the per-source-shape sh:class on
-# SampleShape that rules it out. Under naive RDFS entailment over
-# de_associated_with's own rdfs:range, this defect would be suppressed the
-# same way defect (c) is -- see VALIDATION CONFIGURATION in
-# sagebrain-shapes.ttl.
+# sagebrain:de_associated_with used to union both its domain and range at once,
+# which let OWL alone accept a combination the model never intended -- Sample
+# de_associated_with DiseaseStage -- with only sh:class in SHACL to reject it.
+# It was split into de_associated_with (Sample -> Pathway) and
+# de_associated_with_stage (Pathway -> DiseaseStage) specifically to remove
+# that gap (see ontology/main/sagebrain.ttl), so defects (a) and (g) below are
+# now ordinary wrong-target-class violations like (c), not a demonstration of
+# OWL/SHACL disagreement.
 
 @prefix sagebrain: <https://w3id.org/synapse/sagebrain#> .
 @prefix biolink:   <https://w3id.org/biolink/vocab/> .
 @prefix ex:        <https://example.org/sagebrain-test/> .
 
-# (a) per-pair range violation -- allowed by the OWL union range, forbidden here.
-#     From a Sample, de_associated_with may only reach a Pathway.
+# (a) wrong target class -- de_associated_with must reach a Pathway, not a
+#     DiseaseStage.
 ex:samp1
     a biolink:MaterialSample ;
     sagebrain:de_associated_with ex:braakStage3 .
@@ -49,6 +52,18 @@ ex:samp9 a biolink:MaterialSample .
 ex:apoe
     a biolink:Gene ;
     sagebrain:participates_in "KEGG:hsa04010" .
+
+# (g) wrong target class -- de_associated_with_stage must reach a DiseaseStage,
+#     not a Drug.
+ex:apoptosisPathway sagebrain:de_associated_with_stage ex:donanemab .
+
+# (h) association shape -- section 4 of the shapes graph is otherwise
+#     unexercised here. Subject is a Drug rather than a Gene, and the weight
+#     the reification exists to carry is missing entirely.
+ex:apoeExpressionInSamp1
+    a sagebrain:GeneExpressionAssociation ;
+    biolink:subject ex:donanemab ;
+    biolink:object ex:samp1 .
 
 ###  Supporting well-formed nodes  ##############################
 
