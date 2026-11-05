@@ -364,6 +364,7 @@ sagebrain:Vasculature a sagebrain:Biodomain ; skos:prefLabel "Vasculature" ; sko
 
 sagebrain:QCMetric
     a owl:Class ;
+    rdfs:subClassOf skos:Concept ;
     rdfs:label "QC Metric" ;
     rdfs:comment "A quality-control metric type computed for a sample's underlying sequencing data (e.g. Phred score, reads mapped)." ;
     sagebrain:elementCategory sagebrain:Biological ;
