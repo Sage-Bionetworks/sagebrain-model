@@ -220,15 +220,25 @@ $(ROBOT_JAR):
 
 # Written via a temp file and checksummed before it is moved into place, so an
 # interrupted or corrupted download cannot leave a jar that looks fetched.
+#
+# Compares a plain computed digest rather than piping a checksum line through
+# `sha256sum --check`: GNU coreutils' sha256sum accepts that long-option form,
+# but macOS's own /sbin/sha256sum is a different, BSD-flavoured binary that only
+# understands short flags (`-bctwz`) and errors out on `--check`/`--status`
+# with a usage message -- even though the digest it computes is identical.
+# Plain `sha256sum FILE` (no flags beyond that) is the one invocation both
+# implementations agree on, so this only ever uses that form.
 $(OWL2VOWL_JAR):
 	@echo "Fetching OWL2VOWL $(OWL2VOWL_VERSION) (not committed -- 10 MB)"
 	mkdir -p $(dir $@)
 	curl -L --fail -o $@.tmp "$(OWL2VOWL_URL)"
-	@echo "$(OWL2VOWL_SHA256)  $@.tmp" | sha256sum --check --status \
-	  || { echo "ERROR: checksum mismatch on $(OWL2VOWL_URL)"; \
-	       echo "       expected $(OWL2VOWL_SHA256)"; \
-	       echo "       got      $$(sha256sum $@.tmp | cut -d' ' -f1)"; \
-	       rm -f $@.tmp; exit 1; }
+	@got="$$(sha256sum $@.tmp | cut -d' ' -f1)"; \
+	  if [ "$$got" != "$(OWL2VOWL_SHA256)" ]; then \
+	    echo "ERROR: checksum mismatch on $(OWL2VOWL_URL)"; \
+	    echo "       expected $(OWL2VOWL_SHA256)"; \
+	    echo "       got      $$got"; \
+	    rm -f $@.tmp; exit 1; \
+	  fi
 	mv $@.tmp $@
 
 tools: $(ROBOT_JAR) $(OWL2VOWL_JAR)
