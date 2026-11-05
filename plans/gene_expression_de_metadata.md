@@ -57,7 +57,7 @@ Following this session's established convention (`plans/` + Implementation Repor
 
    *1c. `ontology/main/sagebrain.ttl` -- GeneExpressionAssociation enrichment:*
    - Mint `sagebrain:ExpressionDirection` as a vocabulary class mirroring `sagebrain:QCStatus`'s exact pattern (plain `owl:Class rdfs:subClassOf skos:Concept`, `sagebrain:ExpressionDirectionScheme` SKOS scheme), with four individuals carrying the `skos:closeMatch`/`exactMatch` groundings above: `sagebrain:Upregulated`, `sagebrain:Downregulated`, `sagebrain:NoChange`, `sagebrain:UnknownDirection`.
-   - Add three new properties, domain `sagebrain:GeneExpressionAssociation`, each `rdfs:subPropertyOf biolink:association_slot` (the pattern `sagebrain:weight` already uses):
+   - Add three new properties, domain `sagebrain:GeneExpressionAssociation`, with no `rdfs:subPropertyOf biolink:association_slot` (*corrected: an earlier draft said to add it, citing `sagebrain:weight` as precedent, but `weight` has no such triple -- PR #3 dropped it -- and `biolink:association_slot` is an `owl:ObjectProperty`, so subproperty-of it from a DatatypeProperty is illegal punning that fails `robot validate-profile --profile DL`*):
      - `sagebrain:expression_classifier` -- `owl:ObjectProperty`, range `sagebrain:ExpressionDirection`.
      - `sagebrain:reference_baseline` -- `owl:DatatypeProperty`, range `xsd:string`.
      - `sagebrain:analysis_tool` -- `owl:DatatypeProperty`, range `xsd:string`.
@@ -81,7 +81,7 @@ Following this session's established convention (`plans/` + Implementation Repor
 
 ## Verification
 
-- `python3 tests/validate.py` after each commit touching ontology/shapes/tests -- all 6 checks must keep passing: connection-coverage count unchanged (these new properties aren't "connections"), both new violating.ttl defects caught, `derived_from` now exercised in `examples/AD-cohort.ttl` (previously the sole unexercised connection).
+- `python3 tests/validate.py` after each commit touching ontology/shapes/tests -- all 7 checks must keep passing: connection-coverage count unchanged (these new properties aren't "connections"), both new violating.ttl defects caught, `derived_from` now exercised in `examples/AD-cohort.ttl` (previously the sole unexercised connection).
 - Spot-check that `sh:or` on `derived_from` actually accepts both a `MaterialSample` and a `SynapseEntity` target (the conforming fixture / example must exercise at least one; ideally both across the codebase, though only `SynapseEntity` is required by this task).
 - `make json` (rebuild `build/sage.json`) and confirm `derived_from`'s domain/range resolve to real class ids (not `null`) and `sagegov:SynapseEntity` is not an orphan node -- same inspection technique (`python3` over `build/sage.json`'s `class`/`classAttribute`/`property`/`propertyAttribute` arrays) used for the earlier `contains_tissue`/`derived_from_organ` fix.
 
@@ -115,7 +115,7 @@ Plus two commits outside this plan's own scope, done alongside it at the user's 
 - `Makefile`'s `MAIN_SOURCES` update and `tests/validate.py`'s `IMPORTS` update (both needed so `gov:SynapseEntity` is actually declared when the ontology is loaded/built) weren't called out as separate line items in the Approach but were folded into commit 4, since they're direct, required consequences of adding the import module.
 
 **Verification results:**
-- `python3 tests/validate.py`: all 6 checks pass at every commit that touched ontology/shapes/tests. Final state: 24/24 connections constrained (unchanged count -- the 3 new `GeneExpressionAssociation` fields aren't "connections"), `tests/conforming.ttl` and both `examples/*.ttl` conform. The defect count and letters below are corrected -- see the Corrections note.
+- `python3 tests/validate.py`: all 7 checks pass at every commit that touched ontology/shapes/tests. Final state: 24/24 connections constrained (unchanged count -- the 3 new `GeneExpressionAssociation` fields aren't "connections"), `tests/conforming.ttl` and both `examples/*.ttl` conform. The defect count and letters below are corrected -- see the Corrections note.
 - `make json` + inspecting `build/sage.json`'s `class`/`classAttribute`/`property`/`propertyAttribute` arrays: `gov:SynapseEntity` and `sagebrain:ExpressionDirection` both present as classes; `sagebrain:derived_from` resolves to 4 concrete (domain, range) pairs (`MaterialSample`/`Association` x `MaterialSample`/`SynapseEntity`), none `null`; `SynapseEntity` is not an orphan node.
 - Confirmed programmatically (a one-off script over the merged ontology + both example files) that all 24 connections are now exercised across `examples/*.ttl` -- `sagebrain:derived_from` was the last holdout since v0.4 and is now covered via `association:apoe-expr-samp01`'s `syn:syn26999999`.
 
