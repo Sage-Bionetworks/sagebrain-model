@@ -4,21 +4,32 @@
 # trial, with real identifiers throughout. Validated on every run of
 # tests/validate.py.
 #
-# It exercises 23 of the model's 24 connections, including sagebrain:belongs_to
+# It exercises all 24 of the model's connections, including sagebrain:belongs_to
 # now that the 19 AD biodomains are minted as a SKOS vocabulary (see
 # sagebrain:BiodomainScheme in ontology/main/sagebrain.ttl) -- previously left out
 # on exactly this ground, per the "What is missing" section below before B5 was
 # resolved. v0.4 added a QC layer (see plans/qc_layer_integration.md):
-# sagebrain:has_qc_status is exercised below via sample:03. sagebrain:derived_from
-# is not -- there is no File class yet to point at, and inventing a placeholder
-# IRI for it would recreate exactly the ex: problem the "Where a term comes from"
-# section below already avoids everywhere else in this file. v0.4 also added
+# sagebrain:has_qc_status is exercised below via sample:03. v0.4 also added
 # sagebrain:derived_from_organ, exercised below on both sample:01 (-> Organ) and
 # sample:03 (-> OrganSubregion), demonstrating both members of its range union.
 # Also v0.4: sagebrain:de_associated_with_disease, exercised via
 # REACT:R-HSA-977225 -> MONDO:0004975 -- the same disease its (pre-existing,
 # not-necessarily-DE-derived) sagebrain:associated_with edge already names, here
-# via a differential-expression result specifically.
+# via a differential-expression result specifically; and, per
+# plans/gene_expression_de_metadata.md, association:apoe-expr-samp01 now
+# carries an expression_classifier/reference_baseline/analysis_tool plus a
+# derived_from edge to a syn: SynapseEntity (reused from mc2-center/
+# governanceDUO's governance graph -- see ontology/imports/governance_graph.ttl).
+# sagebrain:derived_from is the last connection to go from unexercised to
+# exercised: through v0.4 there was no real class to point at ("a Sample
+# stands in for a file"), which would have recreated exactly the ex: problem
+# the "Where a term comes from" section below already avoids everywhere else
+# in this file. gov:SynapseEntity resolves that -- syn:syn26999999 below is a
+# fictional but well-formed syn\d+ id (no real Synapse entity backs this toy
+# example, the same honest-fiction treatment sample:/individual: already get,
+# just borrowing Synapse's own real id shape and namespace instead of a local
+# one, since that's what lets this graph and governanceDUO's share the same
+# node if the id ever were real).
 #
 # IDENTIFIERS
 #
@@ -74,6 +85,13 @@
 @prefix individual: <https://w3id.org/synapse/ad/individual/> .
 @prefix sample:     <https://w3id.org/synapse/ad/sample/> .
 @prefix association: <https://w3id.org/synapse/ad/association/> .
+
+# Same syn:/gov: prefixes mc2-center/governanceDUO uses for its own
+# gov:SynapseEntity individuals (see ontology/imports/governance_graph.ttl),
+# so a real Synapse entity id would resolve to the identical node in both
+# graphs.
+@prefix syn: <https://www.synapse.org/Synapse:> .
+@prefix gov: <https://sagebionetworks.org/governance/> .
 
 ###  Participants  ##############################################
 #
@@ -208,7 +226,17 @@ association:apoe-expr-samp01
     a sagebrain:GeneExpressionAssociation ;
     biolink:subject HGNC:613 ;
     biolink:object sample:01 ;
-    sagebrain:weight "1.4"^^xsd:double .
+    sagebrain:weight "1.4"^^xsd:double ;
+    sagebrain:expression_classifier sagebrain:Upregulated ;
+    sagebrain:reference_baseline "Control (participant 02, unaffected)" ;
+    sagebrain:analysis_tool "DESeq2 v1.34.0" ;
+    sagebrain:derived_from syn:syn26999999 .
+
+# Restated for the same reason sagebrain:PhredScore/QCFail are restated below:
+# pySHACL's sh:class only sees rdf:type triples present in the graph actually
+# being validated, not ones that live solely in ont_graph.
+sagebrain:Upregulated a sagebrain:ExpressionDirection .
+syn:syn26999999 a gov:SynapseEntity .
 
 HGNC:620
     a biolink:Gene ;

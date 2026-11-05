@@ -73,7 +73,13 @@ ONTOLOGY = ROOT / "ontology" / "main" / "sagebrain.ttl"
 # endpoint-integrity shapes (check 2) see six undeclared IRIs, every
 # sh:targetClass over them matches nothing, and sagebrain:participates_in and
 # sagebrain:used_to_treat are subproperties of things that do not exist.
-IMPORTS = [ROOT / "ontology" / "imports" / "biolink.ttl"]
+# governance_graph.ttl is the same story for gov:SynapseEntity, reused by
+# sagebrain:derived_from's range (see ontology/main/sagebrain.ttl's "Reused
+# terms (Sage Governance Graph)" section).
+IMPORTS = [
+    ROOT / "ontology" / "imports" / "biolink.ttl",
+    ROOT / "ontology" / "imports" / "governance_graph.ttl",
+]
 # Claims this project asserts about other people's vocabularies, e.g. that a CERAD
 # score specialises an HP finding. Loaded so they are parsed and shape-checked on
 # every run, but deliberately not part of the visualized build: a mapping between two
@@ -116,6 +122,10 @@ EXPECTED_VIOLATIONS = {
         "derived_from_organ must point to an Organ or an OrganSubregion",
     "l: wrong target class, Pathway de_associated_with_disease to a Drug":
         "de_associated_with_disease must point to a DiseaseLabel",
+    "m: wrong target class, GeneExpressionAssociation expression_classifier to a Drug":
+        "expression_classifier must point to at most one ExpressionDirection",
+    "n: wrong target class, Sample derived_from to a Gene":
+        "derived_from must point to a MaterialSample or a SynapseEntity",
 }
 
 
